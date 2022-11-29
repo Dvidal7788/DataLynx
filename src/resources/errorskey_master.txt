@@ -1,5 +1,6 @@
 This key allos if_error() to match error codes with corresponding error messages
 ERROR CODE:
+----------
 1:
 Malloc returned NULL
 2:

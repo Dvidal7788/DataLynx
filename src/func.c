@@ -50,7 +50,7 @@ char *inf_buffer(char *prompt)
     while (true)
     {
         int scanReturn = scanf("%c", &s[i]);
-        if (scanReturn == EOF) {if_error(3);}
+        if (scanReturn == EOF) {free_null(&s); if_error(3);}
 
         if (s[i] == '\n') {
             s[i] = '\0';
@@ -58,7 +58,7 @@ char *inf_buffer(char *prompt)
         }
         else {
             s = realloc(s, sizeof(char)*(i+2));
-            if (s == NULL) {if_error(2);}
+            if (s == NULL) {free_null(&s); if_error(2);}
             i++;
         }
     }
@@ -74,7 +74,7 @@ void build_dblink_list(char *s, node **head, node **last)
     // -- APPEND NODE --
     // Create new node
     node *n = malloc(sizeof(node));
-    if (n == NULL) {if_error(1);}
+    if (n == NULL) {free_list(*head); if_error(1);}
 
     n->s = s;
     s = NULL;
@@ -94,27 +94,24 @@ void build_dblink_list(char *s, node **head, node **last)
 }
 
 // ___ LIST: REMOVE ITEM ___
-char *list_remove_item(node **head, node **last, uint8_t return_or_not)
+char *list_remove_item(node **head, node **last)
 {
-    // Needs to be ** bc I need to chagen ORIGINAL pointers nack to NULL or anything else
+    // Needs to be ** bc I need to change ORIGINAL pointers back to NULL or anything else
 
     // Create string to return
     char *popped = NULL;
-    if (return_or_not == 1) {
+    if (*head != NULL) {
         popped = malloc((strlen((*last)->s)+1) * sizeof(char));
         if (popped == NULL) {if_error(1);}
-
-        sprintf(popped, "%s", (*last)->s);
+        strcpy(popped, (*last)->s);
+    }
+    else {
+        // Nothing in list
+        return NULL;
     }
 
-    // V2
-    if (*head == NULL) {
-        printf("\n\nNothing to remove. List empty.\n");
-    }
-    else if (*head == *last) {
-        // Does last->prev == NULL not work?
-        // One node left
-
+    if (*head == *last) {
+        // One node left - (checking if ((*last)->prev == NULL) also works)
         free((*last)->s);
         (*last)->s = NULL;
         (*last)->prev = (*last)->next = NULL;
@@ -132,25 +129,23 @@ char *list_remove_item(node **head, node **last, uint8_t return_or_not)
         *last = tmp;
     }
 
-
-    // Return string
-    if (return_or_not == 1) {
-        return popped;
-    }
-
-    return NULL;
+    return popped;
 }
 
 // ___ PRINT LIST ___
 void print_list(node *head)
 {
     node *tmp = head;
-    while (tmp != NULL)
-    {
-        printf("%s ", tmp->s);
+    printf("[");
+    while (tmp != NULL) {
+        if (tmp->next == NULL) {
+            printf("'%s'", tmp->s);
+        }
+        else printf("'%s', ", tmp->s);
+
         tmp = tmp->next;
     }
-    printf("\n\n");
+    printf("]\n\n");
 
     return;
 }
@@ -177,36 +172,76 @@ void free_list(node *head)
 // ___ IF ERROR ___
 void if_error(int16_t error_num)
 {
-    // TO DO: READ FROM resources/error_key
-    // Use: error message (input to this function) should not have "error:" or '\n'
-    // Fill in later
-    FILE *file = fopen("src/resources/errors_key.txt", "r");
-    if (file == NULL) {exit(-1);}
+    // Open error KEY to READ from
+    FILE *key_file = fopen("src/resources/errorskey_master.txt", "r");
+    if (key_file == NULL) {
+        printf("\nError: -1\nFailed in if_error(), attemping to log error.\n");
+        exit(-1);
+    }
 
     // Get file stream to correct error message in key
     char c = 0;
-    while ((c = fgetc(file)) != error_num+48);
-    while ((c = fgetc(file)) != '\n');
+    while ((c = fgetc(key_file)) != error_num+48);
+    while ((c = fgetc(key_file)) != '\n');
 
-    char error_msg[250];
+    // Allocate string for error msg (this allows end user full modularity for any length error msg)
+    char *error_msg = malloc(sizeof(char));
+    if (error_msg == NULL) {
+        fclose_null(&key_file);
+        printf("\nError: -2\nFailed in if_error(), attemping to log error.\n");
+        exit(-2);
+        }
 
+    // Read error msg from key
     uint8_t i = 0;
-    while ((c = fgetc(file)) != '\n') {
+    while ((c = fgetc(key_file)) != '\n') {
         error_msg[i] = c;
+        error_msg = realloc(error_msg, sizeof(char)*(i+2));
+        if (error_msg == NULL) {
+            fclose_null(&key_file);
+            free_null(&error_msg);
+            printf("\nError: -3\nFailed in if_error() attemping to log error.\n");
+            exit(-3);
+        }
         i++;
     }
     error_msg[i] = '\0';
 
-    printf("\n\n\t** ERROR **\n\nError code: %i\n** %s **\n\n", error_num, error_msg);
+    // TIMESTAMP
+    time_t timestamp = time(0);
 
-    fclose(file);
+    //  Open error LOG in Append Mode
+    FILE *log_file = fopen("./src/resources/error_log.csv", "a");
+    if (log_file == NULL) {
+        fclose_null(&key_file);
+        free_null(&error_msg);
+        printf("\nError: -4\nFailed in if_error(), attemping to log error.\n");
+        exit(-4);
+    }
+
+    // Append to log
+    fprintf(log_file, "%i,%s,%s\n", error_num, error_msg, ctime(&timestamp));
+
+    printf("\n\n\t** ERROR **\n\nError code: %i\n** %s **\n\n", error_num, error_msg);
+    fclose_null(&key_file);
+    fclose_null(&log_file);
+    free_null(&error_msg);
     exit(error_num);
 }
 // ___ FREE NULL ___
 void free_null(char **s)
 {
-    // The only purpose of this function is to condense these 2 lines of code down to 1 in main.c
+    /* The only purpose of this function is to condense these 2 lines of code down to 1 in main.c or other calling functions. */
     free(*s);
     *s = NULL;
+    return;
+}
+
+// __ FCLOSE NULL ___
+void fclose_null(FILE **file)
+{
+    /* The only purpose of this function is to condense these 2 lines of code down to 1. Like free_null(), for file pointers. */
+    fclose(*file);
+    *file = NULL;
     return;
 }

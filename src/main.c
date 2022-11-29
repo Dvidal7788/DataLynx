@@ -11,17 +11,14 @@
 int main(void)
 {
     uint64_t node_count = 0;
-    // TO DO:
-    // Add quit as item in list
-    // REMOVE FUNCTION
-    // write_list_csv() - TEST when make REMOVE FUNCTION
 
     // User input: Name List
     char *list_name = inf_buffer("Name of list: ");
+    if (strcasecmp(list_name, "quit") == 0) {free_null(&list_name); return 0;}
 
     // Prepend "csv/" and append ".csv" to list name, to create file path
     char file_path[(strlen(list_name) + strlen("csv/.csv") + 1) * sizeof(char)];
-    sprintf(file_path, "csv/%s.csv", list_name);
+    sprintf(file_path, "./csv/%s.csv", list_name);
 
     // Declare Main Pointers
     node *head = NULL;
@@ -35,29 +32,24 @@ int main(void)
     // Loop until user quits
     while (true)
     {
-        bool append_item = false;
+        bool append_item = false, quit_choice = false;
 
         // User Input
         s = inf_buffer("Enter item: ");
 
         // -- QUIT --
         if (strcasecmp(s, "quit") == 0) {
-            break;
-        }
-        else if (strcasecmp(s, "remove") == 0) {
-            // -- REMOVE --
+               // -- QUIT --
             while (true) {
-                choice = inf_buffer("\n\t ~ REMOVE ~\nDo you want to REMOVE the last item? ");
+                choice = inf_buffer("\n\t ~ QUIT ~\nDo you want to QUIT? (yes/no): ");
                 if (strcasecmp(choice, "yes") == 0) {
-                    list_remove_item(&head, &last, 0);
-                    csv_rewrite(file_path, head);
-                    free_null(&s);
-                    free_null(&choice);
+                    quit_choice = true;
                     break;
                 }
                 else if (strcasecmp(choice, "no") == 0) {
                     free(choice);
-                    choice = inf_buffer("Do you want to ADD 'remove' as an item to the list? ");
+                    printf("Do you want to ADD '%s' as an item to the list? (yes/no): ", s);
+                    choice = inf_buffer("");
                     if (strcasecmp(choice, "yes") == 0) {
                         append_item = true;
                         free_null(&choice);
@@ -68,38 +60,82 @@ int main(void)
                         free_null(&choice);
                         break;
                     }
-
                 }
                 printf("\n\n*** Enter 'yes' or 'no' only. ***\n");
                 free_null(&choice);
             }
-
+        }
+        else if (strcasecmp(s, "remove") == 0) {
+            // -- REMOVE --
+            while (true) {
+                choice = inf_buffer("\n\t ~ REMOVE ~\nDo you want to REMOVE the last item? (yes/no): ");
+                if (strcasecmp(choice, "yes") == 0) {
+                    // Attempt tonRemove from Double Linked List
+                    char *popped = list_remove_item(&head, &last);
+                    if (popped == NULL) {
+                        printf("\n\n* Nothing to remove. List empty.\n");
+                    }
+                    else {
+                        csv_rewrite(file_path, head);
+                        printf("\n* You just REMOVED: '%s'\n", popped);
+                        node_count--;
+                    }
+                    free_null(&s);
+                    free_null(&choice);
+                    if (popped != NULL) {free_null(&popped);}
+                    break;
+                }
+                else if (strcasecmp(choice, "no") == 0) {
+                    free(choice);
+                    printf("Do you want to ADD '%s' as an item to the list? (yes/no): ", s);
+                    choice = inf_buffer("");
+                    if (strcasecmp(choice, "yes") == 0) {
+                        append_item = true;
+                        free_null(&choice);
+                        break;
+                    }
+                    else if (strcasecmp(choice, "no") == 0) {
+                        free_null(&s);
+                        free_null(&choice);
+                        break;
+                    }
+                }
+                printf("\n\n*** Enter 'yes' or 'no' only. ***\n");
+                free_null(&choice);
+            }
         }
         else append_item = true;
+
+        if (quit_choice) break;
 
         if (append_item == true) {
             // Append Item to List
             build_dblink_list(s, &head, &last);
             append_csv(file_path, last->s);
+            node_count++;
         }
 
         // Print
-        printf("\nList: '%s':\n\n", list_name);
+        printf("\nLIST: '%s'\n----\n", list_name);
         print_list(head);
     }
 
+
     //      _____ END _____
 
+    // Print
+    printf("\nLIST: '%s'\n----\n", list_name);
     print_list(head);
+
+    // End message
     printf("\n** A file named '%s.csv' was made for you. **\n", list_name);
     printf("\nFile path: '%s'\n\n", file_path);
 
     // Free Pointers
+    free_null(&list_name);
+    free_null(&s);
+    free_null(&choice);
     free_list(head);
-    free(list_name);
-    free(s);
-    free(choice);
-    list_name = s = choice = NULL;
     head = last = NULL;
 
     return EXIT_SUCCESS;

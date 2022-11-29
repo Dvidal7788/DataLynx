@@ -7,6 +7,7 @@
 #include <string.h>
 #include <strings.h>
 #include <stdint.h>
+#include <time.h>
 
 // Double Link Node
 typedef struct node
@@ -22,11 +23,12 @@ void append_csv(char *file_name, char *s);
 void csv_rewrite(char *file_path, node *head);
 char *inf_buffer(char *prompt);
 void build_dblink_list(char *s, node **head, node **last);
-char *list_remove_item(node **head, node **last, uint8_t return_or_not);
+char *list_remove_item(node **head, node **last);
 void print_list(node *head);
 void free_list(node *head);
 void if_error(int16_t error_num);
 void free_null(char **s);
+void fclose_null(FILE **file);
 
 
 #endif /* HEADER_H */
