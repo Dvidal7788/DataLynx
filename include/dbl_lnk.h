@@ -1,5 +1,5 @@
-#ifndef HEADER_H
-#define HEADER_H
+#ifndef DBL_LNK_H
+#define DBL_LNK_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,8 +22,8 @@ node;
 void append_csv(char *file_name, char *s);
 void csv_rewrite(char *file_path, node *head);
 char *inf_buffer(char *prompt);
-void build_dblink_list(char *s, node **head, node **last);
-char *list_remove_item(node **head, node **last);
+void build_dblink_list(char **s_ptr, node **head, node **last);
+char *list_remove_item(node **head, node **last, bool pop_or_not);
 void print_list(node *head);
 void free_list(node *head);
 void if_error(int16_t error_num);
@@ -31,4 +31,4 @@ void free_null(char **s);
 void fclose_null(FILE **file);
 
 
-#endif /* HEADER_H */
+#endif /* DBL_LNK_H */

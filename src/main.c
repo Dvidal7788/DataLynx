@@ -1,12 +1,8 @@
-// ~~~~~ DOUBLE LINK CSV LIBRARY ~~~~~
+// ~~~~~ DOUBLE LINK LIBRARY ~~~~~
 // (STACK)
 
-// TO DO :
-    // remove
-    // if error read from txt
-    // csv rewrite()
-    // Hitting enter creates blank item in csv, but not link list
-#include "../include/header.h"
+#include <dbl_lnk.h>
+// #include "../include/dbl_lnk.h"
 
 int main(void)
 {
@@ -42,14 +38,17 @@ int main(void)
                // -- QUIT --
             while (true) {
                 choice = inf_buffer("\n\t ~ QUIT ~\nDo you want to QUIT? (yes/no): ");
+
                 if (strcasecmp(choice, "yes") == 0) {
                     quit_choice = true;
                     break;
                 }
                 else if (strcasecmp(choice, "no") == 0) {
-                    free(choice);
+
                     printf("Do you want to ADD '%s' as an item to the list? (yes/no): ", s);
+                    free(choice);
                     choice = inf_buffer("");
+
                     if (strcasecmp(choice, "yes") == 0) {
                         append_item = true;
                         free_null(&choice);
@@ -69,9 +68,12 @@ int main(void)
             // -- REMOVE --
             while (true) {
                 choice = inf_buffer("\n\t ~ REMOVE ~\nDo you want to REMOVE the last item? (yes/no): ");
+
                 if (strcasecmp(choice, "yes") == 0) {
-                    // Attempt tonRemove from Double Linked List
-                    char *popped = list_remove_item(&head, &last);
+
+                    // Attempt to Remove last item from Double Linked List
+                    char *popped = list_remove_item(&head, &last, true);
+
                     if (popped == NULL) {
                         printf("\n\n* Nothing to remove. List empty.\n");
                     }
@@ -88,6 +90,7 @@ int main(void)
                 else if (strcasecmp(choice, "no") == 0) {
                     free(choice);
                     printf("Do you want to ADD '%s' as an item to the list? (yes/no): ", s);
+
                     choice = inf_buffer("");
                     if (strcasecmp(choice, "yes") == 0) {
                         append_item = true;
@@ -110,7 +113,7 @@ int main(void)
 
         if (append_item == true) {
             // Append Item to List
-            build_dblink_list(s, &head, &last);
+            build_dblink_list(&s, &head, &last);
             append_csv(file_path, last->s);
             node_count++;
         }
@@ -118,6 +121,8 @@ int main(void)
         // Print
         printf("\nLIST: '%s'\n----\n", list_name);
         print_list(head);
+
+        // I do not need to free(s) because the buffer that s points to has been taken over by node->s
     }
 
 

@@ -1,5 +1,5 @@
-#include "../include/header.h"
-
+#include <dbl_lnk.h>
+// #include "../include/dbl_lnk.h"
 
 // ___ APPEND TO CSV ___
 void append_csv(char *file_name, char *s)
@@ -47,18 +47,20 @@ char *inf_buffer(char *prompt)
 
     // Scan command line char by char
     uint64_t i = 0;
-    while (true)
+    int scanReturn;
+    while ((scanReturn = scanf("%c", &s[i])) == 1)
     {
-        int scanReturn = scanf("%c", &s[i]);
+        // Check EOF
         if (scanReturn == EOF) {free_null(&s); if_error(3);}
 
+        // Check if end of user input
         if (s[i] == '\n') {
             s[i] = '\0';
             break;
         }
         else {
             s = realloc(s, sizeof(char)*(i+2));
-            if (s == NULL) {free_null(&s); if_error(2);}
+            if (s == NULL) {if_error(2);}
             i++;
         }
     }
@@ -67,17 +69,24 @@ char *inf_buffer(char *prompt)
 }
 
 // ___ BUILD DOUBLE LINK LIST ___
-void build_dblink_list(char *s, node **head, node **last)
+void build_dblink_list(char **s_ptr, node **head, node **last)
 {
-    // char *s input can NOT be string literal (maybe change to **)
+    // string input changed to **:
+            // It makes it more obvious to the programmer what the intent of the input is (i.e. that the buffer will be taken over by the node)
+
+                  // This does not solve the problem of not being able to handle a string literal.
+            // input can NOT be string literal bc this will be popped off the stack
+
         // Must be dynamically allocated string
     // -- APPEND NODE --
     // Create new node
     node *n = malloc(sizeof(node));
     if (n == NULL) {free_list(*head); if_error(1);}
 
-    n->s = s;
-    s = NULL;
+    // This string pointer in the node takes over the allocated string buffer (i.e. **s_ptr).
+    n->s = *s_ptr;
+    *s_ptr = NULL;
+    s_ptr = NULL;
     n->prev = n->next = NULL;
 
     // Append node to linked list
@@ -94,24 +103,34 @@ void build_dblink_list(char *s, node **head, node **last)
 }
 
 // ___ LIST: REMOVE ITEM ___
-char *list_remove_item(node **head, node **last)
+char *list_remove_item(node **head, node **last, bool pop_or_not)
 {
     // Needs to be ** bc I need to change ORIGINAL pointers back to NULL or anything else
+    /* Will return NULL if list is empty (nothing to remove) OR if !pop_or_not  */
 
-    // Create string to return
+    // Create string to return removed item
     char *popped = NULL;
+
+    // Check if list is empty first
     if (*head != NULL) {
-        popped = malloc((strlen((*last)->s)+1) * sizeof(char));
-        if (popped == NULL) {if_error(1);}
-        strcpy(popped, (*last)->s);
+
+        // POP OR NOT: Programmer must chose whether to pop or not. (So they don't have to free(popped) if not used.)
+        if (pop_or_not) {
+
+            // Allocate popped buffer
+            popped = malloc((strlen((*last)->s)+1) * sizeof(char));
+            if (popped == NULL) {free_list(*head); if_error(1);}
+            strcpy(popped, (*last)->s);
+        }
     }
     else {
         // Nothing in list
         return NULL;
     }
 
+    // - REMOVE LAST NODE - (i.e. pop off stack)
     if (*head == *last) {
-        // One node left - (checking if ((*last)->prev == NULL) also works)
+        // One node left - if (*head == *last) OR if ((*last)->prev == NULL), both work
         free((*last)->s);
         (*last)->s = NULL;
         (*last)->prev = (*last)->next = NULL;
@@ -199,7 +218,6 @@ void if_error(int16_t error_num)
         error_msg = realloc(error_msg, sizeof(char)*(i+2));
         if (error_msg == NULL) {
             fclose_null(&key_file);
-            free_null(&error_msg);
             printf("\nError: -3\nFailed in if_error() attemping to log error.\n");
             exit(-3);
         }
@@ -207,11 +225,8 @@ void if_error(int16_t error_num)
     }
     error_msg[i] = '\0';
 
-    // TIMESTAMP
-    time_t timestamp = time(0);
-
     //  Open error LOG in Append Mode
-    FILE *log_file = fopen("./src/resources/error_log.csv", "a");
+    FILE *log_file = fopen("./src/resources/error_log.csv", "a+");
     if (log_file == NULL) {
         fclose_null(&key_file);
         free_null(&error_msg);
@@ -219,15 +234,25 @@ void if_error(int16_t error_num)
         exit(-4);
     }
 
-    // Append to log
-    fprintf(log_file, "%i,%s,%s\n", error_num, error_msg, ctime(&timestamp));
+    // TIMESTAMP
+    time_t time_rtrn = time(0);
+    uint8_t l = strlen(ctime(&time_rtrn));
 
-    printf("\n\n\t** ERROR **\n\nError code: %i\n** %s **\n\n", error_num, error_msg);
+    char timestamp[l];
+    strcpy(timestamp, ctime(&time_rtrn));
+    timestamp[l-1] = '\0';
+
+    // Append to log
+    fprintf(log_file, "%i,%s,%s\n", error_num, error_msg, timestamp);
+
+    // End
+    printf("\n\n\t** ERROR **\n\nError code: %i\n\n** %s **\n\n%s\n", error_num, error_msg, timestamp);
     fclose_null(&key_file);
     fclose_null(&log_file);
     free_null(&error_msg);
     exit(error_num);
 }
+
 // ___ FREE NULL ___
 void free_null(char **s)
 {

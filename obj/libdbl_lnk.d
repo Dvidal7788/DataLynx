@@ -1,4 +1,4 @@
-obj/func.o: src/func.c src/../include/header.h /usr/include/stdio.h \
+obj/libdbl_lnk.o: src/libdbl_lnk.c include/dbl_lnk.h /usr/include/stdio.h \
   /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
   /usr/include/features.h /usr/include/features-time64.h \
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
@@ -59,7 +59,7 @@ obj/func.o: src/func.c src/../include/header.h /usr/include/stdio.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h
 
-src/../include/header.h:
+include/dbl_lnk.h:
 
 /usr/include/stdio.h:
 
