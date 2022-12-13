@@ -1,5 +1,5 @@
-#include <dbl_lnk.h>
-// #include "../include/dbl_lnk.h"
+// #include <dbl_lnk.h>
+#include "../include/dbl_lnk.h"
 
 // ___ APPEND TO CSV ___
 void append_csv(char *file_name, char *s)
@@ -254,19 +254,69 @@ void if_error(int16_t error_num)
 }
 
 // ___ FREE NULL ___
-void free_null(char **s)
+void free_null(char **filename)
 {
-    /* The only purpose of this function is to condense these 2 lines of code down to 1 in main.c or other calling functions. */
-    free(*s);
-    *s = NULL;
+    /* The only purpose of this function is to condense these 2 lines of code down to 1 in main() or other calling function. */
+    free(*filename);
+    *filename = NULL;
     return;
 }
 
 // __ FCLOSE NULL ___
 void fclose_null(FILE **file)
 {
-    /* The only purpose of this function is to condense these 2 lines of code down to 1. Like free_null(), for file pointers. */
+    /* The only purpose of this function is to condense these 2 lines of code down to 1. Like free_null(), but for file pointers. */
     fclose(*file);
     *file = NULL;
     return;
 }
+void underline(uint64_t n)
+{
+    for (uint16_t i = 0; i < n; i++) {
+        printf("-");
+    }
+}
+void print_list_and_listname(node *head, char *list_name)
+{
+    printf("----   ");
+    underline(strlen(list_name));
+    printf("\nLIST: '%s'\n----   ", list_name);
+    underline(strlen(list_name));
+    printf("\n\n");
+    print_list(head);
+}
+
+// // ___ BUILD - DICT - DOUBLE LINK LIST ___
+// void build_dict_dblink_list(char **s_ptr, node **head, node **last)
+// {
+//     // string input changed to **:
+//             // It makes it more obvious to the programmer what the intent of the input is (i.e. that the buffer will be taken over by the node)
+
+//                   // This does not solve the problem of not being able to handle a string literal.
+//             // input can NOT be string literal bc this will be popped off the stack
+
+//         // Must be dynamically allocated string
+//     // -- APPEND NODE --
+//     // Create new node
+//     node *n = malloc(sizeof(node));
+//     if (n == NULL) {free_list(*head); if_error(1);}
+
+//     // This string pointer in the node takes over the allocated string buffer (i.e. **s_ptr).
+//     n->s = *s_ptr;
+//     *s_ptr = NULL;
+//     s_ptr = NULL;
+//     n->column =
+//     n->prev = n->next = NULL;
+
+//     // Append node to linked list
+//     if (*head == NULL) {
+//         *head = *last = n;
+//     }
+//     else {
+//         (*last)->next = n;
+//         n->prev = *last;
+//         *last = n;
+//     }
+
+//     return;
+// }

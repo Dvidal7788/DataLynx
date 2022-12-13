@@ -3,9 +3,10 @@
 
 #include <dbl_lnk.h>
 // #include "../include/dbl_lnk.h"
-
+#include <ctype.h>
 int main(void)
 {
+    tolower();
     uint64_t node_count = 0;
 
     // User input: Name List
@@ -118,9 +119,9 @@ int main(void)
             node_count++;
         }
 
-        // Print
-        printf("\nLIST: '%s'\n----\n", list_name);
-        print_list(head);
+        // Print List
+        printf("\n");
+        print_list_and_listname(head, list_name);
 
         // I do not need to free(s) because the buffer that s points to has been taken over by node->s
     }

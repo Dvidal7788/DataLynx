@@ -27,6 +27,7 @@ $(BIN):$(OBJS)
 	@echo $(BIN) created: $(DATE) $(TIME)
 
 dist:
+	rm *.tgz
 	tar -czvf $(PROGRAM)_$(DATE).tgz *
 	@echo $(PROGRAM)_$(DATE).tgz created: $(TIME)
 
