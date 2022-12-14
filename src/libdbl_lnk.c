@@ -256,7 +256,7 @@ void if_error(int16_t error_num)
 // ___ FREE NULL ___
 void free_null(char **filename)
 {
-    /* The only purpose of this function is to condense these 2 lines of code down to 1 in main() or other calling function. */
+    /* The only purpose of this function is to condense these 2 lines of code down to 1 in calling function. */
     free(*filename);
     *filename = NULL;
     return;
@@ -286,37 +286,66 @@ void print_list_and_listname(node *head, char *list_name)
     print_list(head);
 }
 
-// // ___ BUILD - DICT - DOUBLE LINK LIST ___
-// void build_dict_dblink_list(char **s_ptr, node **head, node **last)
-// {
-//     // string input changed to **:
-//             // It makes it more obvious to the programmer what the intent of the input is (i.e. that the buffer will be taken over by the node)
+// ___ BUILD - DICT - DOUBLE LINK LIST ___
+void build_dict_link_list(char **s_ptr, dict_node **head, dict_node **last, char *current_column_name)
+{
+    // string input changed to **:
+            // It makes it more obvious to the programmer what the intent of the input is (i.e. that the buffer will be taken over by the node)
 
-//                   // This does not solve the problem of not being able to handle a string literal.
-//             // input can NOT be string literal bc this will be popped off the stack
+                  // This does not solve the problem of not being able to handle a string literal.
+            // input can NOT be string literal bc this will be popped off the stack
 
-//         // Must be dynamically allocated string
-//     // -- APPEND NODE --
-//     // Create new node
-//     node *n = malloc(sizeof(node));
-//     if (n == NULL) {free_list(*head); if_error(1);}
+        // Must be dynamically allocated string
+    // -- APPEND NODE --
+    // Create new node
+    dict_node *n = malloc(sizeof(dict_node));
+    if (n == NULL) {/*free_dict_list(*head);*/ if_error(1);}
 
-//     // This string pointer in the node takes over the allocated string buffer (i.e. **s_ptr).
-//     n->s = *s_ptr;
-//     *s_ptr = NULL;
-//     s_ptr = NULL;
-//     n->column =
-//     n->prev = n->next = NULL;
+    // This string pointer in the node takes over the allocated string buffer (i.e. **s_ptr).
+    n->s = *s_ptr;
+    *s_ptr = NULL;
+    s_ptr = NULL;
 
-//     // Append node to linked list
-//     if (*head == NULL) {
-//         *head = *last = n;
-//     }
-//     else {
-//         (*last)->next = n;
-//         n->prev = *last;
-//         *last = n;
-//     }
+    n->column_name = malloc(sizeof(char)*strlen(current_column_name)+1);
+    if (n->column_name == NULL) exit(1);
+    strcpy(n->column_name, current_column_name);
 
-//     return;
-// }
+    n->prev = n->next = NULL;
+
+    // Append node to linked list
+    if (*head == NULL) {
+        *head = *last = n;
+    }
+    else {
+        (*last)->next = n;
+        n->prev = *last;
+        *last = n;
+    }
+
+    return;
+}
+
+// ___ FREE DICT LIST ___
+void free_dict_list(dict_node **main_array, uintmax_t row_count)
+{
+    // Iterate through each row (i.e thorugh main array of dict_node pointers)
+    dict_node *tmp = NULL;
+    for (uintmax_t i = 0; i < row_count; i++)
+    {
+        // Traverse linked list at current index in main array
+        // tmp = NULL;
+        while (main_array[i] != NULL)
+        {
+            tmp = main_array[i]->next;
+            free_null(&main_array[i]->s);
+            free_null(&main_array[i]->column_name);
+            main_array[i]->prev = main_array[i]->next = NULL;
+            free(main_array[i]);
+            main_array[i] = tmp;
+        }
+
+    }
+    tmp = NULL;
+    main_array = NULL;
+    return;
+}

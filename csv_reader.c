@@ -14,7 +14,8 @@ uint64_t get_uint(char *prompt);
 bool is_ext(char *filename, char *ext);
 char *index_2darray_csv(char **main_array, uintmax_t row_num, uintmax_t index);
 node **split_by(FILE *file, char **orig_array, uintmax_t row_count, char split);
-void csv_dict_reader(FILE *file);
+char **get_csv_header(FILE *file, uintmax_t *column_count);
+dict_node **csv_dict_reader(FILE *file, uintmax_t *row_count);
 
 int main(void)
 {
@@ -27,7 +28,7 @@ int main(void)
 
         // Check if csv
         if (!is_ext(filename, ".csv")) {
-            printf("\n%s is not a .csv file. Try again.\n", filename);
+            printf("\n'%s' is not a .csv file. Try again.\n", filename);
             free(filename);
         }
         else break;
@@ -36,7 +37,7 @@ int main(void)
 
     // Open File (Read mode)
     FILE *file = fopen(filename, "r");
-    if (file == NULL) {printf("error: file could not open. Check if file exists.\n"); free(filename); return 1;}
+    if (file == NULL) {printf("error: file could not open. Check if file exists.\n"); free_null(&filename); return 1;}
 
 
 
@@ -163,8 +164,26 @@ int main(void)
 
 
     // FINAL - CSV DICT READER
-    csv_dict_reader(file);
+    uintmax_t row_count = 0;
+    dict_node **main_array = csv_dict_reader(file, &row_count);
 
+    printf("ROW COUNT: %lu\n", row_count);
+
+    // PRINT DICT LIST
+    // Iterate through every row
+    for (uintmax_t i = 0; i < row_count; i++) {
+
+        // Traverse linked list
+        dict_node *tmp = main_array[i];
+        while (tmp != NULL) {
+            printf("%s: %s\n", tmp->column_name, tmp->s);
+            tmp = tmp->next;
+        }
+        printf("\n");
+    }
+
+    free_dict_list(main_array, row_count);
+    free(main_array);
     fclose_null(&file);
     free_null(&filename);
 
@@ -515,13 +534,18 @@ char *index_2darray_csv(char **main_array, uintmax_t row_num, uintmax_t index)
     return cell_str;
 }
 
-// CSV DICT READER
-void csv_dict_reader(FILE *file)
+// ---------- GET CSV HEADER ----------
+char **get_csv_header(FILE *file, uintmax_t *column_count)
 {
+    /* THIS FUNCTION: 1. Reads csv header into dynamically allocated array of string pointers
+                      2. Returns array of strings as well as "returns" column_count (via accepting a pointer to column_count as input) for ability to print/free etc array without overrunning buffer
+                      2. The main purpose of this function is for use in calling function csv_dict_reader(), however, of course could be used anywhere. */
+
+    // Set column count to zero incase programmer has not already done so in calling function
+    *column_count = 0;
+
     // Reset file stream
     fseek(file, 0, SEEK_SET);
-
-    // READ HEADER INTO ARRAY
 
     // Allocate first pointer in array of strings
     char **header = malloc(sizeof(char*));
@@ -530,7 +554,6 @@ void csv_dict_reader(FILE *file)
     char *s = NULL;
 
     // Iterate through WHOLE HEADER
-    uintmax_t col_count = 0;
     bool end_of_header = false;
     while (true) {
 
@@ -548,8 +571,9 @@ void csv_dict_reader(FILE *file)
                 break;
             }
 
+            // Check if at next column or end of header
             if (s[i] == ',' || s[i] == '\n') {
-                col_count++;
+                (*column_count)++;
                 if (s[i] == '\n') {end_of_header = true;}
                 break;
             }
@@ -561,32 +585,113 @@ void csv_dict_reader(FILE *file)
         }
         // Add nul to string and add string to array of string pointers
         s[i] = '\0';
-        if (col_count > 0) {
-            header[col_count-1] = s;
+        if (*column_count > 0) {
+            header[(*column_count)-1] = s;
         }
         else free_null(&s);
 
         // Realloc array
         if (!end_of_header) {
-            header = realloc(header, sizeof(char*)*(col_count+1));
+            header = realloc(header, sizeof(char*)*((*column_count)+1));
             if (header == NULL) exit(4);
         }
         else break;
     }
 
-    // Print
-    printf("COLUMN COUNT: %lu\n", col_count);
-    for (uintmax_t i = 0; i < col_count; i++) {
-        printf("%s\n", header[i]);
+    return header;
+}
+
+//      _____ CSV DICT READER _____
+dict_node **csv_dict_reader(FILE *file, uintmax_t *row_count)
+{
+    // Get csv HEADER
+    uintmax_t column_count = 0;
+    char **header = get_csv_header(file, &column_count);
+
+    // // Print Header
+    // printf("COLUMN COUNT: %lu\n", column_count);
+    // for (uintmax_t i = 0; i < column_count; i++) {
+    //     printf("%s\n", header[i]);
+    // }
+
+    // MAIN ARRAY POINTER
+    dict_node **main_array = (dict_node**)malloc(sizeof(dict_node*));
+    if (main_array == NULL) exit(1);
+
+    // Variables
+    *row_count = 1;
+    bool end_of_file = false;
+
+    // ITERATE THROUGH REST OF CSV
+    while (!end_of_file) {
+        main_array[(*row_count)-1] = NULL;
+
+        // Variables for each row
+        bool end_of_row = false;
+        dict_node *last = NULL;
+        uintmax_t current_column = 0;
+
+        // Iterate until end of row
+        while (true) {
+
+            // Allocate 1st char of string (this string will be taken over by double linked list, so do not free)
+            char *s = malloc(sizeof(char));
+            if (s == NULL) exit(1);
+
+            uintmax_t i = 0;
+            // For Each Column, Iterate until next column found
+            while (true) {
+
+                // Scan char
+                if (fscanf(file, "%c", &s[i]) != 1) {
+                    end_of_file = end_of_row = true;
+                    break;
+                }
+
+                // Check if found next column or end of row
+                if (s[i] == ',') {
+                    break;
+                }
+                else if (s[i] == '\n') {
+                    end_of_row = true;
+                    break;
+                }
+                else {
+                    // Reallocate next char in string
+                    s = realloc(s, sizeof(char)*(i+2));
+                    if (s == NULL) exit(2);
+                    i++;
+                }
+            }
+            s[i] = '\0'; // Do not free this string. It will be taken over by node in link list and freed when link list is freed.
+
+            // Append to linked list
+            if (strlen(s) >= 1)
+                build_dict_link_list(&s, &main_array[(*row_count)-1], &last, header[current_column++]);
+            else {
+                (*row_count)--;
+                free_null(&s);
+            }
+            if (end_of_row) break;
+        }
+
+        // Reallocate array of strings for next string
+        if (!end_of_file) {
+            // Realloc
+            main_array = realloc(main_array, sizeof(dict_node*)*(++(*row_count)));
+            if (main_array == NULL) exit(3);
+        }
+        else break;
     }
+    // (*row_count)--; // this only works if csv ends with empty line
 
     // Free header array of strings
-    for (uintmax_t i = 0; i < col_count; i++) {
+    for (uintmax_t i = 0; i < column_count; i++) {
         free_null(&header[i]);
     }
 
     free(header);
     header = NULL;
 
-    return;
+    return main_array;
 }

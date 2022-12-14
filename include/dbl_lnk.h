@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <time.h>
 
-// Double Link Node
+// Double Linked Node
 typedef struct node
 {
     char *s;
@@ -18,13 +18,13 @@ typedef struct node
 }
 node;
 
-// Double Link Node for Dict
+// Double Linked Node for Dict
 typedef struct dict_node
 {
     char *s;
-    char *column;
-    struct node *prev;
-    struct node *next;
+    char *column_name;
+    struct dict_node *prev;
+    struct dict_node *next;
 }
 dict_node;
 
@@ -41,6 +41,7 @@ void free_null(char **filename);
 void fclose_null(FILE **file);
 void underline(uint64_t n);
 void print_list_and_listname(node *head, char *list_name);
-
+void build_dict_link_list(char **s_ptr, dict_node **head, dict_node **last, char *current_column_name);
+void free_dict_list(dict_node **main_array, uintmax_t row_count);
 
 #endif /* DBL_LNK_H */
