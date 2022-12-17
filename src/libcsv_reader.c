@@ -1,39 +1,5 @@
 // #include <dbl_lnk.h>
-#include "../include/dbl_lnk.h"
-
-// ___ APPEND TO CSV ___
-void append_csv(char *file_name, char *s)
-{
-    FILE *file = fopen(file_name, "a");
-    if (file == NULL) {if_error(4);}
-
-    fprintf(file, "%s\n", s);
-
-    fclose(file);
-    file = NULL;
-    return;
-}
-
-// ___ CSV: REWRITE ___
-void csv_rewrite(char *file_path, node *head)
-{
-    // *This funcion is typically called after list_remove_item() to rewrite list to csv
-
-    // Open File: (Write Mode)
-    FILE *file = fopen(file_path, "w");
-    if (file == NULL) {if_error(4);}
-
-    node *tmp = head;
-    while (tmp != NULL)
-    {
-        fprintf(file, "%s\n", tmp->s);
-        tmp = tmp->next;
-    }
-
-    fclose(file);
-    file = NULL;
-    return;
-}
+#include "../include/csv_reader.h"
 
 // ___ INFINITE BUFFER (User Input) ___
 char *inf_buffer(char *prompt)

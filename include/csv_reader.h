@@ -1,5 +1,5 @@
-#ifndef DBL_LNK_H
-#define DBL_LNK_H
+#ifndef CSV_READER_H
+#define CSV_READER_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,8 +29,6 @@ typedef struct dict_node
 dict_node;
 
 // Function Prototypes
-void append_csv(char *file_name, char *s);
-void csv_rewrite(char *file_path, node *head);
 char *inf_buffer(char *prompt);
 void build_dblink_list(char **s_ptr, node **head, node **last);
 char *list_remove_item(node **head, node **last, bool pop_or_not);
@@ -44,4 +42,15 @@ void print_list_and_listname(node *head, char *list_name);
 void build_dict_link_list(char **s_ptr, dict_node **head, dict_node **last, char *current_column_name);
 void free_dict_list(dict_node **main_array, uintmax_t row_count);
 
-#endif /* DBL_LNK_H */
+char *read_file_v1(FILE *file);
+char **read_file_v2(FILE *file, uintmax_t *row_count);
+char *csv_reader_index(FILE *file, uintmax_t row, uintmax_t col, bool skip_header);
+char *csv_dictreader_index(FILE *file, uintmax_t row, char *desired_column);
+uint64_t get_uint(char *prompt);
+bool is_ext(char *filename, char *ext);
+char *index_2darray_csv(char **main_array, uintmax_t row_num, uintmax_t index);
+node **split_by(FILE *file, char **orig_array, uintmax_t row_count, char split);
+char **get_csv_header(FILE *file, uintmax_t *column_count);
+dict_node **csv_dict_reader(FILE *file, uintmax_t *row_count);
+
+#endif /* CSV_READER_H */
