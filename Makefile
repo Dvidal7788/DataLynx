@@ -30,7 +30,7 @@ dist:
 	tar -czvf $(PROGRAM)_$(DATE).tgz *
 	@echo $(PROGRAM)_$(DATE).tgz created $(TIME)
 	
-staticlib: $(OBJ)/libdbl_lnk.o
+staticlib: $(OBJ)/libcsv_reader.o
 	ar rcs ./include/lib$(PROGRAM)_static.a $<
 	@echo ./include/lib$(PROGRAM)_static.a created successfully $(TIME)
 
