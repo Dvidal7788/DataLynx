@@ -1,8 +1,10 @@
-Name,Department,Ext
-David,Director,123
-Anna,Client Implementation,456
-Alex,Sales,788
-Sara,Sales,789
-Amanda,Client Implementation,455
-John,Sales,787
-Chris,Director,122
+Name,Department,Ext,Salary
+David,Director,123,100000
+Chris,Client Implementation,456,70000
+Alex,Sales,788,75000
+Sara,Sales,789,75000
+Amanda,Client Implementation,455,78000
+John,Sales,787,70000
+Anna,Director,122,100000
+Darcy,Administration,103,55000
+Marilyn,Administration,101,58000

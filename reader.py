@@ -1,6 +1,6 @@
 import csv
 # READ
-with open('csv/test.csv', 'r') as file:
+with open('csv/staff.csv', 'r') as file:
     # # V1 - ONE LONG STRING
     # text = file.read()
     # text = text.strip().split('\n')
@@ -16,10 +16,11 @@ with open('csv/test.csv', 'r') as file:
     # # V3
     # reader = csv.reader(file)
     # for row in reader:
-    #     print(row)
+    #     # print(row)
+    #     print(row[0])
 
-    # V4
-    reader = csv.DictReader(file)
-    for row in reader:
-        print(row['NUMBER'])
+    # # V4
+    # reader = csv.DictReader(file)
+    # for row in reader:
+    #     print(row['Ext'])
 
