@@ -16,6 +16,7 @@ CFLAGS = -Wall -Wextra -g $(foreach D,$(INCDIRS),-I$(D)) $(DEPFLAGS)
 DATE = $(shell date +%F)
 TIME = $(shell date +%r)
 
+.PHONY: all
 all:$(BIN)
 
 $(OBJ)/%.o:$(SRC)/%.c
@@ -28,7 +29,12 @@ dist:
 	rm -f *.tgz *.tar.gz
 	tar -czvf $(PROGRAM)_$(DATE).tgz *
 	@echo $(PROGRAM)_$(DATE).tgz created $(TIME)
+	
+staticlib: $(OBJ)/libdbl_lnk.o
+	ar rcs ./include/lib$(PROGRAM)_static.a $<
+	@echo ./include/lib$(PROGRAM)_static.a created successfully $(TIME)
 
+.PHONY: clean
 clean:
 	rm -f *.o obj/*.o
 	rm -f $(BIN)
