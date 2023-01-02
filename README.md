@@ -9,8 +9,9 @@ LIST OF FUNCTIONS:
 ___ INF_BUFFER() ____
 char *inf_buffer(char *prompt)
 
-- PARAMETERS: Takes string as input. Will prompt user with inputted string.
-- Will malloc and realloc one char at a time until '\n' is reached, at which point that char will changed to '\0'.
+- PARAMETERS: Takes string as input.
+- 1. Prompts user with string given as input.
+- 2. Mallocs initial char. Reallocs one char at a time until '\n' is reached, at which point that char will be changed to '\0'.
 - RETURN: Will return dynamically allocated string. It is up to the programmer to free this string in the calling function.
 
 ___ IF_ERROR() ___
