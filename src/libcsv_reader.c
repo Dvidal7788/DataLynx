@@ -250,6 +250,7 @@ void free_dict_list(dict_node **main_array, uintmax_t row_count)
     main_array = NULL;
     return;
 }
+
 //      ___ READ FILE ___ (V1 - ONE LONG STRING)
 char *read_file_v1(FILE *file)
 {
@@ -452,6 +453,95 @@ char *csv_reader_index(FILE *file, uintmax_t row, uintmax_t col, bool skip_heade
 
     return s;
 }
+
+//      ___ UPDATE_CSV_INDEX() ___
+void update_csv_index(FILE *file, uintmax_t row, uintmax_t column, char *new_cell)
+{
+    // NOT WORKING YET
+    /* This function updates csv file based on choice of index */
+
+    // Reset File Stream
+    fseek(file, 0, SEEK_SET);
+
+    // Allocate initial char
+    char *s = malloc(sizeof(char));
+    if (s == NULL) {printf("error: buffer error (malloc()).\n"); exit(2);}
+
+    // Iterate through HEADER char by char
+    uint64_t i = 0;
+    while (fscanf(file, "%c", &s[i]) == 1) {
+
+        if (s[i] == '\n') break;
+
+        // Reallocate for next char
+        s = realloc(s, sizeof(char)*(i+2));
+        if (s == NULL) {printf("error: buffer error (realloc()).\n"); exit(3);}
+        i++;
+    }
+
+    // Reallocate for next char
+    s = realloc(s, sizeof(char)*(i+2));
+    if (s == NULL) {printf("error: buffer error (realloc()).\n"); exit(3);}
+    i++;
+
+    // Variables to keep track of current row/column to match with input row/column
+    uintmax_t current_row = 0, current_column = 0;
+
+    // Iterate through REST OF FILE char by char
+    bool found_correct_index = false;
+    while (fscanf(file, "%c", &s[i]) == 1) {
+
+        printf("%c", s[i]);
+        // FOUND Correct index to update
+        if (current_row == row && current_column == column && !found_correct_index) {
+
+            found_correct_index = true;
+
+            // Copy new_cell into string
+            s = realloc(s, sizeof(char)*(strlen(new_cell)+i+1));
+            for (uintmax_t index = 0; index < strlen(new_cell); index++) {
+                s[i] = new_cell[index];
+                i++;
+            }
+
+            // Get file stream past old cell that we are replacing in file
+            char tmp;
+            while (fscanf(file, "%c", &tmp) == 1) {
+                if (tmp == ',' || tmp == '\n') break;
+            }
+            s[i] = tmp;
+            // strcpy(&s[i], new_cell);
+            // i += strlen(new_cell)-1;
+
+        }
+
+        // Increment current row/column if appropriate
+        if (!found_correct_index) {
+            if (s[i] == ',') current_column++;
+            else if (s[i] == '\n') {current_row++; current_column = 0;}
+        }
+
+        // Reallocate for next char
+        s = realloc(s, sizeof(char)*(i+2));
+        // printf("REALLOC");
+        if (s == NULL) {printf("error: buffer error (realloc()).\n"); exit(3);}
+        i++;
+
+    }
+    s[i] = '\0';
+
+    // Reset file stream
+    fseek(file, 0, SEEK_SET);
+
+    // Print new data to file
+    fprintf(file, "%s", s);
+
+    // Free string
+    free_null(&s);
+
+    return;
+}
+
 //      ___ CSV Dict Reader INDEX ___
 char *csv_dictreader_index(FILE *file, uintmax_t row, char *desired_column)
 {
@@ -829,6 +919,8 @@ dict_node **csv_dict_reader(FILE *file, uintmax_t *row_count)
         free_null(&header[i]);
     }
 
+    /* Can not use free_null() because takes char** (i.e. pointer to char*) but header is char**, so would need to pass char***.
+    If I pass header, which is char **, that would pass the address of the first string in the array, not the address of the char ** header, and if I pass &header, it will be char*** */
     free(header);
     header = NULL;
 
@@ -861,6 +953,33 @@ char *index_into_dict(dict_node **main_array, uintmax_t row_count, uintmax_t row
 
     return cell;
 }
+
+char *update_dict_and_csv(dict_node **main_array, uintmax_t row_count, uintmax_t row, char *desired_column, char *new_cell)
+{
+    /* This function allows you to update index in array of dicts */
+        // Will return NULL if no column matches desired_column or if row is out of range.
+
+    if (row > row_count-1) return NULL;
+
+    char *cell = NULL;
+
+    // Traverse Doubly linked list to find correct column
+    dict_node *tmp = main_array[row];
+    while (tmp != NULL)
+    {
+        if (strcmp(tmp->column_name, desired_column) == 0)
+        {
+            free_null(&tmp->s);
+            tmp->s = new_cell;
+            break;
+        }
+        tmp = tmp->next;
+    }
+
+    return cell;
+}
+
+// ____ PRINT_DICT_LIST() ____
 void print_dict_list(dict_node **main_array, uintmax_t row_count)
 {
     // PRINT DICT LIST
