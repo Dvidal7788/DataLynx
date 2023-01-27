@@ -455,15 +455,15 @@ char *csv_reader_index(FILE *file, uintmax_t row, uintmax_t col, bool skip_heade
 }
 
 //      ___ UPDATE_CSV_INDEX() ___
-void update_csv_index(FILE *file, uintmax_t row, uintmax_t column, char *new_cell)
+void update_csv_index(char *filename, uintmax_t row, uintmax_t column, char *new_cell)
 {
-    // NOT WORKING YET
     /* This function updates csv file based on choice of index */
 
-    // Reset File Stream
-    fseek(file, 0, SEEK_SET);
+    // Open file
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) if_error(1);
 
-    // Allocate initial char
+    // Allocate initial char for buffer to read file contents into
     char *s = malloc(sizeof(char));
     if (s == NULL) {printf("error: buffer error (malloc()).\n"); exit(2);}
 
@@ -479,7 +479,7 @@ void update_csv_index(FILE *file, uintmax_t row, uintmax_t column, char *new_cel
         i++;
     }
 
-    // Reallocate for next char
+    // Reallocate for next char for priming of next loop
     s = realloc(s, sizeof(char)*(i+2));
     if (s == NULL) {printf("error: buffer error (realloc()).\n"); exit(3);}
     i++;
@@ -491,7 +491,6 @@ void update_csv_index(FILE *file, uintmax_t row, uintmax_t column, char *new_cel
     bool found_correct_index = false;
     while (fscanf(file, "%c", &s[i]) == 1) {
 
-        printf("%c", s[i]);
         // FOUND Correct index to update
         if (current_row == row && current_column == column && !found_correct_index) {
 
@@ -510,9 +509,6 @@ void update_csv_index(FILE *file, uintmax_t row, uintmax_t column, char *new_cel
                 if (tmp == ',' || tmp == '\n') break;
             }
             s[i] = tmp;
-            // strcpy(&s[i], new_cell);
-            // i += strlen(new_cell)-1;
-
         }
 
         // Increment current row/column if appropriate
@@ -523,21 +519,25 @@ void update_csv_index(FILE *file, uintmax_t row, uintmax_t column, char *new_cel
 
         // Reallocate for next char
         s = realloc(s, sizeof(char)*(i+2));
-        // printf("REALLOC");
         if (s == NULL) {printf("error: buffer error (realloc()).\n"); exit(3);}
         i++;
 
     }
     s[i] = '\0';
 
-    // Reset file stream
-    fseek(file, 0, SEEK_SET);
+    // Close file in read mode
+    fclose(file);
+
+    // Reopen file in write mode
+    file = fopen(filename, "w");
+    if (file == NULL) if_error(1);
 
     // Print new data to file
     fprintf(file, "%s", s);
 
-    // Free string
+    // Free string/close file
     free_null(&s);
+    fclose_null(&file);
 
     return;
 }
@@ -766,7 +766,8 @@ char **get_csv_header(FILE *file, uintmax_t *column_count)
 {
     /* THIS FUNCTION: 1. Reads csv header into dynamically allocated array of string pointers (i.e. 2D array)
                       2. Returns array of strings as well as psuedo "returns" column_count (via accepting a pointer to column_count as input) for ability to print/free etc array without overrunning buffer
-                      3. The main purpose of this function is for use in calling function csv_dict_reader(), however, of course could be used anywhere. */
+                      3. The main purpose of this function is for use in calling function csv_dict_reader(), however, of course could be used anywhere.
+                      4. Takes pointer to column_count only for ablility to psuedo return column_count. For this reason, programmer does NOT need to have correct column count prior to inputting parameter */
 
     // Set column count to zero incase programmer has not already done so in calling function
     *column_count = 0;

@@ -26,7 +26,7 @@ int main(void)
         }
 
         // Attempt to Open File (Read mode)
-        file = fopen(filename, "r+");
+        file = fopen(filename, "r");
         if (file == NULL) {printf("error: file could not open. Check if file exists. Try again.\n"); free(filename);}
         else break;
     }
@@ -139,139 +139,29 @@ int main(void)
     // free_null(&filename);
 
 
-    // ----- V3 - CSV READER INDEX -----
-        // Index directly into csv without reading whole file into memory
+    // // ----- V3 - CSV READER INDEX -----
+    //     // Index directly into csv without reading whole file into memory
 
-    // Loop until correct index is given
-    char *cell = NULL;
-    uintmax_t row, column;
-    while (cell == NULL) {
+    // // Loop until correct index is given
+    // char *cell = NULL;
+    // uintmax_t row, column;
+    // while (cell == NULL) {
 
-        // User input row/column
-        row = get_uint("Enter row: ");
-        column = get_uint("Enter column: ");
+    //     // User input row/column
+    //     row = get_uint("Enter row: ");
+    //     column = get_uint("Enter column: ");
 
-        // Index into csv at correct row/column
-        cell = csv_reader_index(file, row, column, true);
-
-        // Print
-        if (cell == NULL) printf("Index[%lu][%lu]: does not exist in '%s'. Try again.\n", row, column, filename);
-        else printf("Index[%lu][%lu]: %s\n", row, column, cell);
-    }
-
-    // ----- UPDATE INDEX ----- NOT WORKING YET
-    char *yes_or_no = NULL;
-    while (true) {
-        // User decides if they want to update cell or not
-        yes_or_no = inf_buffer("Would you like to update this index? (yes or no): ");
-
-        if (strcasecmp(yes_or_no, "no") == 0) {
-            break;
-        }
-        else if (strcasecmp(yes_or_no, "yes") == 0) {
-
-            // User input new cell
-            printf("UPDATE INDEX[%lu][%lu]: ", row, column);
-            char *new_cell = inf_buffer("");
-
-            update_csv_index(file, row, column, new_cell);
-            free_null(&new_cell);
-            break;
-        }
-        else {
-            // Free yes_or_no before looping back around
-            free_null(&yes_or_no);
-            printf("\nPlease type 'yes' or 'no' only.\n");
-        }
-
-
-    }
-
-    // Free
-    fclose_null(&file);
-    free_null(&filename);
-    free_null(&cell);
-    free_null(&yes_or_no);
-
-
-    // // V4 - CSV DICT READER INDEX -
-    //     // Index directly into csv like a dict (without reading whole file into memory)
-    //     // Row is integer, Column is STRING (i.e. index into csv like a dict)
-
-    // // Index directly into correct location in csv using row and column name/title
-    // uintmax_t row;
-    // char *col = NULL, *cell = NULL;
-
-    // while (true) {
-
-    //     // User input row and name/title of column to index into
-    //     row = get_uint("Enter Row: ");
-    //     col = inf_buffer("Enter Column Title: ");
-
-    //     cell = csv_dictreader_index(file, row, col);
-
-    //     if (cell != NULL) break;
-    //     else printf("Index[%lu]['%s'] does not exist in '%s'. Try again.\n", row, col, filename);
-
-    //     // Free current column string before looping back around and trying again
-    //     free(col);
-    // }
-
-    // printf("\nIndex[%lu]['%s']: %s\n", row, col, cell);
-
-
-    // // Free
-    // fclose_null(&file);
-    // free_null(&filename);
-    // free_null(&col);
-    // free_null(&cell);
-
-
-    // // --- V5 - FINAL - CSV DICT READER ----
-
-    // // Read csv into array of linked lists (i.e. dict behavior)
-    // uintmax_t row_count = 0;
-    // dict_node **main_array = csv_dict_reader(file, &row_count);
-    // if (main_array == NULL) {printf("Check if '%s' is blank.\n", filename);}
-
-    // // Set up row variable/ strings
-    // uintmax_t row;
-    // char *desired_column = NULL, *cell = NULL;
-
-    // // INDEX INTO ARRAY OF DICTS
-    // if (main_array != NULL)
-    // {
-    //     // Print Whole List
-    //     print_dict_list(main_array, row_count);
-
-    //     // Loop until valid row/column is given
-    //     while (cell == NULL) {
-
-    //         // User Input Row/Column
-    //         while ((row = get_uint("Enter Row: ")) > row_count-1) if (row > row_count-1) printf("Row %lu out of range. Try again.\n", row);
-    //         desired_column = inf_buffer("Enter Column: ");
-
-    //         // Attempt to index into array of dicts at given index
-    //         cell = index_into_dict(main_array, row_count, row, desired_column);
-
-    //         if (cell != NULL) break;
-    //         else  {
-    //             // Print error message and free cell before looping back around
-    //             printf("Index[%lu]['%s'] does not exist. Try again.\n", row, desired_column);
-    //             free_null(&cell);
-    //             free_null(&desired_column);
-    //         }
-
-    //     }
+    //     // Index into csv at correct row/column
+    //     cell = csv_reader_index(file, row, column, true);
 
     //     // Print
-    //     printf("%s\n", cell);
+    //     if (cell == NULL) printf("Index[%lu][%lu]: does not exist in '%s'. Try again.\n", row, column, filename);
+    //     else printf("Index[%lu][%lu]: %s\n", row, column, cell);
     // }
 
-    // // ----- UPDATE INDEX in DICT AND CSV -----
-    // char *yes_or_no = NULL, *new_cell = NULL;
+    // // ----- UPDATE INDEX ----- NOT WORKING YET
+    // char *yes_or_no = NULL;
     // while (true) {
-
     //     // User decides if they want to update cell or not
     //     yes_or_no = inf_buffer("Would you like to update this index? (yes or no): ");
 
@@ -280,43 +170,14 @@ int main(void)
     //     }
     //     else if (strcasecmp(yes_or_no, "yes") == 0) {
 
+    //         fclose_null(&file);
+
     //         // User input new cell
-    //         printf("UPDATE INDEX[%lu]['%s']: ", row, desired_column);
-    //         new_cell = inf_buffer("");
-    //         update_dict_and_csv(main_array, row_count, row, desired_column, new_cell);
+    //         printf("UPDATE INDEX[%lu][%lu]: ", row, column);
+    //         char *new_cell = inf_buffer("");
 
-    //         // REWRITE TO FILE
-    //         // Get header 2D array while still in read mode
-    //         uintmax_t column_count = 0;
-    //         char **header = get_csv_header(file, &column_count);
-
-    //         fclose(file);
-    //         file = fopen(filename, "w");
-    //         if (file == NULL) if_error(1);
-
-    //         // Rewrite header to file & free header
-    //         for (uintmax_t i = 0; i < column_count; i++) {
-    //             if (i < column_count-1) fprintf(file, "%s,", header[i]);
-    //             else fprintf(file, "%s\n", header[i]);
-
-    //             free_null(&header[i]);
-    //         }
-    //         // Can not use free_null() on char ** (would need char ***)
-    //         free(header);
-    //         header = NULL;
-
-
-    //         // Each row
-    //         for (uintmax_t i = 0; i < row_count; i++) {
-
-    //             // Traverse linked list (columns)
-    //             dict_node *tmp = main_array[i];
-    //             while (tmp != NULL) {
-    //                 if (tmp->next != NULL) fprintf(file, "%s,", tmp->s);
-    //                 else fprintf(file, "%s\n", tmp->s);
-    //                 tmp = tmp->next;
-    //             }
-    //         }
+    //         update_csv_index(filename, row, column, new_cell);
+    //         free_null(&new_cell);
     //         break;
     //     }
     //     else {
@@ -327,13 +188,169 @@ int main(void)
     // }
 
     // // Free
-    // free_dict_list(main_array, row_count);
-    // free(main_array);
-    // fclose_null(&file);
+    // if (strcasecmp(yes_or_no, "no") == 0) fclose_null(&file);
     // free_null(&filename);
     // free_null(&cell);
-    // free_null(&desired_column);
     // free_null(&yes_or_no);
+
+
+    // // V4 - CSV DICT READER INDEX -
+    //     // Index directly into csv like a dict (without reading whole file into memory)
+    //     // Row is integer, Column is STRING (i.e. index into csv like a dict)
+
+    // // Index directly into correct location in csv using row and column name/title
+    // uintmax_t row;
+    // char *column = NULL, *cell = NULL;
+
+    // while (true) {
+
+    //     // User input row and name/title of column to index into
+    //     row = get_uint("Enter Row: ");
+    //     column = inf_buffer("Enter Column Title: ");
+
+    //     cell = csv_dictreader_index(file, row, column);
+
+    //     if (cell != NULL) break;
+    //     else printf("Index[%lu]['%s'] does not exist in '%s'. Try again.\n", row, column, filename);
+
+    //     // Free current column string before looping back around and trying again
+    //     free(column);
+    // }
+
+    // printf("\nIndex[%lu]['%s']: %s\n", row, column, cell);
+
+
+    // // Free
+    // fclose_null(&file);
+    // free_null(&filename);
+    // free_null(&column);
+    // free_null(&cell);
+
+
+    // --- V5 - FINAL - CSV DICT READER ----
+
+    // Read csv into array of linked lists (i.e. dict behavior)
+    uintmax_t row_count = 0;
+    dict_node **main_array = csv_dict_reader(file, &row_count);
+    if (main_array == NULL) {printf("Check if '%s' is blank.\n", filename);}
+
+    // Set up row variable/ strings
+    uintmax_t row;
+    char *desired_column = NULL, *cell = NULL;
+
+    // INDEX INTO ARRAY OF DICTS
+    if (main_array != NULL)
+    {
+        // Print Whole List
+        print_dict_list(main_array, row_count);
+
+        // Loop until valid row/column is given
+        while (cell == NULL) {
+
+            // User Input Row/Column
+            while ((row = get_uint("Enter Row: ")) > row_count-1) if (row > row_count-1) printf("\nError: Row %lu out of range. Try again.\n\n", row);
+            desired_column = inf_buffer("Enter Column Title: ");
+
+            // Attempt to index into array of dicts at given index
+            cell = index_into_dict(main_array, row_count, row, desired_column);
+
+            if (cell != NULL) break;
+            else  {
+
+                // Error message - invalid column name
+                printf("\n*Error: Index[%lu]['%s'] does not exist. Try again.\n\n", row, desired_column);
+
+                // Display correct column names
+                uintmax_t column_count;
+                char **header = get_csv_header(file, &column_count);
+
+                printf("*THE CORRECT COLUMN NAMES ARE:\n");
+                for (uintmax_t i = 0; i < column_count; i++) {
+                    if (i < column_count-1) printf("%s,", header[i]);
+                    else printf("%s\n\n", header[i]);
+                }
+
+                // Free before looping back around
+                for (uintmax_t i = 0; i < column_count; i++) free_null(&header[i]);
+                free(header); header = NULL;
+                free_null(&cell);
+                free_null(&desired_column);
+            }
+
+        }
+
+        // Print
+        printf("Index:[%lu][%s]: %s\n", row, desired_column, cell);
+    }
+
+    // ----- UPDATE INDEX in DICT AND CSV -----
+    char *yes_or_no = NULL, *new_cell = NULL;
+    while (true) {
+
+        // User decides if they want to update cell or not
+        yes_or_no = inf_buffer("Would you like to update this index? (yes or no): ");
+
+        if (strcasecmp(yes_or_no, "no") == 0) {
+            break;
+        }
+        else if (strcasecmp(yes_or_no, "yes") == 0) {
+
+            // User input new cell
+            printf("UPDATE INDEX[%lu]['%s']: ", row, desired_column);
+            new_cell = inf_buffer("");
+
+            // Update dict TO DO: function
+            update_dict_and_csv(main_array, row_count, row, desired_column, new_cell);
+
+            // REWRITE TO FILE
+            // Get header 2D array while still in read mode
+            uintmax_t column_count = 0;
+            char **header = get_csv_header(file, &column_count);
+
+            fclose(file);
+            file = fopen(filename, "w");
+            if (file == NULL) if_error(1);
+
+            // Rewrite header to file & free header
+            for (uintmax_t i = 0; i < column_count; i++) {
+                if (i < column_count-1) fprintf(file, "%s,", header[i]);
+                else fprintf(file, "%s\n", header[i]);
+
+                free_null(&header[i]);
+            }
+            // Can not use free_null() on char ** (would need char ***)
+            free(header);
+            header = NULL;
+
+
+            // Each row
+            for (uintmax_t i = 0; i < row_count; i++) {
+
+                // Traverse linked list (columns)
+                dict_node *tmp = main_array[i];
+                while (tmp != NULL) {
+                    if (tmp->next != NULL) fprintf(file, "%s,", tmp->s);
+                    else fprintf(file, "%s\n", tmp->s);
+                    tmp = tmp->next;
+                }
+            }
+            break;
+        }
+        else {
+            // Free yes_or_no before looping back around
+            free_null(&yes_or_no);
+            printf("\nPlease type 'yes' or 'no' only.\n");
+        }
+    }
+
+    // Free
+    free_dict_list(main_array, row_count);
+    free(main_array);
+    fclose_null(&file);
+    free_null(&filename);
+    free_null(&cell);
+    free_null(&desired_column);
+    free_null(&yes_or_no);
 
 
     return EXIT_SUCCESS;

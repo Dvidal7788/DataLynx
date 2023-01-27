@@ -42,7 +42,7 @@ void free_dict_list(dict_node **main_array, uintmax_t row_count);
 
 char *read_file_v1(FILE *file);
 char **string_into_2d_array(char *s, uintmax_t *row_count);
-void update_csv_index(FILE *file, uintmax_t row, uintmax_t column, char *new_cell);
+void update_csv_index(char *filename, uintmax_t row, uintmax_t column, char *new_cell);
 char **read_file_v2(FILE *file, uintmax_t *row_count);
 char *csv_reader_index(FILE *file, uintmax_t row, uintmax_t col, bool skip_header);
 char *csv_dictreader_index(FILE *file, uintmax_t row, char *desired_column);
