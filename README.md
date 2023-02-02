@@ -15,7 +15,7 @@ char *inf_buffer(char *prompt)
 - RETURN: Will return dynamically allocated string. It is up to the programmer to free this string in the calling function.
 
 ___ IF_ERROR() ___
-void if_error(int16_t error_num)
+**void if_error(int16_t error_num)**
 
 - PARAMETERS: Takes integer (i.e. error code) as input.
 - 1. Opens file errorKey.txt (which contains all of the potential error codes), scans the error key file for the appropriate corresponding error message.
