@@ -7,6 +7,7 @@ This library contains functions with the intention of giving a C programmer clos
 LIST OF FUNCTIONS:
 
 ___ INF_BUFFER() ____
+<br>
 char *inf_buffer(char *prompt)
 
 - PARAMETERS: Takes string as input.
