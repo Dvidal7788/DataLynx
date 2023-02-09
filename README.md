@@ -6,7 +6,7 @@ This library contains functions with the intention of giving a C programmer clos
 
 LIST OF FUNCTIONS:
 
-<h5>INF_BUFFER()</h5>
+<h5 align="center">INF_BUFFER()</h5>
 <h6>char *inf_buffer(char *prompt)</h6>
 <ul>
   <li><h6>PARAMETERS:</h6> Takes string as input.</li>
@@ -16,7 +16,7 @@ LIST OF FUNCTIONS:
   </ol>
   <li><h6>RETURN:</h6> Will return dynamically allocated string. It is up to the programmer to free this string in the calling function.</li>
 </ul>
-<p align="center">TEST</p>
+
 <h5 align="center">BUILD_DBLINK_LIST()</h5>
 <h6>void build_dblink_list(char **s_ptr, node **head, node **last)</h6>
 <ul>
