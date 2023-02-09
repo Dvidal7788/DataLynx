@@ -1,7 +1,7 @@
 # CSV Library
 Library for reading from files, especially csv files.
 
-This library contains functions with the intention of giving a C programmer close to the ease of use of Python, but with the control of C.
+This is a library of functions written in C, for use in C programs, inspired by Python's csv library, giving you similiar functionality to dicts among several other data structures read from csv files.
 
 
 LIST OF FUNCTIONS:
@@ -44,11 +44,11 @@ LIST OF FUNCTIONS:
 </ul>
 
 <h5 align="center">READ_FILE_V1()</h5>
-<h6 align="center">char *read_file_v1(FILE *file)</h6>
+<h6 align="center">char *read_file_v1(FILE *file, bool skip_header)</h6>
 <ul>
   <li>PARAMETERS: File pointer.</li>
   <ol>
-    <h6>READS FILE CONTENTS FROM BEGINNING TO END INTO ONE LONG STRING. (Can be .txt or .csv file.)</h6>
+    <h6>READS FILE CONTENTS FROM BEGINNING TO END INTO ONE LONG STRING. (Can be .txt or .csv file.)  Also takes bool to determine if function should skip header or not.</h6>
     <li>File is opened in read mode, using file pointer given as input.</li>
     <li>Initial char is malloced.</li>
     <li>File is read, one char at a time, reallocing after each char.</li>
@@ -74,9 +74,9 @@ LIST OF FUNCTIONS:
 </ul>
 
 <h5 align="center">READ_FILE_V2</h5>
-<h6 align="center">char **read_file_v2(FILE *file, uintmax_t *row_count)</h6>
+<h6 align="center">char **read_file_v2(FILE *file, uintmax_t *row_count, bool skip_header)</h6>
 <ul>
-  <li>PARAMETERS: Takes file pointer and pointer to unsigned integer for purposes of keeping track of number of rows, so this can be pseudo "returned" to calling function, as it will be necessary for printing and freeing 2D array.</li>
+  <li>PARAMETERS: Takes file pointer and pointer to unsigned integer for purposes of keeping track of number of rows, so this can be pseudo "returned" to calling function, as it will be necessary for printing and freeing 2D array. Also takes bool to determine if function should skip header or not.</li>
   <h6>READS FILE INTO DYNAMICALLY ALLOCATED 2D ARRAY (i.e. Array of strings. One row from file per string</h6>
   <ol>
     <li>Opens file in read mode using file pointer given as input.</li>
