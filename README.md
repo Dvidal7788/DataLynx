@@ -48,7 +48,7 @@ LIST OF FUNCTIONS:
 <ul>
   <li>PARAMETERS: File pointer.</li>
   <ol>
-    <h6>READS FILE CONTENTS FROM BEGINNING TO END INTO ONE LONG STRING. CAN BE .txt OR .csv FILE.</h6>
+    <h6>READS FILE CONTENTS FROM BEGINNING TO END INTO ONE LONG STRING. (Can be .txt or .csv file.)</h6>
     <li>File is opened in read mode, using file pointer given as input.</li>
     <li>Initial char is malloced.</li>
     <li>File is read, one char at a time, reallocing after each char.</li>
