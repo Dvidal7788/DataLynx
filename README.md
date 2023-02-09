@@ -21,7 +21,7 @@ LIST OF FUNCTIONS:
 <h5 align="center">BUILD_DBLINK_LIST()</h5>
 <h6 align="center">void build_dblink_list(char **s_ptr, node **head, node **last)</h6>
 <ul>
-  <li>PARAMETERS: Takes pointer to string that will is intended to be in node, pointer to head node pointer and pointer to last node pointer. All 3 need to be pointers to pointers, so I can changed what they are pointing to inside the function.</li>
+  <li>PARAMETERS: Takes pointer to string that will is intended to be in node, pointer to head node pointer and pointer to last node pointer. All 3 need to be pointers to pointers, so I can changed what they are pointing to inside the function. NOTE: String input must be dyamically allocated string, as this buffer will be taken over by linked list node. Otherwise buffer will be popped off the stack in calling function. Can not be string literal, otherwise will be popped off the stack when this function returns.</li>
   <ol>
     <li>Mallocs new node.</li>
     <li>New node takes over string (i.e. string pointer in node now points to string).</li>
@@ -29,6 +29,69 @@ LIST OF FUNCTIONS:
   </ol>
   <li>RETURN: No return value.</li>
 </ul>
+
+<h5 align="center">BUILD_DICT_LINK_LIST</h5>
+<h6 align="center">void build_dict_link_list(char **s_ptr, dict_node **head, dict_node **last, char *current_column_name);</h6>
+<ul>
+  <li>PARAMETERS: Takes pointer to string that will appear in new node, pointer to head node pointer, pointer to last node pointer and string of column name. NOTE: String input must be dyamically allocated string, as this buffer will be taken over by linked list node. Otherwise buffer will be popped off the stack in calling function. Can not be string literal, otherwise will be popped off the stack when this function returns. Column_name string input CAN be string literal.</li>
+  <ol>
+    <li>Mallocs new node.</li>
+    <li>New node takes over string (i.e. string pointer in node now points to string).</li>
+    <li>String for column_name of node is malloced and copied from current_column_name given as input.</li>
+    <li>New node is appended to linked list or added as first node if head is NULL.</li>
+  </ol>
+  <li>RETURN: No return value.</li>
+</ul>
+
+<h5 align="center">READ_FILE_V1()</h5>
+<h6 align="center">char *read_file_v1(FILE *file)</h6>
+<ul>
+  <li>PARAMETERS: File pointer.</li>
+  <ol>
+    <li>File is opened in read mode, using file pointer given as input.</li>
+    <li>Initial char is malloced.</li>
+    <li>File is read, one char at a time, reallocing after each char.</li>
+    <li>When end of file reached, final char is changed to '\0', and string is returned from fucntion.</li>
+  </ol>
+  <li>RETURN: Returns string of contents read from file.</li>
+</ul>
+
+<h5 align="center">STRING_INTO_2D_ARRAY()</h5>
+<h6 align="center">char **string_into_2d_array(char *s, uintmax_t *row_count)</h6>
+<ul>
+  <li>PARAMETERS: Takes string as input that you wish to turn into 2D array, as well as pointer to unsigned integer for purposes of keeping track of number of rows, so this can be pseudo "returned" to calling function, as it will be necessary for printing and freeing 2D array.</li>
+  <ol>
+    <li>TURNS STRING CONTAINING MULTIPLE LINES INTO 2D ARRAY (i.e. ARRAY OF STRINGS), ONE STRING FOR EACH LINE</li>
+    <li>Mallocs first string pointer in array of strings.</li>
+    <li>Mallocs 1st char in first string of the array of strings</li>
+    <li>Keeps reallocing one char at a time until '\n' or '\0' is found.</li>
+    <li>If '\n' is found, this char is chagned to '\0' and reallocs next pointer in array of strings and repeats process.</li>
+    <li>if '\0' is found, this is the end of the original string and process ends.</li>
+  </ol>
+  <li>RETURN: Returns 2D array of strings.</li>
+</ul>
+
+<h5 align="center">READ_FILE_V2</h5>
+<h6 align="center">char **read_file_v2(FILE *file, uintmax_t *row_count)</h6>
+<ul>
+  <li>PARAMETERS:</li>
+  <ol>
+    <li></li>
+  </ol>
+  <li>RETURN:</li>
+</ul>
+
+<h5 align="center"></h5>
+<h6 align="center"></h6>
+<ul>
+  <li>PARAMETERS:</li>
+  <ol>
+    <li></li>
+  </ol>
+  <li>RETURN:</li>
+</ul>
+
+
 
 
 //          ---- FUNCTION PROTOTYPES ----
