@@ -16,8 +16,8 @@ LIST OF FUNCTIONS:
   </ol>
   <li><h6>RETURN:</h6> Will return dynamically allocated string. It is up to the programmer to free this string in the calling function.</li>
 </ul>
-
-<h5 style="text-align: center;">--- BUILD_DBLINK_LIST() ---</h5>
+<center>TEST</center>
+<h5>BUILD_DBLINK_LIST()</h5>
 <h6>void build_dblink_list(char **s_ptr, node **head, node **last)</h6>
 <ul>
   <li><h6>PARAMETERS:</h6> Takes pointer to string that will is intended to be in node, pointer to head node pointer and pointer to last node pointer. All 3 need to be pointers to pointers, so I can changed what they are pointing to inside the function.</li>
