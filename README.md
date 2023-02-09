@@ -15,7 +15,7 @@ char *inf_buffer(char *prompt)
 - 2. Mallocs initial char. Reallocs one char at a time until '\n' is reached, at which point that char will be changed to '\0'.
 - RETURN: Will return dynamically allocated string. It is up to the programmer to free this string in the calling function.
 
-<h43>BUILD_DBLINK_LIST()</h4>
+<h4>BUILD_DBLINK_LIST()</h4>
 <h6>void build_dblink_list(char **s_ptr, node **head, node **last)</h6>
 <ul>
   <li>PARAMETERS: Takes pointer to string that will is intended to be in node, pointer to head node pointer and pointer to last node pointer. All 3 need to be pointers to pointers, so I can changed what they are pointing to inside the function.</li>
