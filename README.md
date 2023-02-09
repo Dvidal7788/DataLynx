@@ -48,6 +48,7 @@ LIST OF FUNCTIONS:
 <ul>
   <li>PARAMETERS: File pointer.</li>
   <ol>
+    <h6>READS FILE CONTENTS FROM BEGINNING TO END INTO ONE LONG STRING. CAN BE .txt OR .csv FILE.</h6>
     <li>File is opened in read mode, using file pointer given as input.</li>
     <li>Initial char is malloced.</li>
     <li>File is read, one char at a time, reallocing after each char.</li>
@@ -61,7 +62,7 @@ LIST OF FUNCTIONS:
 <ul>
   <li>PARAMETERS: Takes string as input that you wish to turn into 2D array, as well as pointer to unsigned integer for purposes of keeping track of number of rows, so this can be pseudo "returned" to calling function, as it will be necessary for printing and freeing 2D array.</li>
   <ol>
-    <li>TURNS STRING CONTAINING MULTIPLE LINES INTO 2D ARRAY (i.e. ARRAY OF STRINGS), ONE STRING FOR EACH LINE</li>
+    <h6>TURNS STRING CONTAINING MULTIPLE LINES INTO 2D ARRAY (i.e. ARRAY OF STRINGS), ONE STRING FOR EACH LINE</h6>
     <li>Mallocs first string pointer in array of strings.</li>
     <li>Mallocs 1st char in first string of the array of strings</li>
     <li>Keeps reallocing one char at a time until '\n' or '\0' is found.</li>
