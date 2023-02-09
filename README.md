@@ -18,13 +18,13 @@ char *inf_buffer(char *prompt)
 <h5>BUILD_DBLINK_LIST()</h5>
 <h6>void build_dblink_list(char **s_ptr, node **head, node **last)</h6>
 <ul>
-  <li>PARAMETERS: Takes pointer to string that will is intended to be in node, pointer to head node pointer and pointer to last node pointer. All 3 need to be pointers to pointers, so I can changed what they are pointing to inside the function.</li>
+  <li><h6>PARAMETERS:</h6> Takes pointer to string that will is intended to be in node, pointer to head node pointer and pointer to last node pointer. All 3 need to be pointers to pointers, so I can changed what they are pointing to inside the function.</li>
   <ol>
     <li>Mallocs new node.</li>
     <li>New node takes over string (i.e. string pointer in node now points to string).</li>
     <li>New node is appended to linked list or added as first node if head is NULL.</li>
   </ol>
-  <li>RETURN: No return value.</li>
+  <li><h6>RETURN:</h6> No return value.</li>
 </ul>
 
 
