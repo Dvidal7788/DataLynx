@@ -16,7 +16,7 @@ LIST OF FUNCTIONS:
   </ol>
   <li><h6>RETURN:</h6> Will return dynamically allocated string. It is up to the programmer to free this string in the calling function.</li>
 </ul>
-<center>TEST</center>
+<p align="center">TEST</p>
 <h5>BUILD_DBLINK_LIST()</h5>
 <h6>void build_dblink_list(char **s_ptr, node **head, node **last)</h6>
 <ul>
