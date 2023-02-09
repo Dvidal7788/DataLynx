@@ -1,4 +1,4 @@
-# file_read_library
+# CSV Library
 Library for reading from files, especially csv files.
 
 This library contains functions with the intention of giving a C programmer close to the ease of use of Python, but with the control of C.
@@ -18,7 +18,7 @@ char *inf_buffer(char *prompt)
 <h3>BUILD_DBLINK_LIST()</h3>
 void build_dblink_list(char **s_ptr, node **head, node **last);
 <ul>
-  <li>PARAMETERS: Takes pointer to string that will is intended to be in node, pointer to head node pointer and pointer to last node pointer. All 3 need to be pointers to pointers, so I can changed what they are pointing to inside the fucntion.</li>
+  <li>PARAMETERS: Takes pointer to string that will is intended to be in node, pointer to head node pointer and pointer to last node pointer. All 3 need to be pointers to pointers, so I can changed what they are pointing to inside the function.</li>
   <ol>
     <li>Mallocs new node.</li>
     <li>New node takes over string (i.e. string pointer in node now points to string).</li>
