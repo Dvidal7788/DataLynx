@@ -6,7 +6,7 @@ This library contains functions with the intention of giving a C programmer clos
 
 LIST OF FUNCTIONS:
 
-<p style="text-align: center;">INF_BUFFER()dd</p>
+<h5>INF_BUFFER()</h5>
 <h6>char *inf_buffer(char *prompt)</h6>
 <ul>
   <li><h6>PARAMETERS:</h6> Takes string as input.</li>
