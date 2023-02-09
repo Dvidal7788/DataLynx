@@ -9,25 +9,25 @@ LIST OF FUNCTIONS:
 <h5 align="center">INF_BUFFER()</h5>
 <h6 align="center">char *inf_buffer(char *prompt)</h6>
 <ul>
-  <li><h6>PARAMETERS:</h6> Takes string as input.</li>
+  <li>PARAMETERS: Takes string as input.</li>
   <ol>
     <li>Prompts user with string given as input.</li>
     <li>Mallocs initial char. Reallocs one char at a time until '\n' is reached, at which point that char will be changed to '\0'.</li>
   </ol>
-  <li><h6>RETURN:</h6> Will return dynamically allocated string. It is up to the programmer to free this string in the calling function.</li>
+  <li>RETURN: Will return dynamically allocated string. It is up to the programmer to free this string in the calling function.</li>
 </ul>
 <br>
 
 <h5 align="center">BUILD_DBLINK_LIST()</h5>
 <h6 align="center">void build_dblink_list(char **s_ptr, node **head, node **last)</h6>
 <ul>
-  <li><h6>PARAMETERS:</h6> Takes pointer to string that will is intended to be in node, pointer to head node pointer and pointer to last node pointer. All 3 need to be pointers to pointers, so I can changed what they are pointing to inside the function.</li>
+  <li>PARAMETERS: Takes pointer to string that will is intended to be in node, pointer to head node pointer and pointer to last node pointer. All 3 need to be pointers to pointers, so I can changed what they are pointing to inside the function.</li>
   <ol>
     <li>Mallocs new node.</li>
     <li>New node takes over string (i.e. string pointer in node now points to string).</li>
     <li>New node is appended to linked list or added as first node if head is NULL.</li>
   </ol>
-  <li><h6>RETURN:</h6> No return value.</li>
+  <li>RETURN: No return value.</li>
 </ul>
 
 
