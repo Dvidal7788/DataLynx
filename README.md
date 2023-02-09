@@ -65,21 +65,29 @@ LIST OF FUNCTIONS:
     <h6>TURNS STRING CONTAINING MULTIPLE LINES INTO 2D ARRAY (i.e. ARRAY OF STRINGS), ONE STRING FOR EACH LINE</h6>
     <li>Mallocs first string pointer in array of strings.</li>
     <li>Mallocs 1st char in first string of the array of strings</li>
+    <li>Copies char from current index of input string to current char in new string.</li>
     <li>Keeps reallocing one char at a time until '\n' or '\0' is found.</li>
     <li>If '\n' is found, this char is chagned to '\0' and reallocs next pointer in array of strings and repeats process.</li>
     <li>if '\0' is found, this is the end of the original string and process ends.</li>
   </ol>
-  <li>RETURN: Returns 2D array of strings.</li>
+  <li>RETURN: Returns pointer to array of strings.</li>
 </ul>
 
 <h5 align="center">READ_FILE_V2</h5>
 <h6 align="center">char **read_file_v2(FILE *file, uintmax_t *row_count)</h6>
 <ul>
-  <li>PARAMETERS:</li>
+  <li>PARAMETERS: Takes file pointer and pointer to unsigned integer for purposes of keeping track of number of rows, so this can be pseudo "returned" to calling function, as it will be necessary for printing and freeing 2D array.</li>
+  <h6>READS FILE INTO DYNAMICALLY ALLOCATED 2D ARRAY (i.e. Array of strings. One row from file per string</h6>
   <ol>
-    <li></li>
+    <li>Opens file in read mode using file pointer given as input.</li>
+    <li>Mallocs first string pointer in array of strings.</li>
+    <li>Mallocs 1st char in first string of the array of strings</li>
+    <li>Reads one char from file.</li>
+    <li>Keeps reallocing one char at a time until '\n' or EOF is found.</li>
+    <li>If '\n' is found, this char is chagned to '\0' and reallocs next pointer in array of strings and repeats process.</li>
+    <li>if '\0' is found, this is the end of the original string and process ends.</li>
   </ol>
-  <li>RETURN:</li>
+  <li>RETURN: Returns pointer array of strings.</li>
 </ul>
 
 <h5 align="center"></h5>
