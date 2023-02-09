@@ -6,14 +6,16 @@ This library contains functions with the intention of giving a C programmer clos
 
 LIST OF FUNCTIONS:
 
-___ INF_BUFFER() ____
-<br>
-char *inf_buffer(char *prompt)
-
-- PARAMETERS: Takes string as input.
-- 1. Prompts user with string given as input.
-- 2. Mallocs initial char. Reallocs one char at a time until '\n' is reached, at which point that char will be changed to '\0'.
-- RETURN: Will return dynamically allocated string. It is up to the programmer to free this string in the calling function.
+<h5>INF_BUFFER()</h5>
+<h6>char *inf_buffer(char *prompt)</h6>
+<ul>
+  <li><h6>PARAMETERS:</h6> Takes string as input.</li>
+  <ol>
+    <li>Prompts user with string given as input.</li>
+    <li>Mallocs initial char. Reallocs one char at a time until '\n' is reached, at which point that char will be changed to '\0'.</li>
+  </ol>
+  <li>RETURN: Will return dynamically allocated string. It is up to the programmer to free this string in the calling function.</li>
+</ul>
 
 <h5>BUILD_DBLINK_LIST()</h5>
 <h6>void build_dblink_list(char **s_ptr, node **head, node **last)</h6>
