@@ -7,7 +7,7 @@ This library contains functions with the intention of giving a C programmer clos
 LIST OF FUNCTIONS:
 
 <h5 align="center">INF_BUFFER()</h5>
-<h6>char *inf_buffer(char *prompt)</h6>
+<h6 align="center">char *inf_buffer(char *prompt)</h6>
 <ul>
   <li><h6>PARAMETERS:</h6> Takes string as input.</li>
   <ol>
@@ -18,7 +18,7 @@ LIST OF FUNCTIONS:
 </ul>
 
 <h5 align="center">BUILD_DBLINK_LIST()</h5>
-<h6>void build_dblink_list(char **s_ptr, node **head, node **last)</h6>
+<h6 align="center">void build_dblink_list(char **s_ptr, node **head, node **last)</h6>
 <ul>
   <li><h6>PARAMETERS:</h6> Takes pointer to string that will is intended to be in node, pointer to head node pointer and pointer to last node pointer. All 3 need to be pointers to pointers, so I can changed what they are pointing to inside the function.</li>
   <ol>
