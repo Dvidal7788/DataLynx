@@ -31,6 +31,7 @@ LIST OF FUNCTIONS:
   <li>RETURN: No return value.</li>
 </ul>
 
+<hr>
 <h5 align="center">READ_FILE_V1()</h5>
 <h6 align="center">char *read_file_v1(FILE *file, bool skip_header)</h6>
 <ul>
@@ -46,6 +47,7 @@ LIST OF FUNCTIONS:
   <li>RETURN: Returns string of contents read from file.</li>
 </ul>
 
+<hr>
 <h5 align="center">STRING_INTO_2D_ARRAY()</h5>
 <h6 align="center">char **string_into_2d_array(char *s, uintmax_t *row_count)</h6>
 <ul>
@@ -63,6 +65,7 @@ LIST OF FUNCTIONS:
   <li>RETURN: Returns pointer to array of strings.</li>
 </ul>
 
+<hr>
 <h5 align="center">READ_FILE_V2</h5>
 <h6 align="center">char **read_file_v2(FILE *file, uintmax_t *row_count, bool skip_header)</h6>
 <ul>
@@ -81,6 +84,7 @@ LIST OF FUNCTIONS:
   <li>RETURN: Returns pointer array of strings.</li>
 </ul>
 
+<hr>
 <h5 align="center">CSV_READER_INDEX()</h5>
 <h6 align="center">char *csv_reader_index(FILE *file, uintmax_t row, uintmax_t col, bool skip_header)</h6>
 <ul>
@@ -88,11 +92,10 @@ LIST OF FUNCTIONS:
   <h6>Allows you to index directly into a csv, read the field at that specific index, without reading the whole file into memory.</h6>
   <h5>How to use function:</h5>
   <li>Input file pointer, desired row number, column number and whether or not you want to count the header as the first row (i.e. skip_header = true if you do not want to count header as 1st row).</li>
-  <li>The function will read the field at that index and return it back to you as a string.</li>
-  
+  <li>The function will read the field at that index and return it back to you as a string.</li> 
 </ul>
 
-
+<hr>
 <h5 align="center">UPDATE_CSV_INDEX()</h5>
 <h6 align="center">void update_csv_index(char *filename, uintmax_t row, uintmax_t column, char *new_cell)</h6>
 <h5>Purpose:</h5>
@@ -106,7 +109,7 @@ LIST OF FUNCTIONS:
   <li>The file will be closed in read mode and opened in write mode, at which point the entire file will be overwritten with the contents of the temporary string, effectively updating only the desired index (i.e. the row/column given as input).</li>
 </ul>
 
-
+<hr>
 <h5 align="center">CSV_DICT_READER()</h5>
 <h6 align="center">char *csv_dictreader_index(FILE *file, uintmax_t row, char *desired_column)</h6>
 <ul>
@@ -119,7 +122,7 @@ LIST OF FUNCTIONS:
   </ol>
 </ul>
 
-
+<hr>
 <h5 align="center">SPLIT_2DARRAY_BY()</h5>
 <h6 align="center">node **split_2darray_by(char **orig_array, uintmax_t row_count, char split)</h6>
 <h5>Purpose: To take an array of strings (typical use case is an array of strings in which each string is equivalent to 1 row in a csv or text file) and split it by the ',' (or any other desired char) into an array of doubly linked lists.</h5>
@@ -128,7 +131,7 @@ LIST OF FUNCTIONS:
   <li>Function will take 2D array and split it by the desired char, creating an array of doubly linked lists, which will be returned.</li>
 
 
-
+<hr>
 <h5 align="center">INDEX_2DARRAY_CSV()</h5>
 <h6 align="center">char *index_2darray_csv(char **main_array, uintmax_t row_num, uintmax_t index)</h6>
 <h5>Purpose:</h5>
@@ -137,6 +140,7 @@ LIST OF FUNCTIONS:
 <h6>Input the pointer to main array (i.e. the pointer to the array of strings), the desired row and desired column you wish to index into.</h6>
 <h6>The function will return back to you a string of the field contents at that specific row/column.</h6>
 
+<hr>
 <h5 align="center">GET_CSV_HEADER()</h5>
 <h6 align="center">char **get_csv_header(FILE *file, uintmax_t *column_count)</h6>
 <h5>Purpose:</h5>
@@ -145,7 +149,7 @@ LIST OF FUNCTIONS:
 <h6>Input pointer to (or address of) unused unsiged integer to keep track of the number of columns.</h6>
 <h6>The function will return back to you an array of strings, each string corresponding to the name of each column.</h6>
 
-
+<hr>
 <h5 align="center">CSV_DICTREADER_INDEX()</h5>
 <h6 align="center">char *csv_dictreader_index(FILE *file, uintmax_t row, char *desired_column)</h6>
 <h5>Purpose:</h5>
@@ -154,6 +158,7 @@ LIST OF FUNCTIONS:
 <h6>Inut file pointer, desired row number and desired column name.</h6>
 <h6>Function will return back to you a string of the contents at that specific row number/column name.</h6>
 
+<hr>
 <h5 align="center">CS_DICT_READER()</h5>
 <h6 align="center">dict_node **csv_dict_reader(FILE *file, uintmax_t *row_count)</h6>
 <h5>Purpose:</h5>
@@ -166,7 +171,7 @@ LIST OF FUNCTIONS:
 <h6>Input file pointer and pointer to (or address of) unused unsigned integer to keep track of number of rows.</h6>
 <h6>Funciton will return back to you a pointer to an array of doubly linked DICT nodes (i.e. each node contains field contents as well as corresponding column name).</h6>
 
-
+<hr>
 <h5 align="center">INDEX_INTO_DICT()</h5>
 <h6 align="center">char *index_into_dict(dict_node **main_array, uintmax_t row_count, uintmax_t row, char *desired_column)</h6>
 <h5>Purpose:</h5>
@@ -175,16 +180,7 @@ LIST OF FUNCTIONS:
 <h6>Input pointer to arary of dicts, row_count (protects you against yourself from inputting a desired row number that is beyond the buffer), the desired row number and desired column name.</h6>
 <h6>Functino returns back to you a string of the contents at that specific row number/column name</h6>
 
-
-<h5 align="center"></h5>
-<h6 align="center"></h6>
-<h5>Purpose:</h5>
-<h6></h6>
-<h5>How to use function:</h5>
-<h6></h6>
-<h6></h6>
-
-
+<hr>
 <h5 align="center">INF_BUFFER()</h5>
 <h6 align="center">char *inf_buffer(char *prompt)</h6>
 <h5>Purpose:</h5>
@@ -195,7 +191,7 @@ LIST OF FUNCTIONS:
 <h6>It is up to the programmer to free the returned string.</h6>
 
 
-
+<hr>
 <h5 align="center">GET_UINT()</h5>
 <h6 align="center">uint64_t get_uint(char *prompt)</h6>
 <h5>Purpose:</h5>
@@ -206,7 +202,7 @@ LIST OF FUNCTIONS:
 <h6>The unsigned integer is then returned from the function.</h6>
 
 
-
+<hr>
 <h5 align="center">IS_EXT()</h5>
 <h6 align="center">bool is_ext(char *filename, char *ext)</h6>
 <h5>Purpose:</h5>
@@ -216,7 +212,7 @@ LIST OF FUNCTIONS:
 <h6>If filename has correct file extension, the fuction will return true.</h6>
 <h6>If filename does not have correct file extension, the fuction will return false.</h6>
 
-
+<hr>
 <h5 align="center">PRINT_LIST(</h5>
 <h6 align="center">void print_list(node *head)</h6>
 <h5>Purpose:</h5>
@@ -226,7 +222,7 @@ LIST OF FUNCTIONS:
 <h6>Each string will printed in a csv-esque format (i.e. with ',' after each item, except for last items in each row).</h6>
 <h6>Note: This function is meant to be used in a loop. Therefore if you are printing an array of doubly linked lists, you must create a loop iterateing through every list head in the array, calling this function on every iteration of the loop. This function will then traverse each node of the current list in the array of doubly linked lists.</h6>
 
-
+<hr>
 <h5 align="center">PRINT_DICT_LIST()</h5>
 <h6 align="center">void print_dict_list(dict_node **main_array, uintmax_t row_count)</h6>
 <h5>Purpose:</h5>
