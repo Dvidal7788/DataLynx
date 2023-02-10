@@ -17,6 +17,7 @@ LIST OF FUNCTIONS:
   <li>RETURN: No return value.</li>
 </ul>
 
+<hr>
 <h5 align="center">BUILD_DICT_LINK_LIST</h5>
 <h6 align="center">void build_dict_link_list(char **s_ptr, dict_node **head, dict_node **last, char *current_column_name);</h6>
 <ul>
