@@ -161,10 +161,32 @@ LIST OF FUNCTIONS:
 <h5 align="center">CSV_DICTREADER_INDEX()</h5>
 <h6 align="center">char *csv_dictreader_index(FILE *file, uintmax_t row, char *desired_column)</h6>
 <h5>Purpose:</h5>
-<h6>Allows you to index directly into a csv, read the field at that specific index, without reading the whole file into memory. This is similar to csv_reader_index(), however instead of using a desired row number/column number, you can use the desired row number and column __name.</h6>
+<h6>Allows you to index directly into a csv, read the field at that specific index, without reading the whole file into memory. This is similar to csv_reader_index(), however instead of using a desired row number/column number, you can use the desired row number and column name.</h6>
+<h5>How to use function:</h5>
+<h6>Inut file pointer, desired row number and desired column name.</h6>
+<h6>Function will return back to you a string of the contents at that specific row number/column name.</h6>
+
+<h5 align="center">CS_DICT_READER()</h5>
+<h6 align="center">dict_node **csv_dict_reader(FILE *file, uintmax_t *row_count)</h6>
+<h5>Purpose:</h5>
+<h6>- To read csv file contents and parse into an array of doubly linked dict nodes.<br>
+  - Each row in file corresonds to each list in array.<br>
+  - Each field in file corresponds to each node in list.<br>
+ - Each node contains not only the contents of the corresponding field, but also the name of the corresponding column.<br>
+ - This makes searching for desired index easier, as you will need the correct row number and column name as opposed to row number/column number.</h6>
 <h5>How to use function:</h5>
 <h6></h6>
 <h6></h6>
+
+
+<h5 align="center"></h5>
+<h6 align="center"></h6>
+<h5>Purpose:</h5>
+<h6></h6>
+<h5>How to use function:</h5>
+<h6></h6>
+<h6></h6>
+
 
 <h5 align="center"></h5>
 <h6 align="center"></h6>
