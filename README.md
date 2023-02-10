@@ -90,6 +90,18 @@ LIST OF FUNCTIONS:
   <li>RETURN: Returns pointer array of strings.</li>
 </ul>
 
+<h5 align="center">CSV_READER_INDEX()</h5>
+<h6 align="center">char *csv_reader_index(FILE *file, uintmax_t row, uintmax_t col, bool skip_header)</h6>
+<ul>
+  <h6>Allows you to index directly into a csv file, without reading the whole file into memory.</h6>
+  <li>PARAMETERS:</li>
+  <ol>
+    <li></li>
+  </ol>
+  <li>RETURN:</li>
+</ul>
+
+
 <h5 align="center"></h5>
 <h6 align="center"></h6>
 <ul>
@@ -99,6 +111,7 @@ LIST OF FUNCTIONS:
   </ol>
   <li>RETURN:</li>
 </ul>
+
 
 
 
