@@ -96,10 +96,24 @@ LIST OF FUNCTIONS:
   <h5>Purpose:</h5>
   <h6>Allows you to index directly into a csv file, without reading the whole file into memory.</h6>
   <h5>How to use function:</h5>
-  <li>Input file pointer</li>
+  <li>Input file pointer, desired row number, column number and whether or not you want to count the header as the first row (i.e. skip_header = true if you do not want to count header as 1st row).</li>
+  <li>The function will read the field at that index and return it back to you as a string.</li>
   
 </ul>
 
+
+<h5 align="center">UPDATE_CSV_INDEX()</h5>
+<h6 align="center">void update_csv_index(char *filename, uintmax_t row, uintmax_t column, char *new_cell)</h6>
+<h5>Purpose:</h5>
+<h6>Updates specific field in csv file.</h6>
+<h5>How to use:</h5>
+<ul>
+  <li>Input filename, desired row number, column number and string you wish to replace the field at the given index with.</li>
+  <li>The function will open the file, read through it, copying everything into a temporary string until it arrives at the desired row/column.</li>
+  <li>Once file stream is at desired row/column, the new string you wish to update the csv with, will be copied into the temporary string instead of the text at the current index.</li>
+  <li>The file stream will then move past the current index (i.e. to the next column), at which point it will continue to copy everything into the temporary string until EOF is reached.</li>
+  <li>The file will be closed in read mode and opened in write mode, at which point the entire file will be overwritten with the contents of the temporary string, effectively updating only the desired index (i.e. the row/column given as input).</li>
+</ul>
 
 <h5 align="center"></h5>
 <h6 align="center"></h6>
@@ -110,7 +124,6 @@ LIST OF FUNCTIONS:
   </ol>
   <li>RETURN:</li>
 </ul>
-
 
 
 
