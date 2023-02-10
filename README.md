@@ -97,7 +97,7 @@ LIST OF FUNCTIONS:
 <h6 align="center">char *csv_reader_index(FILE *file, uintmax_t row, uintmax_t col, bool skip_header)</h6>
 <ul>
   <h5>Purpose:</h5>
-  <h6>Allows you to index directly into a csv file, without reading the whole file into memory.</h6>
+  <h6>Allows you to index directly into a csv, read the field at that specific index, without reading the whole file into memory</h6>
   <h5>How to use function:</h5>
   <li>Input file pointer, desired row number, column number and whether or not you want to count the header as the first row (i.e. skip_header = true if you do not want to count header as 1st row).</li>
   <li>The function will read the field at that index and return it back to you as a string.</li>
@@ -136,22 +136,34 @@ LIST OF FUNCTIONS:
 <h6 align="center">node **split_2darray_by(char **orig_array, uintmax_t row_count, char split)</h6>
 <h5>Purpose: To take an array of strings (typical use case is an array of strings in which each string is equivalent to 1 row in a csv or text file) and split it by the ',' (or any other desired char) into an array of doubly linked lists.</h5>
 <h5>How to use function:</h5>
-  <li>Input the main pointer to an array of strings. Input the row_count of the (i.e. the same one that was "psuedo" </li>
-<h6></h6>
+  <li>Input the main pointer to an array of strings. Input the row_count of the (i.e. the same one that was "psuedo returned" (i.e. given as input in the form of a pointer of address of) from string_into_2d_array()). Input char to split the array by.</li>
+  <li>Function will take 2D array and split it by the desired char, creating an array of doubly linked lists, which will be returned.</li>
+
+
+
+<h5 align="center">INDEX_2DARRAY_CSV()</h5>
+<h6 align="center">char *index_2darray_csv(char **main_array, uintmax_t row_num, uintmax_t index)</h6>
+<h5>Purpose:</h5>
+<h6>To allow you index into an arary of strings (in which each string equates to a line in a csv file) at a specific row and column.</h6>
+<h5>How to use function:</h5>
+<h6>Input the pointer to main array (i.e. the pointer to the array of strings), the desired row and desired column you wish to index into.</h6>
+<h6>The function will return back to you a string of the field contents at that specific row/column.</h6>
+
+<h5 align="center">GET_CSV_HEADER()</h5>
+<h6 align="center">char **get_csv_header(FILE *file, uintmax_t *column_count)</h6>
+<h5>Purpose:</h5>
+<h6>Allows you to recieve an array of strings of the header (i.e. column name) of a csv.</h6>
+<h5>How to use function:</h5>
+<h6>Input pointer to (or address of) unused unsiged integer to keep track of the number of columns.</h6>
+<h6>The function will return back to you an array of strings, each string corresponding to the name of each column.</h6>
 
 
 <h5 align="center"></h5>
 <h6 align="center"></h6>
 <h5>Purpose:</h5>
-<h6></h6>
+<h6</h6>
 <h5>How to use function:</h5>
 <h6></h6>
-
-<h5 align="center"></h5>
-<h6 align="center"></h6>
-<h5>Purpose:</h5>
-<h6></h6>
-<h5>How to use function:</h5>
 <h6></h6>
 
 
