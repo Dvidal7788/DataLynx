@@ -60,9 +60,9 @@ LIST OF FUNCTIONS:
 <h5 align="center">STRING_INTO_2D_ARRAY()</h5>
 <h6 align="center">char **string_into_2d_array(char *s, uintmax_t *row_count)</h6>
 <ul>
+   <h6>TURNS STRING CONTAINING MULTIPLE LINES INTO 2D ARRAY (i.e. ARRAY OF STRINGS), ONE STRING FOR EACH LINE</h6>
   <li>PARAMETERS: Takes string as input that you wish to turn into 2D array, as well as pointer to unsigned integer for purposes of keeping track of number of rows, so this can be pseudo "returned" to calling function, as it will be necessary for printing and freeing 2D array.</li>
   <ol>
-    <h6>TURNS STRING CONTAINING MULTIPLE LINES INTO 2D ARRAY (i.e. ARRAY OF STRINGS), ONE STRING FOR EACH LINE</h6>
     <li>Mallocs first string pointer in array of strings.</li>
     <li>Mallocs 1st char in first string of the array of strings</li>
     <li>Copies char from current index of input string to current char in new string.</li>
@@ -76,8 +76,8 @@ LIST OF FUNCTIONS:
 <h5 align="center">READ_FILE_V2</h5>
 <h6 align="center">char **read_file_v2(FILE *file, uintmax_t *row_count, bool skip_header)</h6>
 <ul>
-  <li>PARAMETERS: Takes file pointer and pointer to unsigned integer for purposes of keeping track of number of rows, so this can be pseudo "returned" to calling function, as it will be necessary for printing and freeing 2D array. Also takes bool to determine if function should skip header or not.</li>
   <h6>READS FILE INTO DYNAMICALLY ALLOCATED 2D ARRAY (i.e. Array of strings. One row from file per string</h6>
+  <li>PARAMETERS: Takes file pointer and pointer to unsigned integer for purposes of keeping track of number of rows, so this can be pseudo "returned" to calling function, as it will be necessary for printing and freeing 2D array. Also takes bool to determine if function should skip header or not.</li>
   <ol>
     <li>Opens file in read mode using file pointer given as input.</li>
     <li>Mallocs first string pointer in array of strings.</li>
@@ -94,11 +94,9 @@ LIST OF FUNCTIONS:
 <h6 align="center">char *csv_reader_index(FILE *file, uintmax_t row, uintmax_t col, bool skip_header)</h6>
 <ul>
   <h6>Allows you to index directly into a csv file, without reading the whole file into memory.</h6>
-  <li>PARAMETERS:</li>
-  <ol>
-    <li></li>
-  </ol>
-  <li>RETURN:</li>
+  <h5>How to use function:</h5>
+  <li></li>
+  
 </ul>
 
 
