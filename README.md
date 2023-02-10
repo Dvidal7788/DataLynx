@@ -46,9 +46,10 @@ LIST OF FUNCTIONS:
 <h5 align="center">READ_FILE_V1()</h5>
 <h6 align="center">char *read_file_v1(FILE *file, bool skip_header)</h6>
 <ul>
+    <h5>Purpose:</h5>
+    <h6>READS FILE CONTENTS FROM BEGINNING TO END INTO ONE LONG STRING. (Can be .txt or .csv file.)  Also takes bool to determine if function should skip header or not.</h6>
   <li>PARAMETERS: File pointer.</li>
   <ol>
-    <h6>READS FILE CONTENTS FROM BEGINNING TO END INTO ONE LONG STRING. (Can be .txt or .csv file.)  Also takes bool to determine if function should skip header or not.</h6>
     <li>File is opened in read mode, using file pointer given as input.</li>
     <li>Initial char is malloced.</li>
     <li>File is read, one char at a time, reallocing after each char.</li>
@@ -60,6 +61,7 @@ LIST OF FUNCTIONS:
 <h5 align="center">STRING_INTO_2D_ARRAY()</h5>
 <h6 align="center">char **string_into_2d_array(char *s, uintmax_t *row_count)</h6>
 <ul>
+   <h5>Purpose:</h5>
    <h6>TURNS STRING CONTAINING MULTIPLE LINES INTO 2D ARRAY (i.e. ARRAY OF STRINGS), ONE STRING FOR EACH LINE</h6>
   <li>PARAMETERS: Takes string as input that you wish to turn into 2D array, as well as pointer to unsigned integer for purposes of keeping track of number of rows, so this can be pseudo "returned" to calling function, as it will be necessary for printing and freeing 2D array.</li>
   <ol>
@@ -76,6 +78,7 @@ LIST OF FUNCTIONS:
 <h5 align="center">READ_FILE_V2</h5>
 <h6 align="center">char **read_file_v2(FILE *file, uintmax_t *row_count, bool skip_header)</h6>
 <ul>
+  <h5>Purpose:</h5>
   <h6>READS FILE INTO DYNAMICALLY ALLOCATED 2D ARRAY (i.e. Array of strings. One row from file per string</h6>
   <li>PARAMETERS: Takes file pointer and pointer to unsigned integer for purposes of keeping track of number of rows, so this can be pseudo "returned" to calling function, as it will be necessary for printing and freeing 2D array. Also takes bool to determine if function should skip header or not.</li>
   <ol>
