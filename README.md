@@ -97,7 +97,7 @@ LIST OF FUNCTIONS:
 <h6 align="center">char *csv_reader_index(FILE *file, uintmax_t row, uintmax_t col, bool skip_header)</h6>
 <ul>
   <h5>Purpose:</h5>
-  <h6>Allows you to index directly into a csv, read the field at that specific index, without reading the whole file into memory</h6>
+  <h6>Allows you to index directly into a csv, read the field at that specific index, without reading the whole file into memory.</h6>
   <h5>How to use function:</h5>
   <li>Input file pointer, desired row number, column number and whether or not you want to count the header as the first row (i.e. skip_header = true if you do not want to count header as 1st row).</li>
   <li>The function will read the field at that index and return it back to you as a string.</li>
@@ -158,13 +158,22 @@ LIST OF FUNCTIONS:
 <h6>The function will return back to you an array of strings, each string corresponding to the name of each column.</h6>
 
 
-<h5 align="center"></h5>
-<h6 align="center"></h6>
+<h5 align="center">CSV_DICTREADER_INDEX()</h5>
+<h6 align="center">char *csv_dictreader_index(FILE *file, uintmax_t row, char *desired_column)</h6>
 <h5>Purpose:</h5>
-<h6</h6>
+<h6>Allows you to index directly into a csv, read the field at that specific index, without reading the whole file into memory. This is similar to csv_reader_index(), however instead of using a desired row number/column number, you can use the desired row number and column __name.</h6>
 <h5>How to use function:</h5>
 <h6></h6>
 <h6></h6>
+
+<h5 align="center"></h5>
+<h6 align="center"></h6>
+<h5>Purpose:</h5>
+<h6></h6>
+<h5>How to use function:</h5>
+<h6></h6>
+<h6></h6>
+
 
 
 //          ---- FUNCTION PROTOTYPES ----
