@@ -3,13 +3,6 @@ Library for reading and updating files, especially csv files.
 
 This is a library of functions written in C, for use in C programs, inspired by Python's csv library, giving you similiar functionality to dicts among several other data structures read from csv files.
 
-Error Codes:
-1: MALLOC_FAILED
-2: REALLOC_FAILED
-3: SCANF_FAILED
-4: FOPEN_FAILED
-Note: Error log will also keep track of which function malloc, realloc, scanf or fopen failed in
-
 LIST OF FUNCTIONS:
 
 <h5 align="center">BUILD_DBLINK_LIST()</h5>
