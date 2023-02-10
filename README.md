@@ -6,18 +6,6 @@ This is a library of functions written in C, for use in C programs, inspired by 
 
 LIST OF FUNCTIONS:
 
-<h5 align="center">INF_BUFFER()</h5>
-<h6 align="center">char *inf_buffer(char *prompt)</h6>
-<ul>
-  <li>PARAMETERS: Takes string as input.</li>
-  <ol>
-    <li>Prompts user with string given as input.</li>
-    <li>Mallocs initial char. Reallocs one char at a time until '\n' is reached, at which point that char will be changed to '\0'.</li>
-  </ol>
-  <li>RETURN: Will return dynamically allocated string. It is up to the programmer to free this string in the calling function.</li>
-</ul>
-<br>
-
 <h5 align="center">BUILD_DBLINK_LIST()</h5>
 <h6 align="center">void build_dblink_list(char **s_ptr, node **head, node **last)</h6>
 <ul>
@@ -169,20 +157,80 @@ LIST OF FUNCTIONS:
 <h5 align="center">CS_DICT_READER()</h5>
 <h6 align="center">dict_node **csv_dict_reader(FILE *file, uintmax_t *row_count)</h6>
 <h5>Purpose:</h5>
-<h6>- To read csv file contents and parse into an array of doubly linked dict nodes.<br>
-  - Each row in file corresonds to each list in array.<br>
+<h6>- To read csv file contents and parse into an array of dicts (i.e. doubly linked dict nodes)<br>
+  - Each row in file corresponds to each list in array.<br>
   - Each field in file corresponds to each node in list.<br>
  - Each node contains not only the contents of the corresponding field, but also the name of the corresponding column.<br>
  - This makes searching for desired index easier, as you will need the correct row number and column name as opposed to row number/column number.</h6>
 <h5>How to use function:</h5>
-<h6></h6>
-<h6></h6>
+<h6>Input file pointer and pointer to (or address of) unused unsigned integer to keep track of number of rows.</h6>
+<h6>Funciton will return back to you a pointer to an array of doubly linked DICT nodes (i.e. each node contains field contents as well as corresponding column name).</h6>
+
+
+<h5 align="center">INDEX_INTO_DICT()</h5>
+<h6 align="center">char *index_into_dict(dict_node **main_array, uintmax_t row_count, uintmax_t row, char *desired_column)</h6>
+<h5>Purpose:</h5>
+<h6>Allows you to index into specific row number and column name in an array of dicts (i.e. doubly linked dict nodes).</h6>
+<h5>How to use function:</h5>
+<h6>Input pointer to arary of dicts, row_count (protects you against yourself from inputting a desired row number that is beyond the buffer), the desired row number and desired column name.</h6>
+<h6>Functino returns back to you a string of the contents at that specific row number/column name</h6>
 
 
 <h5 align="center"></h5>
 <h6 align="center"></h6>
 <h5>Purpose:</h5>
 <h6></h6>
+<h5>How to use function:</h5>
+<h6></h6>
+<h6></h6>
+
+
+<h5 align="center">INF_BUFFER()</h5>
+<h6 align="center">char *inf_buffer(char *prompt)</h6>
+<h5>Purpose:</h5>
+<h6>Allows you to prompt user for input and allows user to input a string as long as they desire (only limited by memory in the heap).</h6>
+<h5>How to use function:</h5>
+<h6>Input desired user prompt into function</h6>
+<h6>Function will prompt user and return back to you a dynamically allocated string.</h6>
+<h6>It is up to the programmer to free the returned string.</h6>
+
+
+
+<h5 align="center">GET_UINT()</h5>
+<h6 align="center">uint64_t get_uint(char *prompt)</h6>
+<h5>Purpose:</h5>
+<h6>To prompt user for input and only return once user has given an unsigned integer. (Useful for getting desired row/column numbers.)</h6>
+<h5>How to use function:</h5>
+<h6>Input desired prompt.</h6>
+<h6>Function will prompt user and keep looping until an unsigned integer is given by the user.</h6>
+<h6>The unsigned integer is then returned from the function.</h6>
+
+
+
+<h5 align="center">IS_EXT()</h5>
+<h6 align="center">bool is_ext(char *filename, char *ext)</h6>
+<h5>Purpose:</h5>
+<h6>To check if a filename has the correct file extension.</h6>
+<h5>How to use function:</h5>
+<h6>Input filename and desired file extension. Make sure to include '.' in desired file extension (i.e. ".csv" or ".txt").</h6>
+<h6>If filename has correct file extension, the fuction will return true.</h6>
+<h6>If filename does not have correct file extension, the fuction will return false.</h6>
+
+
+<h5 align="center">PRINT_LIST(</h5>
+<h6 align="center">void print_list(node *head)</h6>
+<h5>Purpose:</h5>
+<h6>Prints the string in each node of a standard doubly linked list.</h6>
+<h5>How to use function:</h5>
+<h6>Input pointer to first node in list.</h6>
+<h6>Each string will printed in a csv-esque format (i.e. with ',' after each item, except for last items in each row).</h6>
+<h6>Note: This function is meant to be used in a loop. Therefore if you are printing an array of doubly linked lists, you must create a loop iterateing through every list head in the array, calling this function on every iteration of the loop. This function will then traverse each node of the current list in the array of doubly linked lists.</h6>
+
+
+<h5 align="center">PRINT_DICT_LIST()</h5>
+<h6 align="center">void print_dict_list(dict_node **main_array, uintmax_t row_count)</h6>
+<h5>Purpose:</h5>
+<h6>Prints the string in each node of a doubly linked DICT list</h6>
 <h5>How to use function:</h5>
 <h6></h6>
 <h6></h6>
@@ -195,8 +243,6 @@ LIST OF FUNCTIONS:
 <h5>How to use function:</h5>
 <h6></h6>
 <h6></h6>
-
-
 
 //          ---- FUNCTION PROTOTYPES ----
 // Doubly linked list functions (for use inside of other functions)
