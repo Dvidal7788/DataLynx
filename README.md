@@ -115,17 +115,33 @@ LIST OF FUNCTIONS:
   <li>The file will be closed in read mode and opened in write mode, at which point the entire file will be overwritten with the contents of the temporary string, effectively updating only the desired index (i.e. the row/column given as input).</li>
 </ul>
 
-<h5 align="center"></h5>
-<h6 align="center"></h6>
+
+<h5 align="center">CSV_DICT_READER()</h5>
+<h6 align="center">char *csv_dictreader_index(FILE *file, uintmax_t row, char *desired_column)</h6>
 <ul>
-  <li>PARAMETERS:</li>
+  <h5>Purpose:</h5>
+  <h6>Allows you to index directly into a csv file, without reading the whole file into memory, by using the name of a column instead of the number of the number. When done this way, your code will still work even if columns are moved around in csv.</h6>
+  <h5>How to use function:</h5>
   <ol>
-    <li></li>
+    <li>Input file pointer, desired row number and name of desired column.</li>
+    <li>The function will return back to you the field at the given row number/column name in the form of a string.</li>
   </ol>
-  <li>RETURN:</li>
 </ul>
 
 
+<h5 align="center">SPLIT_2DARRAY_BY()</h5>
+<h6 align="center">node **split_2darray_by(char **orig_array, uintmax_t row_count, char split)</h6>
+<h5>Purpose: To take an array of strings (typically already divided into one row per string) and split it by the ',' into an array of doubly linked lists</h5>
+<h6></h6>
+<h5>How to use function:</h5>
+<h6></h6>
+
+<h5 align="center"></h5>
+<h6 align="center"></h6>
+<h5>Purpose:</h5>
+<h6></h6>
+<h5>How to use function:</h5>
+<h6></h6>
 
 
 //          ---- FUNCTION PROTOTYPES ----
