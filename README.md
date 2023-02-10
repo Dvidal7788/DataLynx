@@ -63,7 +63,7 @@ LIST OF FUNCTIONS:
 <ul>
    <h5>Purpose:</h5>
    <h6>TURNS STRING CONTAINING MULTIPLE LINES INTO 2D ARRAY (i.e. ARRAY OF STRINGS), ONE STRING FOR EACH LINE</h6>
-  <li>PARAMETERS: Takes string as input that you wish to turn into 2D array, as well as pointer to unsigned integer for purposes of keeping track of number of rows, so this can be pseudo "returned" to calling function, as it will be necessary for printing and freeing 2D array.</li>
+  <li>PARAMETERS: Takes string as input that you wish to turn into 2D array. Input a pointer to (or address of) an unused unsigned integer for the purposes of remembering how many rows (lines) the new array will have. This row_count int will be necessary for printing and freeing 2D array.</li>
   <ol>
     <li>Mallocs first string pointer in array of strings.</li>
     <li>Mallocs 1st char in first string of the array of strings</li>
@@ -134,7 +134,15 @@ LIST OF FUNCTIONS:
 
 <h5 align="center">SPLIT_2DARRAY_BY()</h5>
 <h6 align="center">node **split_2darray_by(char **orig_array, uintmax_t row_count, char split)</h6>
-<h5>Purpose: To take an array of strings (typically already divided into one row per string) and split it by the ',' into an array of doubly linked lists</h5>
+<h5>Purpose: To take an array of strings (typical use case is an array of strings in which each string is equivalent to 1 row in a csv or text file) and split it by the ',' (or any other desired char) into an array of doubly linked lists.</h5>
+<h5>How to use function:</h5>
+  <li>Input the main pointer to an array of strings. Input the row_count of the (i.e. the same one that was "psuedo" </li>
+<h6></h6>
+
+
+<h5 align="center"></h5>
+<h6 align="center"></h6>
+<h5>Purpose:</h5>
 <h6></h6>
 <h5>How to use function:</h5>
 <h6></h6>
