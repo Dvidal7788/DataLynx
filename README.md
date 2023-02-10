@@ -93,9 +93,10 @@ LIST OF FUNCTIONS:
 <h5 align="center">CSV_READER_INDEX()</h5>
 <h6 align="center">char *csv_reader_index(FILE *file, uintmax_t row, uintmax_t col, bool skip_header)</h6>
 <ul>
+  <h5>Purpose:</h5>
   <h6>Allows you to index directly into a csv file, without reading the whole file into memory.</h6>
   <h5>How to use function:</h5>
-  <li></li>
+  <li>Input file pointer</li>
   
 </ul>
 
