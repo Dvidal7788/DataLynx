@@ -3,7 +3,9 @@ Library for reading and updating files, especially csv files.
 
 This is a library of functions written in C, for use in C programs, inspired by Python's csv library, giving you similiar functionality to dicts among several other data structures read from csv files.
 
-LIST OF FUNCTIONS:
+<hr>
+<h2 align="center">LIST OF FUNCTIONS:</h2>
+<hr>
 
 <h5 align="center">BUILD_DBLINK_LIST()</h5>
 <h6 align="center">void build_dblink_list(char **s_ptr, node **head, node **last)</h6>
