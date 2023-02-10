@@ -3,7 +3,6 @@ Library for reading and updating files, especially csv files.
 
 This is a library of functions written in C, for use in C programs, inspired by Python's csv library, giving you similiar functionality to dicts among several other data structures read from csv files.
 
-<hr>
 <h2 align="center">LIST OF FUNCTIONS:</h2>
 
 
