@@ -31,6 +31,7 @@ dist:
 	@echo $(PROGRAM)_$(DATE).tgz created $(TIME)
 
 staticlib: $(OBJ)/libcsv_reader.o
+	rm -f include/*.a
 	ar rcs ./include/lib$(PROGRAM)_static.a $<
 	@echo ./include/lib$(PROGRAM)_static.a created successfully $(TIME)
 
@@ -39,6 +40,7 @@ clean:
 	rm -f *.o obj/*.o
 	rm -f $(BIN)
 	rm -f *.exe a.out
+	rm -f vgcore*
 	@echo clean complete $(DATE) $(TIME)
 
 -include $(DEPFILES)
