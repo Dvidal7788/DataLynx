@@ -216,7 +216,7 @@ This is a library of functions written in C, for use in C programs, inspired by 
 <h6>If filename does not have correct file extension, the fuction will return false.</h6>
 
 <hr>
-<h5 align="center">PRINT_LIST(</h5>
+<h5 align="center">PRINT_LIST()</h5>
 <h6 align="center">void print_list(node *head)</h6>
 <h5>Purpose:</h5>
 <h6>Prints the string in each node of a standard doubly linked list.</h6>
