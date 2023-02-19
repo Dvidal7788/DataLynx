@@ -121,7 +121,7 @@ char **string_into_2d_array(char *s, uintmax_t *row_count)
     // Function name for use in if_error()
     const char *func_name = "string_into_2d_array";
 
-    /* THIS FUNCTION: Turns string INTO DYNAMICALLY ALLOCATED JAGGED 2D ARRAY */
+    /* THIS FUNCTION: Turns string INTO DYNAMICALLY ALLOCATED JAGGED 2D ARRAY (splits by '\n') */
     /* When I try to write this function returning the row_count and accepting main_array as input, I get seg fault. I would prefer function to work that way */
     *row_count = 1;
 
@@ -129,7 +129,7 @@ char **string_into_2d_array(char *s, uintmax_t *row_count)
     char **main_array = (char**)malloc(sizeof(char*));
     if (main_array == NULL) {if_error(MALLOC_FAILED, func_name);}
 
-    // Iterate through file
+    // Iterate through string
     uintmax_t str_index = 0;
     while (true)
     {
@@ -139,7 +139,7 @@ char **string_into_2d_array(char *s, uintmax_t *row_count)
         main_array[(*row_count)-1] = malloc(sizeof(char));
         if (main_array[(*row_count)-1] == NULL) {if_error(MALLOC_FAILED, func_name);}
 
-        uint64_t i = 0;
+        uintmax_t i = 0;
         while (true) {
 
             // Check for end of row
@@ -147,8 +147,14 @@ char **string_into_2d_array(char *s, uintmax_t *row_count)
                 main_array[(*row_count)-1][i] = '\0';
                 break;
             }
+
+            // Check end of string
             else if (s[str_index] == '\0') {
                 main_array[(*row_count)-1][i] = '\0';
+
+                // Get rid of empty last row
+                if (main_array[(*row_count)-1][0] == '\0') free_null(&main_array[(*row_count)-1]);
+                (*row_count)--;
                 next_row = false;
                 break;
             }
@@ -180,6 +186,8 @@ char **string_into_2d_array(char *s, uintmax_t *row_count)
 //      ___ READ FILE ___ (V2 - 2D JAGGED ARRAY)
 char **read_file_v2(FILE *file, uintmax_t *row_count, bool skip_header)
 {
+    /* THIS FUNCTION: READS FILE INTO DYNAMICALLY ALLOCATED JAGGED 2D ARRAY (Each row in file corresponds to string in array of strings) */
+
     // Function name for use in if_error()
     const char *func_name = "read_file_v2";
 
@@ -192,7 +200,6 @@ char **read_file_v2(FILE *file, uintmax_t *row_count, bool skip_header)
         while (tmp != '\n') fscanf(file, "%c", &tmp);
     }
 
-    /* THIS FUNCTION: READS FILE INTO DYNAMICALLY ALLOCATED JAGGED 2D ARRAY */
     /* When I try to write this function returning the row_count and accepting main_array as input, I get seg fault. I would prefer function to work that way */
     *row_count = 1;
 
@@ -225,6 +232,13 @@ char **read_file_v2(FILE *file, uintmax_t *row_count, bool skip_header)
             }
             else if (tmp == EOF) {
                 main_array[(*row_count)-1][i] = '\0';
+
+                // Get rid of empty row
+                if (main_array[(*row_count)-1][0] == '\0') {
+                    free_null(&main_array[(*row_count)-1]);
+                    (*row_count)--;
+                }
+
                 next_row = false;
                 break;
             }
@@ -250,6 +264,161 @@ char **read_file_v2(FILE *file, uintmax_t *row_count, bool skip_header)
 
     return main_array;
 }
+
+
+//      -----  2darray_csv_index()  -----
+char *index_2darray_csv(char **main_array, uintmax_t row, uintmax_t column)
+{
+    // Function name for use in if_error()
+    const char *func_name = "index_2darray_csv";
+
+    /* THIS FUNCTION: Helps you index into a 2D array as if indexes were seperated by comma (i.e. csv) instead of char by char */
+
+    // Get to correct index in row
+    uint64_t j = 0, cursor = 0;
+    bool inside_quotes = false;
+    while (cursor < column) {
+
+        // Get to next column
+        // while (main_array[row][j] != ',' && main_array[row][j] != '\0') {j++;}
+
+        // Determine if inside quotes
+        if (!inside_quotes && main_array[row][j] == '"') {inside_quotes = true; j++;}
+        else if (inside_quotes && main_array[row][j] == '"') {inside_quotes = false; j++;}
+
+        // Get to next column
+        if (!inside_quotes) {while (main_array[row][j] != ',') j++;}
+        else if (inside_quotes) {while (main_array[row][j] != '"') j++;}
+
+        if (main_array[row][j] != '\0') {
+            cursor++;
+            j++;
+        }
+        else break;
+    }
+
+    if (main_array[row][j] == '\0') return NULL;
+
+    if (main_array[row][j] == ',') j++;
+
+    // Put index into own string
+    char *cell_str = malloc(sizeof(char));
+    if (cell_str == NULL) {if_error(MALLOC_FAILED, func_name);}
+
+    // Iterate until next cell (i.e ',') is found or end of row (i.e. '\0')
+    uint64_t str_i = 0;
+    if (main_array[row][j] == '"') inside_quotes = true;
+    bool break_after_realloc = false;
+    while (main_array[row][j] != '\0') {
+
+        // Determine whether to break
+        if (!inside_quotes && main_array[row][j] == ',') break;
+        else if (inside_quotes && main_array[row][j] == '"' && str_i != 0) break_after_realloc = true;
+
+        // Add to string char by char
+        cell_str[str_i] = main_array[row][j];
+
+        // Realloc
+        cell_str = realloc(cell_str, sizeof(char)*(str_i+2));
+        if (cell_str == NULL) {if_error(REALLOC_FAILED, func_name);}
+
+        str_i++;
+        j++;
+
+        if (break_after_realloc) break;
+    }
+    cell_str[str_i] = '\0';
+
+    return cell_str;
+}
+
+
+//      ___ SPLIT BY ___
+node **split_2darray_by(char **orig_array, uintmax_t row_count, char split_by)
+{
+    // Function name for use in if_error()
+    const char *func_name = "split_2daray_by";
+
+    /* THIS FUNCTION: 1. Takes dynamically allocated 2D array
+                      2. Returns array of double link lists, separated by whatever char is stored in split (commonly split by ',' for csv-like behavior, but could be anything) */
+
+    /* Note: When I try to write this function returning the row_count and accepting main_array as input, I get seg fault. I would prefer function to work that way. */
+
+    // Allocate main array of double link lists
+    node **main_dblnk_array = malloc(sizeof(node*));
+    if (main_dblnk_array == NULL) {if_error(MALLOC_FAILED, func_name);}
+
+    // Iterate through whole 2D array
+    uintmax_t i = 0;
+    while (true)
+    {
+        bool next_row = true;
+
+        // Double linked list main pointers for current row
+        node *last = NULL;
+        main_dblnk_array[i] = NULL;
+        char *tmp_str = NULL;
+
+        uintmax_t j = 0;
+        uintmax_t ii = 0;
+
+        bool inside_quotes = false;
+
+        // Iterate through each ROW
+        while (true) {
+
+            // Allocate 1st char of tmp string
+            if (ii == 0) {
+                tmp_str = malloc(sizeof(char));
+                if (tmp_str == NULL) if_error(MALLOC_FAILED, func_name);
+            }
+
+            tmp_str[ii] = orig_array[i][j];
+
+            if (!inside_quotes && orig_array[i][j] == '"') inside_quotes = true;
+            else if (inside_quotes && orig_array[i][j] == '"') inside_quotes = false;
+
+            // Check for end of row
+            if (tmp_str[ii] == '\0') {
+                build_dblink_list(&tmp_str, &main_dblnk_array[i], &last);
+
+                // Check if end of 2d array (this is why row_count is required as a parameter for this function. Otherwise will touch unallocated memory)
+                if (i == row_count-1) {next_row = false;}
+                break;
+            }
+            else if (!inside_quotes && split_by == ',' && tmp_str[ii] == split_by) {
+                tmp_str[ii] = '\0';
+                build_dblink_list(&tmp_str, &main_dblnk_array[i], &last);
+                ii = 0;
+                j++;
+            }
+            else if (split_by != ',' && tmp_str[ii] == split_by) {
+                tmp_str[ii] = '\0';
+                build_dblink_list(&tmp_str, &main_dblnk_array[i], &last);
+                ii = 0;
+                j++;
+            }
+            else {
+
+                // Reallocate for next char
+                tmp_str = realloc(tmp_str, sizeof(char)*(ii+2));
+                if (tmp_str == NULL) {if_error(REALLOC_FAILED, func_name);}
+                j++; ii++;
+            }
+        }
+
+        // Reallocate Next Row
+        if (next_row) {
+            main_dblnk_array = realloc(main_dblnk_array, sizeof(node*)*(i+2));
+            if (main_dblnk_array == NULL) {if_error(REALLOC_FAILED, func_name);}
+            i++;
+        }
+        else break;
+    }
+
+    return main_dblnk_array;
+}
+
 
 //      ___ CSV READER INDEX ___
 char *csv_reader_index(FILE *file, uintmax_t row, uintmax_t col, bool skip_header)
@@ -280,10 +449,20 @@ char *csv_reader_index(FILE *file, uintmax_t row, uintmax_t col, bool skip_heade
     }
 
     // Get stream to correct column
-    bool end_of_row = false;
+    bool end_of_row = false, inside_quotes = false;
+
     for (uintmax_t j = 0; j < col; j++)
     {
-        while ((tmp = fgetc(file)) != ',' && tmp != '\n') if (tmp == EOF) {reached_eof = true; break;}
+        while ((tmp = fgetc(file)) != '\n') {
+
+            if (tmp == '"' && inside_quotes == false) inside_quotes = true;
+            else if (tmp == '"') inside_quotes = false;
+
+            // Break conditions
+            if (tmp == ',' && inside_quotes == false) break;
+
+            if (tmp == EOF) {reached_eof = true; break;}
+        }
 
         if (reached_eof) break;
 
@@ -299,18 +478,27 @@ char *csv_reader_index(FILE *file, uintmax_t row, uintmax_t col, bool skip_heade
         if (s == NULL) {if_error(MALLOC_FAILED, func_name);}
 
         uintmax_t i = 0;
-        while ((s[i] = fgetc(file)) != ',' && s[i] != '\n' && s[i] != EOF) {
+
+        // In a field without quotes
+        while ((s[i] = fgetc(file)) != '\n' && s[i] != EOF) {
+
+            if (!inside_quotes && s[i] == '"') inside_quotes = true;
+            else if (s[i] == '"') inside_quotes = false;
+
+            if (s[i] == ',' && inside_quotes == false) break;
 
             // Realloc
             s = realloc(s, sizeof(char)*(i+2));
             if (s == NULL) {if_error(REALLOC_FAILED, func_name);}
             i++;
         }
+
         s[i] = '\0';
     }
 
     return s;
 }
+
 
 //      ___ UPDATE_CSV_INDEX() ___
 void update_csv_index(char *filename, uintmax_t row, uintmax_t column, char *new_cell)
@@ -321,6 +509,11 @@ void update_csv_index(char *filename, uintmax_t row, uintmax_t column, char *new
     /* THIS FUNCTION: Updates csv file based on choice of index
             Note: This function takes filename string instead of file pointer as input, to be able to open in read mode, then close and open in write mode.
                     This would not be possible with a single file pointer. */
+
+    // Make new_cell into a dynamically allocated string (so I can pass the address of string through add_quotes() and resize if necessary)
+    char *new_cell_dyn = malloc(sizeof(char) * strlen(new_cell)+1);
+    if (new_cell_dyn == NULL) if_error(MALLOC_FAILED, func_name);
+    strcpy(new_cell_dyn, new_cell);
 
     // Open file
     FILE *file = fopen(filename, "r");
@@ -349,9 +542,9 @@ void update_csv_index(char *filename, uintmax_t row, uintmax_t column, char *new
 
     // Variables to keep track of current row/column to match with input row/column
     uintmax_t current_row = 0, current_column = 0;
+    bool found_correct_index = false, inside_quotes = false;
 
     // Iterate through REST OF FILE char by char
-    bool found_correct_index = false;
     while (fscanf(file, "%c", &s[i]) == 1) {
 
         // FOUND Correct index to update
@@ -359,25 +552,40 @@ void update_csv_index(char *filename, uintmax_t row, uintmax_t column, char *new
 
             found_correct_index = true;
 
+            // Determine current field is inside quotes
+            if (!inside_quotes && s[i] == '"') inside_quotes = true;
+
+            // Add quotes to new cell if necessary
+            if (!has_quotes(new_cell) && has_comma(new_cell)) add_quotes(&new_cell_dyn);
+
             // Copy new_cell into string
-            s = realloc(s, sizeof(char)*(strlen(new_cell)+i+1));
+            s = realloc(s, sizeof(char)*(strlen(new_cell_dyn)+i+1));
             if (s == NULL) {if_error(REALLOC_FAILED, func_name);}
-            for (uintmax_t index = 0; index < strlen(new_cell); index++) {
-                s[i] = new_cell[index];
+
+            uintmax_t len =  strlen(new_cell_dyn);
+            for (uintmax_t index = 0; index < len; index++) {
+                s[i] = new_cell_dyn[index];
                 i++;
             }
 
             // Get file stream past old cell that we are replacing in file
             char tmp;
             while (fscanf(file, "%c", &tmp) == 1) {
-                if (tmp == ',' || tmp == '\n') break;
+
+                if (inside_quotes && tmp == '"') inside_quotes = false;
+                else if ((!inside_quotes && tmp == ',' ) || tmp == '\n') break;
             }
             s[i] = tmp;
         }
 
         // Increment current row/column if appropriate
         if (!found_correct_index) {
-            if (s[i] == ',') current_column++;
+
+            if (!inside_quotes && s[i] == '"') inside_quotes = true;
+            else if (inside_quotes && s[i] == '"') inside_quotes = false;
+            else if (s[i] == ',' && !inside_quotes) {
+                current_column++;
+            }
             else if (s[i] == '\n') {current_row++; current_column = 0;}
         }
 
@@ -402,132 +610,71 @@ void update_csv_index(char *filename, uintmax_t row, uintmax_t column, char *new
     // Free string/close file
     free_null(&s);
     fclose_null(&file);
+    free_null(&new_cell_dyn);
 
     return;
 }
 
 
-
-//      ___ SPLIT BY ___
-node **split_2darray_by(char **orig_array, uintmax_t row_count, char split_by)
+//      ___ HAS_QUOTES() ___
+bool has_quotes(char *s)
 {
-    // Function name for use in if_error()
-    const char *func_name = "split_2daray_by";
-
-    /* THIS FUNCTION: 1. Takes dynamically allocated 2D array
-                      2. Returns array of double link lists, separated by whatever char is stored in split (commonly split by ',' for csv-like behavior, but could be anything) */
-
-    /* Note: When I try to write this function returning the row_count and accepting main_array as input, I get seg fault. I would prefer function to work that way. */
-
-    // Allocate array of double link lists
-    node **main_dblnk_array = malloc(sizeof(node*));
-    if (main_dblnk_array == NULL) {if_error(MALLOC_FAILED, func_name);}
-
-    // Iterate through whole array
-    uintmax_t i = 0;
-    while (true)
-    {
-        bool next_row = true;
-
-        // Double linked list main pointers for current row
-        node *last = NULL;
-        main_dblnk_array[i] = NULL;
-        char *tmp_str = NULL;
-
-        uintmax_t j = 0;
-        uintmax_t ii = 0;
-
-        // Iterate through each ROW
-        while (true) {
-
-            // Allocate 1st char of tmp string
-            if (ii == 0) {
-                tmp_str = malloc(sizeof(char));
-                if (tmp_str == NULL) exit(1);
-            }
-
-            tmp_str[ii] = orig_array[i][j];
-
-            // Check for end of row
-            if (tmp_str[ii] == '\0') {
-                // Check if end of 2d array (this is why row_count is required as a parameter for this function. Otherwise will touch unallocated memory)
-                build_dblink_list(&tmp_str, &main_dblnk_array[i], &last);
-                if (i == row_count-1) {next_row = false;}
-                break;
-            }
-            else if (tmp_str[ii] == split_by) {
-                tmp_str[ii] = '\0';
-                build_dblink_list(&tmp_str, &main_dblnk_array[i], &last);
-                ii = 0;
-                j++;
-            }
-            else {
-
-                // Reallocate for next char
-                tmp_str = realloc(tmp_str, sizeof(char)*(ii+2));
-                if (tmp_str == NULL) {if_error(REALLOC_FAILED, func_name);}
-                j++; ii++;
-            }
-        }
-
-        // Reallocate Next Row
-        if (next_row) {
-            main_dblnk_array = realloc(main_dblnk_array, sizeof(node*)*(i+2));
-            if (main_dblnk_array == NULL) {if_error(REALLOC_FAILED, func_name);}
-            i++;
-        }
-        else break;
-    }
-
-    return main_dblnk_array;
+    /* THIS FUNCTION: Checks if a string has quotes */
+    if (s[0] == '"' && s[strlen(s)-1] == '"') return true;
+    else return false;
 }
 
-
-//      -----  2darray_csv_index()  -----
-char *index_2darray_csv(char **main_array, uintmax_t row, uintmax_t column)
+//      __ HAS_COMMA()___
+bool has_comma(char *s)
 {
-    // Function name for use in if_error()
-    const char *func_name = "index_2darray_csv";
+    /* THIS FUNCTION: Checks if a string has 1 or more commas */
+    uintmax_t length = strlen(s);
 
-    /* THIS FUNCTION: Helps you index into a 2D array as if indexes were seperated by comma (i.e. csv) instead of char by char */
-
-    // Get to correct index in row
-    uint64_t j = 0, cursor = 0;
-    while (cursor < column) {
-        while (main_array[row][j] != ',' && main_array[row][j] != '\0') {j++;}
-        if (main_array[row][j] != '\0') {
-            cursor++;
-            j++;
-        }
-        else break;
+    for (uintmax_t i = 0; i < length; i++) {
+        if (s[i] == ',') return true;
     }
 
-    if (main_array[row][j] == '\0') return NULL;
-
-    if (main_array[row][j] == ',') j++;
-
-    // Put index into own string
-    char *cell_str = malloc(sizeof(char));
-    if (cell_str == NULL) {if_error(MALLOC_FAILED, func_name);}
-
-    // Iterate until next cell (i.e ',') is found or end of row (i.e. '\0')
-    uint64_t str_i = 0;
-    while (main_array[row][j] != ',' && main_array[row][j] != '\0') {
-
-        // Add to string char by char
-        cell_str[str_i] = main_array[row][j];
-
-        // Realloc
-        cell_str = realloc(cell_str, sizeof(char)*(str_i+2));
-        if (cell_str == NULL) {if_error(REALLOC_FAILED, func_name);}
-
-        str_i++;
-        j++;
-    }
-    cell_str[str_i] = '\0';
-
-    return cell_str;
+    return false;
 }
+
+//      __ ADD_QUOTES()___
+void add_quotes(char **s)
+{
+    /* THIS FUNCTION: Adds quotes to a dynamically allocated string. */
+
+    // Don't add quotes if unnecessary
+    if (has_quotes(*s)) return;
+
+    // Fucntion name for if_error()
+    char *func_name = "add_quotes";
+
+    // Original string length
+    uint16_t length = strlen(*s);
+
+    // Make copy of string without quotes
+    char s_no_quotes[length+1];
+    strcpy(s_no_quotes, *s);
+
+    if ((*s)[0] != '"' && (*s)[length-1] != '"') {
+
+        // Resize s to be long enough for quotes
+        *s = realloc(*s, sizeof(char)*(strlen(*s)+3));
+        if (*s == NULL) if_error(REALLOC_FAILED, func_name);
+
+        //
+        strcpy(&((*s)[1]), s_no_quotes);
+
+        // Add quotes and nul
+        (*s)[0] = '"';
+        (*s)[length+1] = '"';
+        (*s)[length+2] = '\0';
+
+    }
+
+    return;
+
+}
+
 
 // ---------- GET CSV HEADER ----------
 char **get_csv_header(FILE *file, uintmax_t *column_count)
@@ -562,6 +709,7 @@ char **get_csv_header(FILE *file, uintmax_t *column_count)
 
         // Iterate until end of current index
         uintmax_t i = 0;
+        bool inside_quotes = false;
         while (true) {
 
             // Scan char
@@ -570,8 +718,11 @@ char **get_csv_header(FILE *file, uintmax_t *column_count)
                 break;
             }
 
+            if (!inside_quotes && s[i] == '"') inside_quotes = true;
+            else if (inside_quotes && s[i] == '"') inside_quotes = false;
+
             // Check if at next column or end of header
-            if (s[i] == ',' || s[i] == '\n') {
+            if ((!inside_quotes && s[i] == ',') || s[i] == '\n') {
                 (*column_count)++;
                 if (s[i] == '\n') {end_of_header = true;}
                 break;
@@ -601,6 +752,19 @@ char **get_csv_header(FILE *file, uintmax_t *column_count)
     return header;
 }
 
+//      ___ VERIFY_COLUMN() ___
+bool verify_column(char **header, uintmax_t column_count, char *column)
+{
+    /* THIS FUNCTION: Verifies if a column name is in the header of a csv, mainly for the purpose of tightening code in calling function. */
+
+    for (uint16_t i = 0; i < column_count; i++) {
+        if (strcasecmp(header[i], column) == 0)
+            return true;
+    }
+
+    return false;
+
+}
 
 //      ___ CSV Dict Reader INDEX ___
 char *csv_dictreader_index(FILE *file, uintmax_t row, char *desired_column)
@@ -610,7 +774,10 @@ char *csv_dictreader_index(FILE *file, uintmax_t row, char *desired_column)
 
     /* THIS FUNCTION: 1. Allows you to index directly into a csv file using the column name and without reading the whole file into memory.
                       2. Returns NULL if desired_column is not in header of file
-                      3. This function will treat the 1st non-header row as row 0 (i.e. row 2 in the file = row 0, as it is the first non-header row and will be 0 indexed.) */
+                      3. This function will treat the 1st non-header row as row 0 (i.e. row 2 in the file = row 0, as it is the first non-header row and will be 0 indexed.)
+                      How it works: 1. Finds correct column number that corresponds with column name.
+                                    2. Then calls csv_reader_index() to find field at that index location */
+
 
     // Reset file stream
     fseek(file, 0, SEEK_SET);
@@ -689,11 +856,13 @@ dict_node **csv_dict_reader(FILE *file, uintmax_t *row_count)
         // Iterate until end of row
         while (true) {
 
-            // Allocate 1st char of string (this string will be taken over by double linked list, so do not free)
+            // Allocate 1st char of string (this string will be taken over by linked list node, so do not free)
             char *s = malloc(sizeof(char));
             if (s == NULL) {if_error(MALLOC_FAILED, func_name);}
 
             uintmax_t i = 0;
+            bool inside_quotes = false;
+
             // For Each Column, Iterate until next column found
             while (true) {
 
@@ -703,8 +872,16 @@ dict_node **csv_dict_reader(FILE *file, uintmax_t *row_count)
                     break;
                 }
 
+                // Check for quotes
+                if (!inside_quotes && s[i] == '"') {
+                    inside_quotes = true;
+                }
+                else if (inside_quotes && s[i] == '"') {
+                    inside_quotes = false;
+                }
+
                 // Check if found next column or end of row
-                if (s[i] == ',') {
+                if (!inside_quotes && s[i] == ',') {
                     break;
                 }
                 else if (s[i] == '\n') {
@@ -783,16 +960,19 @@ char *index_into_dict(dict_node **main_array, uintmax_t row_count, uintmax_t row
     return cell;
 }
 
-char *update_dict_and_csv(dict_node **main_array, uintmax_t row_count, uintmax_t row, char *desired_column, char *new_cell)
+bool update_dict_index(dict_node **main_array, uintmax_t row_count, uintmax_t row, char *desired_column, char *new_cell)
 {
     /* THIS FUNCTION: Allows you to update specific index in array of dicts and csv index */
-        // Will return NULL if no column matches desired_column or if row is out of range.
+        // Will return false if no column matches desired_column or if row is out of range.
 
     if (row > row_count-1) return NULL;
 
-    char *cell = NULL;
+    // Add quotes if new_cell has comma(s)
+    if (has_comma(new_cell) && !has_quotes(new_cell)) {
+        add_quotes(&new_cell);
+    }
 
-    // Traverse Doubly linked list to find correct column
+    // Traverse Doubly linked dict list to find correct column
     dict_node *tmp = main_array[row];
     while (tmp != NULL)
     {
@@ -800,12 +980,12 @@ char *update_dict_and_csv(dict_node **main_array, uintmax_t row_count, uintmax_t
         {
             free_null(&tmp->s);
             tmp->s = new_cell;
-            break;
+            return true;
         }
         tmp = tmp->next;
     }
 
-    return cell;
+    return false;
 }
 
 
@@ -910,6 +1090,23 @@ bool is_ext(char *filename, char *ext)
 }
 
 
+// ___ PRINT_HEADER() ___
+void print_header(char **header, uintmax_t *column_count, bool with_spaces)
+{
+    /* THIS FUNCTION: Makes printing the header of the csv easier and tightens up the code of the calling function. */
+
+    for (uintmax_t i = 0; i < *column_count; i++) {
+
+        // Print with comma if not the last column
+        if (i < (*column_count)-1) {
+            printf("%s,", header[i]);
+            if (with_spaces) printf(" ");
+        }
+        else printf("%s\n", header[i]);
+    }
+    return;
+}
+
 
 // ___ PRINT LIST ___
 void print_list(node *head)
@@ -919,10 +1116,13 @@ void print_list(node *head)
     node *tmp = head;
     printf("[");
     while (tmp != NULL) {
-        if (tmp->next == NULL) {
-            printf("'%s'", tmp->s);
-        }
-        else printf("'%s', ", tmp->s);
+
+        // Dont print single quotes if field has double quotes
+        if (!has_quotes(tmp->s)) printf("'%s'", tmp->s);
+        else printf("%s", tmp->s);
+
+        // Print comma & space after field if not end of row
+        if (tmp->next != NULL) printf(", ");
 
         tmp = tmp->next;
     }
@@ -1033,12 +1233,12 @@ void if_error(uint8_t error_code, const char *function_name)
 
     // Decalre array of string of function names, inside of which above functions might fail (for now, simply a list of all functions in this library)
     const char *LIST_OF_CSV_FUNCTIONS[NUM_OF_FUNCTIONS] = {"build_dblink_list", "build_dict_link_list", "read_file_v1", "string_into_2d_array", "update_csv_index",
-                                            "read_file_v2", "csv_reader_index", "index_2darray_csv", "split_2darray_by", "get_csv_header", "csv_dictreader_index",
+                                            "read_file_v2", "csv_reader_index", "add_quotes", "index_2darray_csv", "split_2darray_by", "get_csv_header", "csv_dictreader_index",
                                             "csv_dict_reader", "index_into_dict", "update_dict_and_csv", "inf_buffer", "get_uint", "is_ext", "print_list",
                                             "print_dict_list", "free_list", "free_dict_list", "free_null", "fclose_null", "if_error"};
 
     // Find corresponding number for function that failed
-    uint8_t libcsv_function_code;
+    uint8_t libcsv_function_code = 0;
     for (uint8_t i = 0; i < NUM_OF_FUNCTIONS; i++) {
         if (strcasecmp(LIST_OF_CSV_FUNCTIONS[i], function_name) == 0) {
             libcsv_function_code = i;
