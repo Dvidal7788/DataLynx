@@ -645,7 +645,7 @@ void add_quotes(char **s)
     // Don't add quotes if unnecessary
     if (has_quotes(*s)) return;
 
-    // Fucntion name for if_error()
+    // Function name for if_error()
     char *func_name = "add_quotes";
 
     // Original string length
@@ -792,9 +792,17 @@ char *csv_dictreader_index(FILE *file, uintmax_t row, char *desired_column)
     // Iterate through CSV HEADER to find correct column
     while (true) {
 
-        // Iterate until end of current column (i.e. until ',', '\n' or EOF)
+        // Iterate until end of current column (i.e. until ',' (if not inside quotes), '\n' or EOF)
         i = 0;
-        while ((cursor[i] = fgetc(file)) != ',' && cursor[i] != '\n' && cursor[i] != EOF) {
+        bool inside_quotes = false;
+        while ((cursor[i] = fgetc(file)) != '\n' && cursor[i] != EOF) {
+
+            // Check for double quotes
+            if (!inside_quotes && cursor[i] == '"') inside_quotes = true;
+            else if (inside_quotes && cursor[i] == '"') inside_quotes = false;
+
+            // Break if necessary
+            if (!inside_quotes && cursor[i] == ',') break;
 
             // Reallocate
             cursor = realloc(cursor, sizeof(char)*(i+2));
@@ -805,8 +813,28 @@ char *csv_dictreader_index(FILE *file, uintmax_t row, char *desired_column)
 
         cursor[i] = '\0';
 
+
         // Compare strings
-        if (strcmp(cursor, desired_column) == 0) break;
+        if (!has_quotes(cursor) && strcmp(cursor, desired_column) == 0) break;
+        else if (has_quotes(cursor)) {
+            // Create temp string to compare strings without quotes
+
+            // Length of new string 2 less than original
+            uint16_t new_length = strlen(cursor)-2;
+
+            char s_sans_quotes[new_length+1];
+
+            // Copy, excluding first double quote
+            strcpy(s_sans_quotes, &cursor[1]);
+            
+            // Copy last quote
+            s_sans_quotes[new_length-1] = cursor[strlen(cursor)-2];
+
+            // Change last char to nul
+            s_sans_quotes[new_length] = '\0';
+
+            if (strcmp(s_sans_quotes, desired_column) == 0) break;
+        }
         else if (end_of_header) {found_column = false; break;}
 
         correct_column++;
