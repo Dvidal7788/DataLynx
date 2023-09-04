@@ -1,10 +1,11 @@
-PROGRAM = csv_reader
+PROGRAM = csvWizard
 CC = gcc
 BIN = bin
+DIST = lib$(PROGRAM)_$(DATE)
 
 SRC = src
 OBJ = obj
-INCDIRS = . ./include
+INCDIRS = ./include
 
 CFILES = $(wildcard $(SRC)/*.c)
 OBJS = $(patsubst $(SRC)/%.c,$(OBJ)/%.o, $(CFILES))
@@ -27,13 +28,18 @@ $(BIN):$(OBJS)
 
 dist:
 	rm -f *.tgz *.tar.gz
-	tar -czvf $(PROGRAM)_$(DATE).tgz *
-	@echo $(PROGRAM)_$(DATE).tgz created $(TIME)
+	tar -czvf $(DIST).tgz *
+	@echo $(DIST).tgz created $(TIME)
 
 staticlib: $(OBJ)/libcsv_reader.o
 	rm -f include/*.a
 	ar rcs ./include/lib$(PROGRAM)_static.a $<
 	@echo ./include/lib$(PROGRAM)_static.a created successfully $(TIME)
+
+
+.PHONY: run
+run:
+	./$(BIN)
 
 .PHONY: clean
 clean:

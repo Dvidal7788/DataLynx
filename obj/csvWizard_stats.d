@@ -1,5 +1,5 @@
-obj/libcsv_reader.o: src/libcsv_reader.c /usr/include/stdc-predef.h \
- include/csv_reader.h /usr/include/stdio.h \
+obj/csvWizard_stats.o: src/csvWizard_stats.c /usr/include/stdc-predef.h \
+ include/csvWizard_stats.h include/csvWizard_data.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
@@ -65,7 +65,8 @@ obj/libcsv_reader.o: src/libcsv_reader.c /usr/include/stdc-predef.h \
  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
  /usr/include/x86_64-linux-gnu/bits/mathcalls.h
 /usr/include/stdc-predef.h:
-include/csv_reader.h:
+include/csvWizard_stats.h:
+include/csvWizard_data.h:
 /usr/include/stdio.h:
 /usr/include/x86_64-linux-gnu/bits/libc-header-start.h:
 /usr/include/features.h:

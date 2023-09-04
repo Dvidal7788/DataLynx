@@ -1,5 +1,5 @@
-obj/libcsv_reader.o: src/libcsv_reader.c /usr/include/stdc-predef.h \
- include/csv_reader.h /usr/include/stdio.h \
+obj/libcsv.o: src/libcsv.c /usr/include/stdc-predef.h include/libcsv.h \
+ /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
@@ -63,9 +63,10 @@ obj/libcsv_reader.o: src/libcsv_reader.c /usr/include/stdc-predef.h \
  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
- /usr/include/x86_64-linux-gnu/bits/mathcalls.h
+ /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+ include/csvWizard_file_io.h
 /usr/include/stdc-predef.h:
-include/csv_reader.h:
+include/libcsv.h:
 /usr/include/stdio.h:
 /usr/include/x86_64-linux-gnu/bits/libc-header-start.h:
 /usr/include/features.h:
@@ -140,3 +141,4 @@ include/csv_reader.h:
 /usr/include/x86_64-linux-gnu/bits/fp-fast.h:
 /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h:
 /usr/include/x86_64-linux-gnu/bits/mathcalls.h:
+include/csvWizard_file_io.h:

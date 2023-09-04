@@ -1,416 +1,210 @@
-#include <csv_reader.h>
+#include <csvWizard.h>
+
 
 // EXAMPLE CODE FOR CSV LIBRARY
 int main(void)
 {
-    // ----- GET FILE NAME & OPEN FILE (Read Mode) ------
-    // Setup section will be the same for all example code versions
+    // ----- Set Up ------
 
-    // Declare filename and file pointers
-    char *filename = NULL;
-    FILE *file = NULL;
+    // Create main 'object'
+    csvWizard myData = csvWizardConstructor();
 
     // User input filename until a valid file is given
     while (true) {
 
         // Ask user for filename
-        filename = inf_buffer("Enter file path to open: ");
+        // myData.userInputFilename(&myData, "Enter filename: ");
 
         // Quit if user chooses to do so
-        if (strcasecmp(filename, "quit") == 0) {printf("\nGOODBYE!\n\n"); free_null(&filename); return 1;}
+        // if (strcasecmp(myData.filename, "quit") == 0) {printf("\n\tGOODBYE!\n\n"); free_null(&myData.filename); return 1;}
 
-        // Check if csv
-        if (!is_ext(filename, ".csv")) {
-            printf("\n'%s' is not a .csv file. Try again.\n", filename);
-            free(filename);
-            continue;
-        }
+        // Open
+        if (myData.csv.openFile(&myData, "csv/staff.csv")) break;
 
-        // Attempt to Open File (Read mode)
-        file = fopen(filename, "r");
-        if (file == NULL) {printf("error: file could not open. Check if file exists. Try again.\n"); free(filename);}
-        else break;
     }
     // End of set up section
 
+    // CSV Readers:
+    // csv.headerReader(&myData);          /* header  */
+    // fileReader(&myData);                /* Raw     */
+    // fileRowReader(&myData);             /* Rows    */
+    // myData.csv.reader_v3(&myData);      /* Grid_v3 */
+    myData.csv.reader(&myData);         /* Grid    */
+    // myData.csv.dictReader(&myData);        /* Dict    */
 
+    // Print
+    // myData.printData(&myData);
+    // myData.printStats(&myData, "all");
 
-    // // EXAMPLE CODE V1 ----- ONE LONG STRING ----- (.txt or .csv)
 
-    // // Get header 1st, so I can keep file contents separate
-    // uint64_t column_count;
-    // char **header = get_csv_header(file, &column_count);
 
-    // // Read file into string
-    // char *s = read_file_v1(file, true);
+    //      ---- REPLACE ----
+    // printf("\nREPLACE:\n");
 
-    // // PRINT
-    // printf("FILE CONTENTS:\n");
+    // myData.replace(&myData, "4511", "9999");
+    // myData.replaceInColumn(&myData, "Name", "?", "TEST");
 
-    // // Print header
-    // print_header(header, &column_count, false);
 
-    // // Print file contents
-    // printf("%s\n", s);
+    // Print
+    // myData.printData(&myData);
 
-    // // Convert string into 2D Array of strings (One row per string)
-    // uintmax_t row_count;
-    // char **main_array = string_into_2d_array(s, &row_count);
+    // print one column
+    // myData.printColumn(&myData, "Name");
 
-    // /* From here I can use split__2d_array_by() to split 2D array by ',' into array of doubly linked lists, but for the sake of less redundancy, will do that in next section. */
+    // Print One column's stats
+    // myData.printStats(&myData, "Name");
 
-    // // Print header
-    // print_header(header, &column_count, true);
+    // // Print one specific stat
+    // printf("Sum: %.2f\n\n", myData.getStat(&myData, "Ext", "sum"));
+    // printf("Sum: %.2f\n\n", myData.sum(&myData, "Ext"));
 
-    // // Print 2D Array
-    // for (uintmax_t i = 0; i < row_count; i++) {
-    //     printf("%s\n", main_array[i]);
-    // }
+    // // Sort by numberic column
+    // // myData.sortRowsByColumn(&myData, "Salary, Data & Entries", "desc");
 
-    // //      --- FREE ---
+    // // Sort by non-numeric column
+    // myData.sortRowsByColumn(&myData, "Salary, Data & Entries", "ASC");
 
-    // // Free header
-    // for (uint16_t i = 0; i < column_count; i++) free_null(&header[i]);
-    // free(header);
-    // header = NULL;
+    // myData.printData(&myData);
 
-    //  // Free 2D array
-    // for (uintmax_t i = 0; i < row_count; i++) {free_null(&main_array[i]);}
 
-    // free(main_array);
-    // main_array = NULL;
 
-    // fclose_null(&file);
-    // free_null(&s);
-    // free_null(&filename);
+    // Other:
+    // myData.formatHeader(&myData);
+    // myData.changeColumnName(&myData, "Department", "Departmentooo");
 
+    // myData.printData(&myData);
 
-    // // EXAMPLE CODE V2 ----- Dynamically Allocated 2D ARRAY (.txt or .csv) -----
-    // uintmax_t row_count, column_count;
-    // char **header = get_csv_header(file, &column_count);
-    // char **main_array = read_file_v2(file, &row_count, true);
 
-    // // PRINT
-    // printf("FILE CONTENTS:\n");
+    // Get Field (from memory)
 
-    // // Print header
-    // for (uint16_t i = 0; i < column_count; i++) {
-    //     if (i < column_count - 1) printf("%s, ", header[i]);
-    //     else printf("%s\n", header[i]);
-    // }
+    // printf("Get field: %s\n", myData.getField2(&myData, 2, "Departmentooo"));
 
-    // // Print file contents
-    // for (uint64_t i = 0; i < row_count; i++) printf("%s\n", main_array[i]);
+    //          --- Filter --- - How to return row so caller does not have to free it?
+    myData.printColumnCond(&myData, "emp_id", "<", "0");
 
-    // // Print Row
-    // uintmax_t row, column;
-    // while (true) {
+    // Update Field (in memory)
 
-    //     // Ask User which row
-    //     printf("-- PRINT WHOLE ROW --\n");
-    //     row = get_uint("\nSELECT ROW: ");
+    // Get Field (from CSV)
+    // printf("Get field from CSV: %s\n", myData.csv.fieldReader2(&myData, 2, "Department"));
 
-    //     if (row <= row_count-1) {
-    //         break;
-    //     }
-    //     else printf("Row out of range. List is %lu rows long (i.e 0 - %lu).Try again.\n", row_count, row_count-1);
-    // }
-    // printf("%s\n\n", main_array[row]);
+    // Update Field (in CSV)
+    // myData.csv_write_permission = true;
+    // if (myData.csv.fieldWriter(&myData, 0, "Name", "Dave Vidal")) printf("Success writing to csv\n");
+    // else printf("Failure writing to csv\n");
+    // myData.csv_write_permission = false;
 
-    // // -- Index into 2D Array like a csv ---
-    // char *cell = NULL;
-    // while (cell == NULL) {
 
-    //     printf("-- INDEX INTO ARRAY --\n");
-    //     row = get_uint("Row: ");
+    // // Backup CSV
+    // myData.csv.backup(&myData);
+    // myData.csv.writeData(&myData, "testfile.csv");
 
-    //     if (row > row_count-1) {
-    //         printf("Row out of range. List is %lu rows long (i.e 0 - %lu).\n", row_count, row_count-1);
-    //         continue;
-    //     }
+    // printf("Get Field: %s, %s\n", getField(&myData, 0, 3), getField(&myData, 0, 4));
+    // printf("\n\tUPDATE\n");
+    // updateField(&myData, 6, "Emp_ID", "100");
+    // printHead(&myData, 5);
+    // printTail(&myData, 5);
+    // printData(&myData);
+    // myData.printStats(&myData);
 
-    //     column = get_uint("Column: ");
+    // printf("%s %s\n", myData.csv.fieldReader(&myData, 0, 1), myData.csv.fieldReader(&myData, 0, 90));
+    // printf("%s %s\n", myData.csv.fieldReader(&myData, 1, 1), myData.csv.fieldReader(&myData, 1, 2));
+    // sort_value_counts(&myData);
+    // printStats(&myData, "all");
 
-    //     cell = index_2darray_csv(main_array, row, column);
 
-    //     if (cell == NULL) printf("Index[%lu][%lu] out of range. Try again.\n", row, column);
-    // }
 
-    // // Print individual requested field (do not print single quotes around field if field has quotes)
-    // if (!has_quotes(cell)) printf("Index[%lu][%lu]: '%s'\n\n", row, column, cell);
-    // else printf("Index[%lu][%lu]: %s\n\n", row, column, cell);
+    //      --- INSERT ROW --- /* VALGRIND ERRORS!! */
+    /* When inserting, must at very least set columnCount (whether insertRow ro insertRow2) */
 
+    // Create your own header
+    // can either set header or columnCount if do not want to set header
+    // const char *head[] = {"Name", "", "Phone Number"};
+    // createHeader(&myData, head, 3);
+    // myData.printHeader(&myData);
 
-    // // --- SPLIT 2D array by comma into array of doubly linked lists --
-    // printf("-- 2D ARRAY SPLIT BY ',' (into array of doubly linked lists --\n");
-    // node **main_dblink_array = split_2darray_by(main_array, row_count, ',');
 
-    // // Print array of db link list
-    // for (uintmax_t i = 0; i < row_count; i++) {
-    //     print_list(main_dblink_array[i]);
-    // }
+    // char *values[] = {"value1", "value2", "value3"};
+    // Auto-create generic header
+    // myData.columnCount = 3;
+    // myData.createHeader(&myData, NULL, 3); /* Same as setting columnCount. Will create generic header */
 
+    // Create header
+    // char *header[] = {"ID", "Name", "Status"};
+    // myData.createHeader(&myData, header, 3);
 
-    // //      -- FREE --
-    // // Free header
-    // for (uint16_t i = 0; i < column_count; i++) free_null(&header[i]);
+    // myData.insertRow(&myData, values);
 
-    // free(header); /* cannot use free_null() to free node** or char**, bc would need node*** and char***, which does not exist */
-    // header = NULL;
+    //      - Insert Row 2 -
+    // dict values[] = {{"Name", "David"}, {"Address", "123 Main"}, {"Phone Number", "215-555"}};
+    // myData.columnCount = 3;
+    // if (!myData.insertRow2(&myData, values)) return 1;
+    // myData.insertRow2(&myData, values);
 
-    // // Free array of db link lists
-    // for (uintmax_t i = 0; i < row_count; i++) free_list(main_dblink_array[i]);
+    // dict values2[] = {{"Name", "Anna"}, {"Address", "123 Main Apt 2"}, {"Phone Number", "215-777"}};
 
-    // free(main_dblink_array); /* cannot use free_null() to free node** or char**, bc would need node*** and char***, which does not exist */
-    // main_dblink_array = NULL;
+    // if (!insertRow2(&myData, values)) return 1;
+    // myData.insertRow2(&myData, values2);
 
-    // // Free 2D array
-    // for (uintmax_t i = 0; i < row_count; i++) free_null(&main_array[i]);
 
-    // free(main_array);
-    // main_array = NULL;
+    //  Insert into existing data
+    // char *values[] = {"8888", "Mr. Pebbles", "Administration", "333", "80000"};
+    // insertRow(&myData, values);
 
-    // fclose_null(&file);
-    // free_null(&cell);
-    // free_null(&filename);
 
-
-    // // ----- EXAMPLE CODE V3 - CSV READER INDEX -----
-    //     // Index directly into csv without reading whole file into memory
+    // Does not have to be in correct order
+    // dict values[] = {{"Name", "Mr. Pebbles"}, {"DEPARTmeNT", "\"Administration, and TONS\""}, {"Ext", "333"}, {"Salary, dATA & ENtRies", "80000"}, {"emp_id", "8888"}};
+    // insertRow2(&myData, values);
 
-    // // Loop until correct index is given
-    // char *cell = NULL;
-    // uintmax_t row, column;
-    // while (cell == NULL) {
+    // printf("Field: %s\n", myData.getField(&myData, 3, 0));
 
-    //     // User input row/column
-    //     row = get_uint("Enter row: ");
-    //     column = get_uint("Enter column: ");
+    // myData.printData(&myData);
 
-    //     // Index into csv at correct row/column
-    //     cell = csv_reader_index(file, row, column, true);
+    //      --- Backup Data / Write New Data ---
+    // myData.csv.writeData(&myData, "test_filetest.csv");
 
-    //     // Print
-    //     if (cell == NULL) printf("Index[%lu][%lu]: does not exist in '%s'. Try again.\n", row, column, filename);
-    //     else printf("Index[%lu][%lu]: %s\n", row, column, cell);
-    // }
+    // myData.printStats(&myData, "all");
 
-    // // ----- UPDATE INDEX -----
-    // char *yes_or_no = NULL;
-    // while (true) {
-    //     // User decides if they want to update cell or not
-    //     yes_or_no = inf_buffer("Would you like to update this index? (yes or no): ");
 
-    //     if (strcasecmp(yes_or_no, "no") == 0) {
-    //         break;
-    //     }
-    //     else if (strcasecmp(yes_or_no, "yes") == 0) {
 
-    //         // Close file before passing filename to update_csv_index(). This is not technically neccessary, but best practice.
-    //         fclose_null(&file);
+    //                            ------ DATA CLEANUP ------
 
-    //         // User input new cell
-    //         printf("UPDATE INDEX[%lu][%lu]: ", row, column);
-    //         char *new_cell = inf_buffer("");
+    //      --- Sort Rows ---
+    // myData.case_sensitive_sort = true;
+    // myData.in_place_sort = false;
+    // myData.sortRowsByColumn(&myData, "Name", "asc");
 
-    //         update_csv_index(filename, row, column, new_cell);
-    //         free_null(&new_cell);
-    //         break;
-    //     }
-    //     else {
-    //         // Free yes_or_no before looping back around
-    //         free_null(&yes_or_no);
-    //         printf("\nPlease type 'yes' or 'no' only.\n");
-    //     }
-    // }
+    // TODO: myData.printSortedColumn()
+    // myData.printData(&myData);
 
-    // // Free
-    // if (strcasecmp(yes_or_no, "no") == 0) fclose_null(&file);
-    // free_null(&filename);
-    // free_null(&cell);
-    // free_null(&yes_or_no);
+    //      --- Drop Column ---
+    // myData.dropColumn(&myData, "Name");
 
+    //      --- Format Header ---
+    // myData.formatHeader(&myData);
 
-    // EXAMPLE CODE V4 - CSV DICT READER INDEX -
-        // Index directly into csv like a dict (without reading whole file into memory)
-        // Row is integer, Column is STRING (i.e. index into csv like a dict)
 
-    // Index directly into correct location in csv using row and column name/title
-    uintmax_t row;
-    char *column = NULL, *cell = NULL;
+    //      --- Drop Row --- /* MAKE WORK FOR ALL DATA STRUCTURES. LINK TO FILTER */
+    // myData.dropRow(&myData, 9);
+    /*                           DOES UPDATE STATS WORK??
+                                        - is/not NULL NOT WORKING. DONE
+                                        - min not updating when min changed DONE
+                                        - value counts not updating  DONE */
+    // myData.dropRow(&myData, 5);
 
-    while (true) {
+    // //      --- Strip ---
+    // // stripField(&myData, "Name");
+    // myData.stripAll(&myData);
 
-        // User input row and name/title of column to index into
-        row = get_uint("Enter Row: ");
-        column = inf_buffer("Enter Column Title: ");
 
-        cell = csv_dictreader_index(file, row, column);
+    myData.printData(&myData);
+    printStats(&myData, "all");
 
-        if (cell != NULL) break;
-        else {
+    // printf("Anna in Name: %d\n", myData.isInColumn(&myData, "Anna", "Name"));
+    // printf("Anna in Name: %d\n", myData.valueCount(&myData, "Anna", "Name"));
 
-            // Error message
-            printf("\nIndex[%lu]['%s'] does not exist in '%s'. Try again.\n", row, column, filename);
 
-            // Get correct column names
-            uintmax_t column_count;
-            char **header = get_csv_header(file, &column_count);
-
-            if (verify_column(header, column_count, column)) {
-                printf("Row is out of range.\n\n");
-            }
-            else {
-                // Display correct column names - (print/free strings in header)
-                printf("\n** Incorrect column name ** THE CORRECT COLUMN NAMES ARE:\n");
-                for (uint16_t i = 0; i < column_count; i++) {
-                    if (i < column_count-1) {printf("%s,", header[i]); free_null(&header[i]);}
-                    else {printf("%s\n\n", header[i]); free_null(&header[i]);}
-                }
-                free(header);
-                header = NULL;
-            }
-        }
-
-        // Free current column string before looping back around and trying again
-        free(column);
-    }
-
-    printf("\nIndex[%lu]['%s']: %s\n", row, column, cell);
-
-
-    // Free
-    fclose_null(&file);
-    free_null(&filename);
-    free_null(&column);
-    free_null(&cell);
-
-
-    // // --- EXAMPLE CODE V5 - FINAL - CSV DICT READER ----
-
-    // // Read csv into array of linked lists (i.e. dict behavior)
-    // uintmax_t row_count = 0;
-    // dict_node **main_array = csv_dict_reader(file, &row_count);
-    // if (main_array == NULL) {printf("Check if '%s' is blank.\n", filename);}
-
-    // // Set up row variable/ strings
-    // uintmax_t row;
-    // char *desired_column = NULL, *cell = NULL;
-
-    // // INDEX INTO ARRAY OF DICTS
-    // if (main_array != NULL)
-    // {
-    //     // Print Whole List
-    //     print_dict_list(main_array, row_count);
-
-    //     // Loop until valid row/column is given
-    //     while (cell == NULL) {
-
-    //         // User Input Row/Column
-    //         while ((row = get_uint("Enter Row: ")) > row_count-1) if (row > row_count-1) printf("\nError: Row %lu out of range. Try again.\n\n", row);
-    //         desired_column = inf_buffer("Enter Column Title: ");
-
-    //         // Attempt to index into array of dicts at given index
-    //         cell = index_into_dict(main_array, row_count, row, desired_column);
-
-    //         if (cell != NULL) break;
-    //         else  {
-
-    //             // Error message - invalid column name
-    //             printf("\n*Error: Index[%lu]['%s'] does not exist. Try again.\n\n", row, desired_column);
-
-    //             // Display correct column names
-    //             uintmax_t column_count;
-    //             char **header = get_csv_header(file, &column_count);
-
-    //             printf("*THE CORRECT COLUMN NAMES ARE:\n");
-    //             for (uintmax_t i = 0; i < column_count; i++) {
-    //                 if (i < column_count-1) printf("%s,", header[i]);
-    //                 else printf("%s\n\n", header[i]);
-    //             }
-
-    //             // Free before looping back around
-    //             for (uintmax_t i = 0; i < column_count; i++) free_null(&header[i]);
-    //             free(header); header = NULL;
-    //             free_null(&cell);
-    //             free_null(&desired_column);
-    //         }
-
-    //     }
-
-    //     // Print
-    //     printf("Index:[%lu]['%s']: %s\n", row, desired_column, cell);
-    // }
-
-    // // ----- UPDATE INDEX in DICT AND CSV -----
-    // char *yes_or_no = NULL, *new_cell = NULL;
-    // while (true) {
-
-    //     // User decides if they want to update cell or not
-    //     yes_or_no = inf_buffer("Would you like to update this index? (yes or no): ");
-
-    //     if (strcasecmp(yes_or_no, "no") == 0) {
-    //         break;
-    //     }
-    //     else if (strcasecmp(yes_or_no, "yes") == 0) {
-
-    //         // User input new cell
-    //         printf("UPDATE INDEX[%lu]['%s']: ", row, desired_column);
-    //         new_cell = inf_buffer("");
-
-    //         // Update dict
-    //         update_dict_index(main_array, row_count, row, desired_column, new_cell);
-
-    //         // REWRITE TO FILE
-    //         // Get header 2D array while still in read mode
-    //         uintmax_t column_count = 0;
-    //         char **header = get_csv_header(file, &column_count);
-
-    //         fclose(file);
-    //         file = fopen(filename, "w");
-    //         if (file == NULL) {printf("Error: fopen failed."); return 4;}
-
-    //         // Rewrite header to file & free header
-    //         for (uintmax_t i = 0; i < column_count; i++) {
-    //             if (i < column_count-1) fprintf(file, "%s,", header[i]);
-    //             else fprintf(file, "%s\n", header[i]);
-
-    //             free_null(&header[i]);
-    //         }
-    //         // Can not use free_null() on char ** (would need char ***)
-    //         free(header);
-    //         header = NULL;
-
-
-    //         // Each row
-    //         for (uintmax_t i = 0; i < row_count; i++) {
-
-    //             // Traverse linked list (columns)
-    //             dict_node *tmp = main_array[i];
-    //             while (tmp != NULL) {
-    //                 if (tmp->next != NULL) fprintf(file, "%s,", tmp->s);
-    //                 else fprintf(file, "%s\n", tmp->s);
-    //                 tmp = tmp->next;
-    //             }
-    //         }
-    //         break;
-    //     }
-    //     else {
-    //         // Free yes_or_no before looping back around
-    //         free_null(&yes_or_no);
-    //         printf("\nPlease type 'yes' or 'no' only.\n");
-    //     }
-    // }
-
-    // // Free
-    // free_dict_list(main_array, row_count);
-    // free(main_array);
-    // fclose_null(&file);
-    // free_null(&filename);
-    // free_null(&cell);
-    // free_null(&desired_column);
-    // free_null(&yes_or_no);
-
+    //      --- End ---
+    myData.freeAll(&myData);
 
     return EXIT_SUCCESS;
 }
