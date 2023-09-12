@@ -64,7 +64,8 @@ obj/main.o: src/main.c /usr/include/stdc-predef.h include/csvWizard.h \
  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
- include/csvWizard_file_io.h include/csvWizard_stats.h
+ include/csvWizard_file_io.h include/csvWizard_stats.h \
+ include/csvWizard_util.h
 /usr/include/stdc-predef.h:
 include/csvWizard.h:
 include/csvWizard_data.h:
@@ -144,3 +145,4 @@ include/csvWizard_data.h:
 /usr/include/x86_64-linux-gnu/bits/mathcalls.h:
 include/csvWizard_file_io.h:
 include/csvWizard_stats.h:
+include/csvWizard_util.h:

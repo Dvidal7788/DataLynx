@@ -1,5 +1,7 @@
 #include <csvWizard_stats.h>
 #include <csvWizard_data.h>
+#include <csvWizard_util.h>
+#include <math.h>
 
 
 //                          ------- STATS -------
@@ -26,6 +28,7 @@ bool create_stats(csvWizard *self) {
         tmp->column_name = self->header[c];
         tmp->min = tmp->max = tmp->lower_qrt = tmp->upper_qrt = tmp->median = tmp->sum = tmp->mean = tmp->std = tmp->is_null = tmp->not_null = 0;
         tmp->is_number = false;
+        tmp->longest_field_strlen = 0;
         tmp->value_counts = NULL;
         create_value_counts(self, c);
     }
@@ -108,6 +111,11 @@ bool find_median(csvWizard *self) {
         if (!self->aggregate[column].is_number) continue;
 
         sortRowsByColumn(self, self->header[column], "asc");
+
+        if (self->rowCount == 1) {
+            self->aggregate[column].lower_qrt = self->aggregate[column].median = self->aggregate[column].upper_qrt = atof(self->tmp_column[0]);
+            continue;
+        }
 
         // TO DO: Copy only non-null rows
 
@@ -449,7 +457,6 @@ void calc_std(csvWizard *self) {
 
         for (uint32_t row = 0; row < self->rowCount; row++) {
 
-
             double difference = 0;
 
             if (self->grid_v3 != NULL && self->grid_v3[row][column][0] != '\0') difference = atof(self->grid_v3[row][column]) - self->aggregate[column].mean;
@@ -475,25 +482,14 @@ void calc_std(csvWizard *self) {
         }
 
         double variance = sum_squared_differences / self->aggregate[column].not_null;
-        self->aggregate[column].std = calc_sqrt(variance);
+        self->aggregate[column].std = sqrt(variance);
 
     }
 
-
+    return;
 }
 
-double calc_sqrt(double num) {
-    double x = num;
-    double y = 1.0;
-    double epsilon = 0.0000001;  // Desired precision
 
-    while (x - y > epsilon) {
-        x = (x + y) / 2;
-        y = num / x;
-    }
-
-    return x;
-}
 
 
 // bool calc_median(csvWizard *self) {
@@ -772,7 +768,10 @@ bool update_stats(csvWizard *self, uintmax_t column, char *old_field, char *new_
 void update_stats_new_row(csvWizard *self, char *values[]) {
 
     for (uint32_t column = 0; column < self->columnCount; column++) {
-        
+
+        size_t field_strlen = strlen(values[column]);
+        if (self->aggregate[column].longest_field_strlen < field_strlen) self->aggregate[column].longest_field_strlen = field_strlen;
+
         if (is_number(values[column])) self->aggregate[column].is_number = true;
         else self->aggregate[column].is_number = false;
 
@@ -1008,6 +1007,8 @@ bool increment_decrement_value_count(csvWizard *self, char *column_name, char *v
     if (self == NULL) return false;
     if (column_name == NULL) return false;
     if (value == NULL)  return false;
+    else if (value[0] == '\0') return false;
+
 
     intmax_t column_index = findColumnIndex(self, column_name);
     if (column_index < 0) return false;

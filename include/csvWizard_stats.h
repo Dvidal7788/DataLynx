@@ -20,7 +20,6 @@ double find_new_min(csvWizard *self, uintmax_t column, double old_field_float, d
 double find_new_max(csvWizard *self, uintmax_t column, double old_field_float, double new_field_float);
 bool update_stats(csvWizard *self, uintmax_t column, char *old_field, char *new_field);
 void calc_std(csvWizard *self);
-double calc_sqrt(double x);
 bool find_median(csvWizard *self);
 
 double aggregate_raw(csvWizard *self, char *column_name, char *operation);

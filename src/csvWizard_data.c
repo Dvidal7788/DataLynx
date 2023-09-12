@@ -1,7 +1,4 @@
-#include <csvWizard_data.h>
-#include <csvWizard_file_io.h>
-#include <csvWizard_stats.h>
-
+#include <csvWizard.h>
 
 csvWizard csvWizardConstructor(void) {
 
@@ -17,10 +14,10 @@ csvWizard csvWizardConstructor(void) {
     self.printRowIndex = true;
     self.maxPrintRows = 25;
     self.print_truncated_rows = false;
-    self.longest_field_strlen = 0;
     self.in_place_sort = true;
     self.row_to_drop = -1;
     self.generic_header = false;
+    self.print_filter = false;
 
     self.destructive_mode = false;
     self.find_rows_at_file_read = true;
@@ -54,6 +51,7 @@ csvWizard csvWizardConstructor(void) {
 
     //  --- Assign function pointers ---
     self.userInputFilename = &userInputFilename;
+    self.changeFilename = &changeFilename;
 
     // Read/Write to CSV Functions
     self.csv.openFile = &openFile;
@@ -114,6 +112,7 @@ csvWizard csvWizardConstructor(void) {
     self.printHeader = &printHeader;
     self.printColumn = &printColumn;
     self.printData = &printData;
+    self.printDataTable = &printDataTable;
     self.printStats = &printStats;
     self.printShape = &printShape;
     self.changeMissingValue = &changeMissingValue;
@@ -234,6 +233,9 @@ bool insertRow2(csvWizard *self, dict values[]) {
     if (self == NULL || values == NULL) return false;
     if (self->columnCount == 0) return false;
 
+    // Check if columns are in correct order. Rearraange if not.
+    if (!rearrange_dict_array(self, values)) return false;
+
     const char *func_name = "insertRow2";
 
     // Create header (Library user must set columnCount)
@@ -265,6 +267,7 @@ bool insertRow2(csvWizard *self, dict values[]) {
         self->rowCount++;
         create_stats(self);
     }
+    // Realloc main array for 1 more row pointer
     else if (self->grid_v3 != NULL) {
 
         self->grid_v3 = (char***)realloc(self->grid_v3, sizeof(char**) * (++self->rowCount));
@@ -282,31 +285,24 @@ bool insertRow2(csvWizard *self, dict values[]) {
     }
 
 
-    // Allocate for new row
+    // Allocate / setup new row
     if (self->grid_v3 != NULL) {
         self->grid_v3[self->rowCount-1] = (char**)malloc(sizeof(char*) * self->columnCount);
         if (self->grid_v3 == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
     }
     // Make head row pointer NULL, so linked list builder functions handle it prooerly
     else if (self->grid != NULL) {
-
-        self->grid[self->rowCount-1] = NULL;
+        self->grid[self->rowCount-1] = self->node_last = NULL;
     }
     else if (self->grid_v3 != NULL) {
-        self->dict_grid[self->rowCount-1] = NULL;
+        self->dict_grid[self->rowCount-1] = self->dict_last = NULL;
     }
 
-
-    // Assuming order is correct, copy from values array TODO protect by requiring column_names in dict *values[]
-    // Check if columns are in correct order. Rearraange if not.
-    rearrange_dict_array(self, values);
-
-    if (self->grid != NULL) self->node_last = self->grid[self->rowCount-1];
-    else if (self->dict_grid != NULL) self->dict_last = self->dict_grid[self->rowCount-1];
 
     // Create array of strings for update_stats_new_row
     char *values2[self->columnCount];
 
+    // Iterate through values
     for (uint32_t column = 0; column < self->columnCount; column++) {
 
         bool add_quotes = false;
@@ -324,8 +320,9 @@ bool insertRow2(csvWizard *self, dict values[]) {
         char *new_field = (char*)malloc(sizeof(char) * buffer_size);
         if (new_field == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
 
-        // Copy sting to new buffer
+        // Copy string to new buffer
         !add_quotes ? strcpy(new_field, values[column].field) : strcpy(&new_field[1], values[column].field);
+
 
         // Add quotes
         if (add_quotes) new_field[0] = new_field[buffer_size-2] = '"';
@@ -373,12 +370,13 @@ bool rearrange_dict_array(csvWizard *self, dict values[]) {
     for (uint32_t column = 0; column < self->columnCount; column++) {
 
         // Mismatch found
-        if (strcmp(values[column].column_name, self->header[column]) != 0) {
+
+        if (strcmp_quotes(values[column].column_name, self->header[column], true) != 0) {
 
             // Search rest of columns for match
             for (uint32_t c = column+1; c < self->columnCount; c++) {
 
-                if (strcmp(values[c].column_name, self->header[column]) == 0) {
+                if (strcmp_quotes(values[c].column_name, self->header[column], true) == 0) {
 
                     // Swap
                     char *tmp_field = values[column].field;
@@ -391,9 +389,12 @@ bool rearrange_dict_array(csvWizard *self, dict values[]) {
                     values[c].column_name = tmp_column_name;
 
                     rearranged = true;
+                    break;
 
                 }
             }
+
+            // if (!rearranged) return false;
 
         }
     }
@@ -570,6 +571,22 @@ char *changeMissingValue(csvWizard *self, char *missingValue) {
     return self->missingValue;
 }
 
+bool changeFilename(csvWizard *self, char *filename) {
+
+    if (self == NULL || filename == NULL) return false;
+
+    if (self->filename != NULL) free(self->filename);
+
+    const char *func_name = "changeFilename";
+
+    // Allocate buffer for filename
+    self->filename = (char*)malloc(sizeof(char) * (strlen(filename)+1));
+    if (self->filename == NULL)  {if_error(MALLOC_FAILED, func_name); return false;}
+
+    strcpy(self->filename, filename);
+
+    return true;
+}
 
 //          _______ USER INPUT FILENAME() ________
 char *userInputFilename(csvWizard *self, char *prompt) {
@@ -607,7 +624,7 @@ char *userInputFilename(csvWizard *self, char *prompt) {
 // -- REPLACE --
 bool replace(csvWizard *self, char *to_replace, char *replace_with) {
 
-    if (self == NULL) return false;
+    if (self == NULL || to_replace == NULL || replace_with == NULL) return false;
 
     if (self->grid_v3 != NULL) return grid_v3_replace(self, to_replace, replace_with, -1);
     else if (self->grid != NULL) return grid_replace(self, to_replace, replace_with, -1);
@@ -889,11 +906,8 @@ bool dropColumn(csvWizard *self, char *column_name) {
 //      DROP ROW()
 bool dropRow(csvWizard *self, uintmax_t row_to_drop) {
 
-    // TO DO: make work for all data structures
     // Safety checks
     if (self == NULL || row_to_drop > self->rowCount-1) return false;
-
-    // TODO Link TO filter
 
     const char *func_name = "dropRow";
 
@@ -915,11 +929,14 @@ bool dropRow(csvWizard *self, uintmax_t row_to_drop) {
         if (new_dict_grid == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
     }
 
-    // Iterate through rows assigned all rows (except row to drop) to new grid
+    // Iterate through row and assign all rows (except row to drop) to new grid
     uintmax_t new_row_count = 0;
     for (uintmax_t row = 0; row < self->rowCount; row++) {
 
+        if (row == row_to_drop) continue;
+
         if (self->grid_v3 != NULL) {
+
             new_grid_v3[new_row_count] = self->grid_v3[row];
         }
         else if (self->grid != NULL) {
@@ -929,7 +946,7 @@ bool dropRow(csvWizard *self, uintmax_t row_to_drop) {
              new_dict_grid[new_row_count] = self->dict_grid[row];
         }
 
-        if (row != row_to_drop) new_row_count++;
+        new_row_count++;
     }
 
 
@@ -1005,8 +1022,6 @@ bool dropRow(csvWizard *self, uintmax_t row_to_drop) {
 
     return true;
 }
-
-
 
 
 //          FIND ALPHA INDEX()
@@ -1358,296 +1373,241 @@ bool stripAll(csvWizard *self) {
 // }
 
 
-// GET FIELD CONDITION
-bool printColumnCond(csvWizard *self, char *column_name, char *condition_operator, char *condition_value) {
+//          FILTER()
+bool filter(csvWizard *self, csvWizard *filteredData, char *column_name, char *condition_operator, char *condition_value) {
 
-    if (self == NULL || column_name == NULL || condition_operator == NULL) return false;
+    /* THIS FUNCTION: Filters into a NEW data structure (currently only into a grid_v3, but can filter FROM any data structure) */
 
+    // Safety Checks
+    if (self == NULL || column_name == NULL || condition_operator == NULL || condition_value == NULL || self == filteredData) return false;
 
+    // Determine if column_name is valid / retrieve corresponding column index integer
     int32_t column_index = findColumnIndex(self, column_name);
     if (column_index < 0) return false;
 
-    if (self->grid_v3 != NULL) {
-        return get_fields_cond_grid_v3(self, column_index, condition_operator, condition_value);
-    }
-    else if (self->grid != NULL) {
-        return get_fields_cond_grid(self, column_index, condition_operator, condition_value);
-    }
-    else if (self->dict_grid != NULL) {
-        return get_fields_cond_dict(self, column_name, condition_operator, condition_value);
-    }
+    // Filter / create new data structure
+    bool print = false;
+    bool drop_rows = false;
 
-    return true;
+    return filter_internal_(self, column_index, condition_operator, condition_value, filteredData, print, drop_rows);
+}
+
+
+
+// GET FIELD CONDITION
+bool printColumnCond(csvWizard *self, char *column_name, char *condition_operator, char *condition_value) {
+
+    // Safety Checks
+    if (self == NULL || column_name == NULL || condition_operator == NULL || condition_value == NULL) return false;
+
+    // Determine if column_name is valid / retrieve corresponding column index integer
+    int32_t column_index = findColumnIndex(self, column_name);
+    if (column_index < 0) return false;
+
+    // Filter and print
+    bool print = true;
+    bool drop_rows = false;
+    return filter_internal_(self, column_index, condition_operator, condition_value, NULL, print, drop_rows);
+
+}
+
+bool dropRowsFilter(csvWizard *self, char *column_name, char *condition_operator, char *condition_value) {
+
+    // Safety Checks
+    if (self == NULL || column_name == NULL || condition_operator == NULL || condition_value == NULL) return false;
+
+    // Determine if column_name is valid / retrieve corresponding column index integer
+    int32_t column_index = findColumnIndex(self, column_name);
+    if (column_index < 0) return false;
+
+    // Filter and Drop Rows
+    bool print = false;
+    bool drop_rows = true;
+
+    return filter_internal_(self, column_index, condition_operator, condition_value, NULL, print, drop_rows);
 
 }
 
 
+
 //      GET FIELDS CONDITION DICT()
-bool get_fields_cond_grid_v3(csvWizard *self, uintmax_t desired_column, char *condition_operator, char *condition_value) {
+bool filter_internal_(csvWizard *self, uintmax_t desired_column, char *condition_operator, char *condition_value, csvWizard *new_data, bool print, bool drop_rows) {
+
+    if (new_data != NULL && drop_rows) return false;
+
+    const char *func_name = "filter_internal_";
 
     double condition_num = 0;
 
-    if (self->aggregate[desired_column].is_number) {
-        condition_num = atof(condition_value);
+    // Print column head
+    if (self->aggregate[desired_column].is_number) condition_num = atof(condition_value);
+
+    if (print && self->aggregate[desired_column].is_number) {
         printf("\n'%s' <Conditon: %s %.2f>\n", self->header[desired_column], condition_operator, condition_num);
     }
-    else printf("\n'%s' <Conditon: %s '%s'>\n", self->header[desired_column], condition_operator, condition_value);
+    else if (print) printf("\n'%s' <Conditon: %s '%s'>\n", self->header[desired_column], condition_operator, condition_value);
 
 
-    uint32_t total = 0, current_column = 0;
+    // Array to keep track of which rows met filter condition
+    uint32_t rows_met_condition[self->rowCount];
+
+    char *current_field = NULL;
+    node *node_tmp = NULL;
+    dict_node *dict_tmp = NULL;
+
+    // Iterate through rows
+    uint32_t total = 0;
     for (uint32_t current_row = 0; current_row < self->rowCount; current_row++) {
 
         bool condition_met = false;
-        current_column = 0;
 
-        char *current_field = self->grid_v3[current_row][desired_column];
+        // Retrieve current field
+        if (self->grid_v3 != NULL) current_field = self->grid_v3[current_row][desired_column];
+        else if (self->grid != NULL) {
+            node_tmp = self->grid[current_row];
+            get_ptr_to_correct_column(desired_column, &node_tmp, NULL);
+            current_field = node_tmp->s;
+        }
+        else if (self->dict_grid != NULL) {
+            dict_tmp = self->dict_grid[current_row];
+            get_ptr_to_correct_column(desired_column, NULL, &dict_tmp);
+            current_field = dict_tmp->s;
+        }
 
-        // Do not print empy fields
+        // Skip empy fields
         if (current_field[0] == '\0') continue;
 
         // Check conditon
         if (strcmp(condition_operator, "<") == 0) {
 
-            if (self->aggregate[current_column].is_number && atof(current_field) < condition_num) {condition_met = true;}
-            else if (!self->aggregate[current_column].is_number) {
+            if (self->aggregate[desired_column].is_number && atof(current_field) < condition_num) {condition_met = true;}
+            else if (!self->aggregate[desired_column].is_number) {
                 if (strcasecmp(current_field, condition_value) < 0 || (has_quotes(current_field) && strcasecmp(&current_field[1], condition_value) < 0)) condition_met = true;
             }
 
         }
         else if (strcmp(condition_operator, ">") == 0) {
 
-            if (self->aggregate[current_column].is_number && atof(current_field) > condition_num) {condition_met = true;}
-            else if (!self->aggregate[current_column].is_number) {
+            if (self->aggregate[desired_column].is_number && atof(current_field) > condition_num) {condition_met = true;}
+            else if (!self->aggregate[desired_column].is_number) {
                 if (strcasecmp(current_field, condition_value) > 0 || (has_quotes(current_field) && strcasecmp(&current_field[1], condition_value) > 0)) condition_met = true;
             }
 
         }
         else if (strcmp(condition_operator, "<=") == 0) {
 
-            if (self->aggregate[current_column].is_number && atof(current_field) <= condition_num) {condition_met = true;}
-            else if (!self->aggregate[current_column].is_number) {
+            if (self->aggregate[desired_column].is_number && atof(current_field) <= condition_num) {condition_met = true;}
+            else if (!self->aggregate[desired_column].is_number) {
                 if ((!has_quotes(current_field) && strcasecmp(current_field, condition_value) <= 0) || (has_quotes(current_field) && strcasecmp(&current_field[1], condition_value) <= 0) ) condition_met = true;
             }
 
         }
         else if (strcmp(condition_operator, ">=") == 0) {
 
-            if (self->aggregate[current_column].is_number && atof(current_field) >= condition_num) {condition_met = true;}
-            else if (!self->aggregate[current_column].is_number) {
-                //
+            if (self->aggregate[desired_column].is_number && atof(current_field) >= condition_num) {condition_met = true;}
+            else if (!self->aggregate[desired_column].is_number) {
                 if ((!has_quotes(current_field) && strcasecmp(current_field, condition_value) >= 0) || (has_quotes(current_field) && strcasecmp(&current_field[1], condition_value) >= 0) ) condition_met = true;
+            }
+
+        }
+        else if (strcmp(condition_operator, "==") == 0) {
+
+            if (self->aggregate[desired_column].is_number && atof(current_field) == condition_num) {condition_met = true;}
+            else if (!self->aggregate[desired_column].is_number) {
+                if ((!has_quotes(current_field) && strcmp(current_field, condition_value) == 0) || (has_quotes(current_field) && strcmp(&current_field[1], condition_value) == 0) ) condition_met = true;
             }
 
         }
 
         // Print result
-        if (condition_met) {
+        if (condition_met && print) {
             printf("%*d: %s\n", self->max_row_digits, current_row, current_field);
+        }
+
+        if (condition_met) {
+            rows_met_condition[total] = current_row; /* Keep track of which rows met the filter condition */
             total++;
         }
 
     }
 
-    printf("\n%d fields in this column met this condition\n\n", total);
+
+    if (print) (total == 1) ? printf("\n%d field in this column met this condition\n\n", total) : printf("\n%d fields in this column met this condition\n\n", total);
+
+
+    // For filtering into new object
+    if (new_data != NULL) {
+
+        size_t filename_length = strlen(self->filename);
+
+        // Create appended portion of amended filename (i.e. filename plus conditon)
+        size_t append_strlen = strlen(" (Filtered Data)") + strlen(self->header[desired_column]) + strlen(condition_value) + strlen(condition_operator);
+        char new_filename_append[append_strlen+4];
+        sprintf(new_filename_append, " (Filtered Data) %s %s %s", self->header[desired_column], condition_operator, condition_value);
+
+        size_t new_filename_length = filename_length + strlen(new_filename_append);
+
+        // Allocate for new filename
+        new_data->filename = (char*)malloc(sizeof(char) * (new_filename_length + 1));
+        if (new_data->filename == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+
+        sprintf(new_data->filename, "%s%s", self->filename, new_filename_append);
+
+        createHeader(new_data, self->header, self->columnCount);
+
+        // Copy filtered rows
+        for (uint32_t row = 0; row < total; row++) {
+
+            uint32_t original_row_index = rows_met_condition[row];
+
+            char *values[self->columnCount];
+
+            // Assign current row to pointer
+            if (self->grid != NULL) node_tmp = self->grid[original_row_index];
+            else if (self->dict_grid != NULL) dict_tmp = self->dict_grid[original_row_index];
+
+            // Copy field strings into values array
+            for (uint16_t column = 0; column < self->columnCount; column++) {
+
+                if (self->grid_v3 != NULL) values[column] = self->grid_v3[original_row_index][column];
+                else if (self->grid != NULL) {
+                    values[column] = node_tmp->s;
+                    node_tmp = node_tmp->next;
+                }
+                else if (self->dict_grid != NULL) {
+                    values[column] = dict_tmp->s;
+                    dict_tmp = dict_tmp->next;
+                }
+
+            }
+
+            // Append row
+            insertRow(new_data, values);
+
+        }
+
+    }
+
+
+    if (drop_rows) {
+
+        // Iterate through rows that met conditon and drop them from data structure
+        for (uint32_t row = 0; row < total; row++) {
+
+            uint32_t original_row_index = rows_met_condition[row];
+
+            dropRow(self, original_row_index);
+
+            // Adjust index of remaining rows, now that a row was dropped
+            for (uint32_t j = row+1; j < total; j++) rows_met_condition[j]--;
+        }
+    }
+
 
     return (total > 0) ? true : false;
 
 }
 
-
-
-//      GET FIELDS CONDITION DICT()
-bool get_fields_cond_grid(csvWizard *self, uintmax_t desired_column, char *condition_operator, char *condition_value) {
-
-    double condition_num = 0;
-
-    if (self->aggregate[desired_column].is_number) {
-        condition_num = atof(condition_value);
-        printf("\n'%s' <Conditon: %s %.2f>\n", self->header[desired_column], condition_operator, condition_num);
-    }
-    else printf("\n'%s' <Conditon: %s '%s'>\n", self->header[desired_column], condition_operator, condition_value);
-
-    uint32_t total = 0, current_column = 0;
-    for (uint32_t current_row = 0; current_row < self->rowCount; current_row++) {
-
-        node *tmp = self->grid[current_row];
-        bool condition_met = false;
-        current_column = 0;
-
-        // Get to correct column
-        while (tmp != NULL && current_column < desired_column) {
-            tmp = tmp->next;
-            current_column++;
-        }
-
-        if (tmp != NULL && current_column == desired_column) {
-
-            // Do not print empy fields
-            if (tmp->s[0] == '\0') continue;
-
-            // Check conditon
-            if (strcmp(condition_operator, "<") == 0) {
-
-                if (self->aggregate[current_column].is_number && atof(tmp->s) < condition_num) {condition_met = true;}
-                else if (!self->aggregate[current_column].is_number) {
-                    if (strcasecmp(tmp->s, condition_value) < 0 || (has_quotes(tmp->s) && strcasecmp(&tmp->s[1], condition_value) < 0)) condition_met = true;
-                }
-
-            }
-            else if (strcmp(condition_operator, ">") == 0) {
-
-                if (self->aggregate[current_column].is_number && atof(tmp->s) > condition_num) {condition_met = true;}
-                else if (!self->aggregate[current_column].is_number) {
-                    if (strcasecmp(tmp->s, condition_value) > 0 || (has_quotes(tmp->s) && strcasecmp(&tmp->s[1], condition_value) > 0)) condition_met = true;
-                }
-
-            }
-            else if (strcmp(condition_operator, "<=") == 0) {
-
-                if (self->aggregate[current_column].is_number && atof(tmp->s) <= condition_num) {condition_met = true;}
-                else if (!self->aggregate[current_column].is_number) {
-                    if ((!has_quotes(tmp->s) && strcasecmp(tmp->s, condition_value) <= 0) || (has_quotes(tmp->s) && strcasecmp(&tmp->s[1], condition_value) <= 0) ) condition_met = true;
-                }
-
-            }
-            else if (strcmp(condition_operator, ">=") == 0) {
-
-                if (self->aggregate[current_column].is_number && atof(tmp->s) >= condition_num) {condition_met = true;}
-                else if (!self->aggregate[current_column].is_number) {
-                    //
-                    if ((!has_quotes(tmp->s) && strcasecmp(tmp->s, condition_value) >= 0) || (has_quotes(tmp->s) && strcasecmp(&tmp->s[1], condition_value) >= 0) ) condition_met = true;
-                }
-
-            }
-
-            // Print result
-            if (condition_met) {
-                printf("%*d: %s\n", self->max_row_digits, current_row, tmp->s);
-                total++;
-            }
-
-        }
-
-    }
-
-    printf("\n%d fields in this column met this condition\n\n", total);
-
-    return (total > 0) ? true : false;
-
-}
-
-
-
-
-
-//      GET FIELDS CONDITION DICT()
-bool get_fields_cond_dict(csvWizard *self, char *desired_column, char *condition_operator, char *condition_value) {
-
-    const char *func_name = "get_fields_cond_dict";
-
-    // Condition (printColumnCond()) /* I do not need to check findColumnIndex for -1 because that was done in calling function (i.e. printColumnCond())*/
-    int32_t column_index = findColumnIndex(self, desired_column);
-
-    double condition_num = 0;
-
-    if (self->aggregate[column_index].is_number) {
-        condition_num = atof(condition_value);
-        printf("\n'%s' <Conditon: %s %.2f>\n", self->header[column_index], condition_operator, condition_num);
-    }
-    else printf("\n'%s' <Conditon: %s '%s'>\n", self->header[column_index], condition_operator, condition_value);
-
-    char *desired_column_with_quotes = NULL;
-
-    uint32_t total = 0, current_column = 0;
-    for (uint32_t current_row = 0; current_row < self->rowCount; current_row++) {
-
-        dict_node *tmp = self->dict_grid[current_row];
-        bool condition_met = false, added_quotes = false;
-        current_column = 0;
-
-        // Get to correct column
-        while (tmp != NULL) {
-
-            added_quotes = false;
-
-            // Add quotes to desrired column name if neccessary
-            if (has_quotes(tmp->column_name) && !has_quotes(desired_column)) {
-
-                // Allocate buffer
-                desired_column_with_quotes = (char *)malloc(sizeof(char)*(strlen(desired_column)+1));
-                if (desired_column_with_quotes == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;};
-
-                // Copy
-                strcpy(desired_column_with_quotes, desired_column);
-                add_quotes(&desired_column_with_quotes);
-                added_quotes = true;
-            }
-
-            // Compare current column name with desired column name
-
-            if (strcmp(tmp->column_name, desired_column) == 0 || (added_quotes && strcmp(tmp->column_name, desired_column_with_quotes) == 0)) break;
-
-            tmp = tmp->next;
-            current_column++;
-        }
-
-        if ( tmp != NULL && ( strcmp(tmp->column_name, desired_column) == 0 || (added_quotes && strcmp(tmp->column_name, desired_column_with_quotes) == 0) ) ) {
-
-            // Do not print empy fields
-            if (tmp->s[0] == '\0') continue;
-
-            // Check conditon
-            if (strcmp(condition_operator, "<") == 0) {
-
-                if (self->aggregate[current_column].is_number && atof(tmp->s) < condition_num) {condition_met = true;}
-                else if (!self->aggregate[current_column].is_number) {
-                    if (strcasecmp(tmp->s, condition_value) < 0 || (has_quotes(tmp->s) && strcasecmp(&tmp->s[1], condition_value) < 0)) condition_met = true;
-                }
-
-            }
-            else if (strcmp(condition_operator, ">") == 0) {
-
-                if (self->aggregate[current_column].is_number && atof(tmp->s) > condition_num) {condition_met = true;}
-                else if (!self->aggregate[current_column].is_number) {
-                    if (strcasecmp(tmp->s, condition_value) > 0 || (has_quotes(tmp->s) && strcasecmp(&tmp->s[1], condition_value) > 0)) condition_met = true;
-                }
-
-            }
-            else if (strcmp(condition_operator, "<=") == 0) {
-
-                if (self->aggregate[current_column].is_number && atof(tmp->s) <= condition_num) {condition_met = true;}
-                else if (!self->aggregate[current_column].is_number) {
-                    if ((!has_quotes(tmp->s) && strcasecmp(tmp->s, condition_value) <= 0) || (has_quotes(tmp->s) && strcasecmp(&tmp->s[1], condition_value) <= 0) ) condition_met = true;
-                }
-
-            }
-            else if (strcmp(condition_operator, ">=") == 0) {
-
-                if (self->aggregate[current_column].is_number && atof(tmp->s) >= condition_num) {condition_met = true;}
-                else if (!self->aggregate[current_column].is_number) {
-                    //
-                    if ((!has_quotes(tmp->s) && strcasecmp(tmp->s, condition_value) >= 0) || (has_quotes(tmp->s) && strcasecmp(&tmp->s[1], condition_value) >= 0) ) condition_met = true;
-                }
-
-            }
-
-            // Print result
-            if (condition_met) {
-                printf("%*d: %s\n", self->max_row_digits, current_row, tmp->s);
-                total++;
-            }
-
-        }
-
-        if (desired_column_with_quotes != NULL) free_null(&desired_column_with_quotes);
-
-    }
-
-    printf("\n%d fields in this column met this condition\n\n", total);
-
-    return (total > 0) ? true : false;
-
-}
 
 
 
@@ -2719,385 +2679,55 @@ void get_ptr_to_correct_column(intmax_t correct_column, node **node_ptr, dict_no
     return;
 }
 
-int strcmp_quotes(const char *s1, const char *s2, bool case_sensitive) {
+int strcmp_quotes(const char *s1_input, const char *s2_input, bool case_sensitive) {
 
     // THIS FUNCTION: Ignores "" around a string when using strcmp()/strcasecmp() (otherwise strings with "" will all be placed together before 'A' regardless of 1st alphabetical letter)
 
+    const char *func_name = "strcmp_quotes";
+
     // Declare function  pointer to point to either strcmp() or strcasecmp()
     int (*strcmp_ptr)(const char *s1, const char *s2);
+    int func_return;
+
+    // Find string lengths
+    size_t s1_len = strlen(s1_input);
+    size_t s2_len = strlen(s2_input);
+
+    // Allocate buffers and copy strings (so that I can alter them without Valgrind errors)
+    char *s1 = (char*)malloc(sizeof(char)*(s1_len+1));
+    if (s1 == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    strcpy(s1, s1_input);
+
+    char *s2 = (char*)malloc(sizeof(char)*(s2_len+1));
+    if (s2== NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    strcpy(s2, s2_input);
 
     // Determine whether to point to strcmp() or strcasecmp()
     strcmp_ptr = (case_sensitive) ? &strcmp : &strcasecmp;
 
-    // Compare strings - CHANGE TO has_quotes
-    if (s1[0] == '"' && s2[0] != '"') return strcmp_ptr(&s1[1], s2);
-    else if (s1[0] != '"' && s2[0] == '"') return strcmp_ptr(s1, &s2[1]);
-    else if (s1[0] == '"' && s2[0] == '"') return strcmp_ptr(&s1[1], &s2[1]);
-    else return strcmp_ptr(s1, s2);
+    // Cut off last quote
+    if (has_quotes(s1)) s1[s1_len-1] = '\0';
+
+    if (has_quotes(s2)) s2[s2_len-1] = '\0';
+
+
+    // Compare strings
+    if (s1[0] == '"' && s2[0] != '"') func_return = strcmp_ptr(&s1[1], s2);
+    else if (s1[0] != '"' && s2[0] == '"') func_return = strcmp_ptr(s1, &s2[1]);
+    else if (s1[0] == '"' && s2[0] == '"') func_return = strcmp_ptr(&s1[1], &s2[1]);
+    else func_return = strcmp_ptr(s1, s2);
+
+    // Free allocated buffers
+    free(s1);
+    free(s2);
+
+    return func_return;
 }
 
 
 
 
-//          ----- UTIL FUCTIONS -----
 
-//         ___ IS_NUMBER() ___
-bool is_number(char *s) {
-
-    // THIS FUNCTION calls 2 other internal functions to determine if a string is a number or not (includinng bothe decimal and hexadecimal)
-    if (!is_numeric(s) && !is_hex(s)) return false;
-    else return true;
-}
-
-//      ___ IS_NUMERIC() ____
-bool is_numeric(char *s) {
-
-    if (s == NULL) return false;
-    if (s[0] == '\n') return false;
-
-    uint32_t length = strlen(s);
-    bool dot_found = false;
-
-    for (uint32_t i = 0; i < length; i++) {
-
-        if (!isdigit(s[i]) && s[i] != '.' && s[i] != '-') return false;
-        else if (s[i] == '.' && !dot_found) dot_found = true;
-        else if (s[i] == '.' && dot_found) return false;
-        else if (s[i] == '-' && i != 0) return false;
-        // else if (s[i] == '-' && !sign_found) sign_found = true;
-        // else if ((s[i] == '-' && sign_found) || (s[i] == '-' && i != 0)) return false;
-    }
-
-
-    return true;
-}
-
-//     __ IS_HEX() __
-bool is_hex(char *s) {
-
-    if (s == NULL) return false;
-
-    size_t length = strlen(s);
-
-    for (uint32_t i = 0; i < length; i++) {
-
-        if (i == 1 && (s[i] == 'x' || s[i] == 'X') && s[0] == '0') continue;
-        else if ( (s[i] >= 'a' && s[i] <= 'f') || (s[i] >= 'A' && s[i] <= 'F') || (s[i] >= '0' && s[i] <= '9') ) continue;
-        else return false;
-    }
-
-    return true;
-}
-
-
-
-//      ___ HAS_QUOTES() ___
-bool has_quotes(char *s)
-{
-    /* THIS FUNCTION: Checks if a string has quotes */
-    if (s[0] == '"' && s[strlen(s)-1] == '"') return true;
-    else return false;
-}
-
-//      __ HAS_COMMA()___
-bool has_comma(char *s)
-{
-    /* THIS FUNCTION: Checks if a string has 1 or more commas */
-    uintmax_t length = strlen(s);
-
-    for (uintmax_t i = 0; i < length; i++) {
-        if (s[i] == ',') return true;
-    }
-
-    return false;
-}
-
-//      __ ADD_QUOTES()___
-bool add_quotes(char **s)
-{
-    /* THIS FUNCTION:
-        - is destructive
-        - Adds quotes to a dynamically allocated string. */
-
-    // Don't add quotes if unnecessary
-    if (has_quotes(*s)) return false;
-
-    // Function name for if_error()
-    char *func_name = "add_quotes";
-
-    // Original string length
-    uint16_t length = strlen(*s);
-
-    // Make copy of string without quotes
-    char s_no_quotes[length+1];
-    strcpy(s_no_quotes, *s);
-
-    if ((*s)[0] != '"' && (*s)[length-1] != '"') {
-
-        // Resize s to be long enough for quotes
-        *s = realloc(*s, sizeof(char)*(strlen(*s)+3));
-        if (*s == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
-
-        //
-        strcpy(&((*s)[1]), s_no_quotes);
-
-        // Add quotes and nul
-        (*s)[0] = '"';
-        (*s)[length+1] = '"';
-        (*s)[length+2] = '\0';
-
-    }
-
-    return true;
-
-}
-
-char *remove_quotes(csvWizard *self, char *s) {
-
-    /* This function is NON destructive (unlike add_quotes) */
-
-    const char * func_name = "remove_quotes";
-
-    // Length of new string 2 less than original
-    uint16_t new_length = strlen(s)-2;
-
-    char *s_sans_quotes = malloc(sizeof(char)*(new_length+1));
-    if (s == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
-
-    // Copy, excluding first double quote
-    strncpy(s_sans_quotes, &s[1], new_length);
-
-    // Change last char to nul
-    s_sans_quotes[new_length] = '\0';
-
-    if (self->last_retrieved_field != NULL) free(self->last_retrieved_field);
-
-    self->last_retrieved_field = s_sans_quotes;
-
-    return self->last_retrieved_field;
-
-
-}
-
-
-//      ___ VERIFY_COLUMN() ___
-bool verify_column(char **header, uintmax_t column_count, char *column)
-{
-    /* THIS FUNCTION: Verifies if a column name is in the header of a csv, mainly for the purpose of tightening code in calling function. */
-
-    for (uint16_t i = 0; i < column_count; i++) {
-        if (strcasecmp(header[i], column) == 0)
-            return true;
-    }
-
-    return false;
-
-}
-
-
-// ___ INFINITE BUFFER (User Input) ___
-char *inf_buffer(char *prompt)
-{
-    // Function name (for use in if_error())
-    const char *func_name = "inf_buffer";
-
-    /* THIS FUNCTION: allows the user to input a dynamically allocated string, of "any" length (i.e. length dictated by size of heap of course)*/
-
-    // Prompt user
-    printf("%s", prompt);
-
-    // Allocate 1st char of string
-    char *s = (char*)malloc(sizeof(char));
-    if (s == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
-
-    // Scan command line char by char
-    uint64_t i = 0;
-    int8_t scanReturn;
-    while ((scanReturn = scanf("%c", &s[i])) == 1)
-    {
-        // Check EOF
-        if (scanReturn == EOF) {free_null(&s); if_error(SCANF_FAILED, func_name); return NULL;}
-
-        // Check if end of user input
-        if (s[i] == '\n') {
-            s[i] = '\0';
-            break;
-        }
-        else {
-            s = realloc(s, sizeof(char)*(i+2));
-            if (s == NULL) {free_null(&s); if_error(REALLOC_FAILED, func_name); return NULL;}
-            i++;
-        }
-    }
-
-    return s;
-}
-
-
-//      ___  GET_UINT()  ___
-uint64_t get_uint(char *prompt)
-{
-    /* THIS FUNCTION: 1. Uses inf_buffer() to get input from user.
-                      2. Keeps looping until unsigned integer is given by user
-                      2. Returns unsigned integer */
-    char *s = NULL;
-    // Loop until unsigned integer is given
-    while (true) {
-
-        bool is_int = true;
-
-        // Scan command line
-        s = inf_buffer(prompt);
-
-        // Check if unsigned integer
-        for (uint64_t i = 0, length = strlen(s); i < length; i++) {
-            if (!isdigit(s[i])) {
-                is_int = false;
-                printf("\nError: unsigned integers only please.\n");
-                break;
-            }
-        }
-
-        if (is_int) break;
-
-        free(s);
-    }
-
-    // Convert string to integer. (Can not simply return atoi(s), because I need to free(s) first.)
-    uint64_t x = atoi(s);
-
-    free(s);
-    s = NULL;
-
-    return x;
-}
-
-bool convert_to_csv(csvWizard *self, char *filename) {
-    /*DOES NOT WORK YET*/
-    if (is_ext(filename, ".csv")) return true;
-
-    char *possible_extensions[5] = {
-        ".xls",
-        ".xlsx",
-        ".xlsm",
-        ".xlsb",
-        ".docx"
-    };
-
-
-    bool correct_ext = false;
-    for (uint8_t i = 0; i < 5; i++) {
-        if (is_ext(filename, possible_extensions[i])) {
-            correct_ext = true;
-            break;
-        }
-    }
-
-    if (!correct_ext) return false;
-
-    const char *func_name = "convert_to_csv";
-
-    FILE *file = fopen(filename, "r");
-    if (file == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
-
-    fseek(file, 0, SEEK_END);
-    uintmax_t file_size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    char buffer[file_size+1];
-
-    fread(buffer, file_size, 1, file);
-    buffer[file_size] = '\0';
-
-    fclose(file);
-
-    // replace '.' with  '\0'
-    uint8_t filename_length = strlen(filename);
-
-    char *new_filename = malloc(sizeof(char)*filename_length+1);
-    if (new_filename == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
-
-    for (uint8_t i = 0; i < filename_length; i++) {
-
-        new_filename[i] = filename[i];
-
-        if (new_filename[i] == '.') {
-            new_filename[i+1] = 'c';
-            new_filename[i+2] = 's';
-            new_filename[i+3] = 'v';
-            new_filename[i+4] = '\0';
-            break;
-        }
-    }
-
-
-    FILE *new_file = fopen(new_filename, "w");
-    if (new_file == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
-
-    fwrite(buffer, 0, file_size, new_file);
-
-    self->file_ptr = new_file;
-    self->filename = new_filename;
-
-    fseek(file, 0, SEEK_SET);
-    return true;
-
-}
-
-char *append_last_retrieved_fields(csvWizard *self, char **field)
-{
-    if (field == NULL) return false;
-    if (*field == NULL) return false;
-
-    const char *func_name = "append_last_retrieved_fields";
-
-    // Allocate for new node
-    node *n = (node *)malloc(sizeof(node));
-    if (n ==  NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
-
-    n->next = self->last_retrieved_fields;
-    self->last_retrieved_fields = n;
-
-    n->s = *field;
-
-    return n->s;
-}
-
-
-//      ____  IS_EXT()  ____
-bool is_ext(char *filename, char *ext)
-{
-    /* THIS FUNCTION: Checks if filename has correct file extension of your choice */
-
-    // Check that proper argument for file extension (char *ext) has been passed through
-    if (ext[0] != '.') return false;
-
-    // Make sure not to dereference NULL pointer
-    if (filename == NULL || ext == NULL) return false;
-
-    // Check if filename is at least 5 chars long (e.g. ".csv" plus at least 1 char prior to ".csv")
-        //  This avoids buffer underrun once we backup 4 chars in next section
-    if (strlen(filename) < 5) return false;
-
-    // Return true if filename has correct extension
-    if (strcmp(&filename[strlen(filename)-4], ext) == 0) {
-        return true;
-    }
-    else return false;
-}
-
-
-void calc_max_row_digits(csvWizard *self) {
-
-    uintmax_t temp = self->rowCount;
-
-    self->max_row_digits = 1;
-
-    while (temp >= 10) {
-        temp /= 10;
-        self->max_row_digits++;
-    }
-}
 
 bool printHead(csvWizard *self, uintmax_t number_of_rows) {
     if (self == NULL) return NULL;
@@ -3182,6 +2812,470 @@ bool printColumn(csvWizard *self, char *column_name) {
     return true;
 
 }
+
+//      NOT CENTERED
+bool printDataTable(csvWizard *self) {
+    // TO DO scientifi notation, all data structure
+    printf("\t<DATA SQL STYLE>\n\n");
+    uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than MAX_FIELD_PRINT_LENGTH */
+    size_t head_strlens[self->columnCount];
+    uint8_t padding = 2;
+
+
+    // Go through ever column and remember what the longest string length
+    for (uint32_t column = 0; column < self->columnCount; column++) {
+
+        size_t head_strlen = strlen(self->header[column]);
+
+        if ((head_strlen + padding >= MAX_FIELD_PRINT_LENGTH) || (self->aggregate[column].longest_field_strlen + padding >= MAX_FIELD_PRINT_LENGTH)) column_lengths[column] = MAX_FIELD_PRINT_LENGTH;
+        else if (head_strlen + padding > self->aggregate[column].longest_field_strlen + padding) column_lengths[column] = head_strlen + padding;
+        else column_lengths[column] = self->aggregate[column].longest_field_strlen + padding;
+
+        head_strlens[column] = head_strlen;
+        // printf("c: %d, c_length: %d, head_strlen: %ld\n", column, column_lengths[column], head_strlens[column]);
+
+    }
+
+    char spaces[MAX_FIELD_PRINT_LENGTH];
+    char truncated[MAX_FIELD_PRINT_LENGTH+1];
+    int8_t num_spaces = 0;
+    bool odd_even_mismatch = false;
+
+    char *field = NULL;
+    node *node_tmp = NULL;
+    dict_node *dict_tmp = NULL;
+    intmax_t column_count = (intmax_t)self->columnCount;
+
+    // Print
+    // for (double row = -1.5; row < (intmax_t) self->rowCount; row += 0.5) {
+    for (intmax_t row = -3; row < (intmax_t) self->rowCount+1; row++) {
+
+        for (intmax_t column = -1; column < column_count; column++) {
+
+            // signed long row_truncated = row;
+            // double row_decimal = row - row_truncated;
+
+            if (row == -2) {
+
+                if (column < 0 && self->printRowIndex) {
+                    create_spaces_string(spaces, self->max_row_digits+3, false, ' ');
+                    printf("%s", spaces);
+                    continue;
+                }
+                else if (column < 0) continue;
+
+                // -- Print Header --
+
+                // Calc spaces to print
+                num_spaces = (column_lengths[column]-head_strlens[column]) / 2;
+
+                if (num_spaces < 0) {
+
+                    char tmp = truncate_with_ellipses(self->header[column], truncated, MAX_FIELD_PRINT_LENGTH-1);
+
+                    (column == 0) ? printf("|%s|", truncated) : printf("%s|", truncated);
+
+                    self->header[column][MAX_FIELD_PRINT_LENGTH-3] = tmp;
+
+                    continue;
+                }
+
+
+                if (((size_t)column_lengths[column]) & 1 && !(head_strlens[column] & 1)) odd_even_mismatch = true;
+                else if (!(((size_t)column_lengths[column]) & 1) && head_strlens[column] & 1) odd_even_mismatch = true;
+                else odd_even_mismatch = false;
+
+                create_spaces_string(spaces, num_spaces+1, false, ' ');
+
+                if (column == 0) {
+                    (odd_even_mismatch) ? printf("| %s%s%s|", spaces, self->header[column], spaces)  : printf("|%s%s%s|", spaces, self->header[column], spaces);
+                }
+                else {
+                    (odd_even_mismatch) ? printf(" %s%s%s|", spaces, self->header[column], spaces)  : printf("%s%s%s|", spaces, self->header[column], spaces);
+                }
+
+                continue;
+            }
+            // else if (row_decimal == 0.5 || row_decimal == -0.5) {
+            else if (row < 0 || row == (intmax_t) self->rowCount) {
+
+                // Dashes
+                if (column < 0 && !self->printRowIndex) continue;
+                else if (column < 0 && self->printRowIndex) {
+                    create_spaces_string(spaces, self->max_row_digits+3, false, ' ');
+                    printf("%s", spaces);
+                }
+                else {
+
+                    create_spaces_string(spaces, column_lengths[column]+1, false, '-');
+                    (column == 0) ? printf("+%s+", spaces) : printf("%s+", spaces);
+                }
+
+                continue;
+
+            }
+
+            if (column < 0) {
+
+                 if (self->printRowIndex) printf("%*ld: ", self->max_row_digits, row);
+
+                continue;
+
+            }
+
+
+            // Get current field
+            if (self->grid_v3 != NULL) field = self->grid_v3[(uint32_t)row][column];
+            else if (self->grid != NULL) {
+                if (column == 0) node_tmp = self->grid[(uint32_t)row];
+                field = node_tmp->s;
+            }
+            else if (self->dict_grid != NULL) {
+                if (column == 0) dict_tmp = self->dict_grid[(uint32_t)row];
+                field = dict_tmp->s;
+            }
+
+            if (field[0] == '\0') field = self->missingValue;
+
+            // Remove quotes (non-destructively) if field has quotes
+            if (has_quotes(field)) field = remove_quotes(self, field);
+
+            size_t field_strlen = strlen(field);
+
+            num_spaces = (column_lengths[column]-field_strlen);
+
+            if (num_spaces <= 0) {
+
+                // MAX_FIELD_PRINT_LENGTH - 2 to make room for at least 1 space before & after field value
+                char tmp = truncate_with_ellipses(field, truncated, MAX_FIELD_PRINT_LENGTH-2);
+
+                (column == 0) ? printf("| %s |", truncated) : printf(" %s |", truncated);
+
+                // Replace char
+                field[MAX_FIELD_PRINT_LENGTH-3] = tmp;
+
+                continue;
+            }
+
+
+            // Fill spaces string
+            create_spaces_string(spaces, num_spaces, false, ' ');
+
+            // Print field
+            (column == 0) ? printf("| %s%s|", field, spaces) : printf(" %s%s|", field, spaces);
+
+            if (self->grid != NULL) node_tmp = node_tmp->next;
+            else if (self->dict_grid != NULL) dict_tmp = dict_tmp->next;
+
+        }
+        printf("\n");
+    }
+
+    return true;
+}
+
+//           if (column_lengths[column] != MAX_FIELD_PRINT_LENGTH) {
+//                     if (((size_t)column_lengths[column]-padding) & 1 && !(head_strlens[column] & 1)) odd_even_mismatch = true;
+//                     else if (!(((size_t)column_lengths[column]-padding) & 1) && head_strlens[column] & 1) odd_even_mismatch = true;
+//                 }
+//                 else {
+//                     if ((size_t)column_lengths[column] & 1 && !(head_strlens[column] & 1)) odd_even_mismatch = true;
+//                     else if (!((size_t)column_lengths[column] & 1) && head_strlens[column] & 1) odd_even_mismatch = true;
+//                 }
+
+
+//          LATEST VERSION CENTERED
+// bool printDataTable(csvWizard *self) {
+
+//     printf("\t<DATA SQL STYLE>\n\n");
+//     uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than MAX_FIELD_PRINT_LENGTH */
+//     size_t head_strlens[self->columnCount];
+//     uint8_t padding = 2;
+
+
+//     // Go through ever column and remember what the longest string length
+//     for (uint32_t column = 0; column < self->columnCount; column++) {
+
+//         size_t head_strlen = strlen(self->header[column]);
+
+//         if ((head_strlen + padding > MAX_FIELD_PRINT_LENGTH) || (self->aggregate[column].longest_field_strlen + padding > MAX_FIELD_PRINT_LENGTH)) column_lengths[column] = MAX_FIELD_PRINT_LENGTH;
+//         else if (head_strlen + padding > self->aggregate[column].longest_field_strlen + padding) column_lengths[column] = head_strlen + padding;
+//         else column_lengths[column] = self->aggregate[column].longest_field_strlen + padding;
+
+//         head_strlens[column] = head_strlen;
+//         printf("c: %d, c_length: %d, head_strlen: %ld\n", column, column_lengths[column], head_strlens[column]);
+//     }
+
+//     char spaces[MAX_FIELD_PRINT_LENGTH];
+//     char truncated[MAX_FIELD_PRINT_LENGTH+1];
+//     int8_t num_spaces = 0;
+
+//     // Print
+//     // for (double row = -1.5; row < (intmax_t) self->rowCount; row += 0.5) {
+//     for (intmax_t row = -3; row < (intmax_t) self->rowCount+1; row++) {
+
+//         for (uint32_t column = 0; column < self->columnCount; column++) {
+
+//             // signed long row_truncated = row;
+//             // double row_decimal = row - row_truncated;
+
+//             if (row == -2) {
+//                 // Print Header
+//                 num_spaces = (column_lengths[column]-head_strlens[column]) / 2;
+
+//                 if (num_spaces < 0) {
+
+//                     char tmp = truncate_with_ellipses(self->header[column], truncated, MAX_FIELD_PRINT_LENGTH);
+
+//                     (column == 0) ? printf("|%s|", truncated) : printf("%s|", truncated);
+
+//                     self->header[column][MAX_FIELD_PRINT_LENGTH-3] = tmp;
+
+//                     continue;
+//                 }
+
+//                 create_spaces_string(spaces, num_spaces+1, false, ' ');
+
+//                 // (column == 0) ? printf("|%s%s%s|", spaces, self->header[column], spaces) : printf("%s%s%s|", spaces, self->header[column], spaces);
+//                 if (column == 0) printf("|");
+//                 (head_strlens[column] & 1 && head_strlens[column] != (size_t)column_lengths[column]-padding) ? printf("%s%s%s |", spaces, self->header[column], spaces) : printf("%s%s%s|", spaces, self->header[column], spaces);
+//                 continue;
+//             }
+//             // else if (row_decimal == 0.5 || row_decimal == -0.5) {
+//             else if (row < 0 || row == (intmax_t) self->rowCount) {
+//                 // Dashes
+//                 create_spaces_string(spaces, column_lengths[column]+1, false, '-');
+//                 (column == 0) ? printf("+%s+", spaces) : printf("%s+", spaces);
+
+//                 continue;
+//             }
+
+//             // Get current field
+//             char *field = NULL;
+//             if (self->grid_v3 != NULL) field = self->grid_v3[(uint32_t)row][column];
+
+//             if (field[0] == '\0') field = self->missingValue;
+
+//             size_t field_strlen = strlen(field);
+
+//             num_spaces = (column_lengths[column]-field_strlen) / 2;
+
+//             if (num_spaces < 0) {
+
+//                 char tmp = truncate_with_ellipses(field, truncated, MAX_FIELD_PRINT_LENGTH);
+
+//                 (column == 0) ? printf("|%s|", truncated) : printf("%s|", truncated);
+
+//                 // Replace char
+//                 field[MAX_FIELD_PRINT_LENGTH-3] = tmp;
+
+//                 continue;
+//             }
+
+
+//             (num_spaces == 0) ? create_spaces_string(spaces, num_spaces+2, false, ' ') : create_spaces_string(spaces, num_spaces+1, false, ' ');
+
+//             if (column == 0) printf("|");
+
+//             // printf("%s%s%s|", spaces, field, spaces);
+//             ((field_strlen & 1 && (field_strlen != head_strlens[column] || field_strlen != (size_t)column_lengths[column]-padding))) ? printf("%s%s%s |", spaces, field, spaces) : printf("%s%s%s|", spaces, field, spaces);
+
+//         }
+//         printf("\n");
+//     }
+
+//     return true;
+// }
+
+// bool printDataTable(csvWizard *self) {
+
+//     printf("\t<DATA SQL STYLE>\n\n");
+//     uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than MAX_FIELD_PRINT_LENGTH */
+//     size_t head_strlens[self->columnCount];
+//     uint8_t padding = 2;
+
+
+//     // Go through ever column and remember what the longest string length
+//     for (uint32_t column = 0; column < self->columnCount; column++) {
+
+//         size_t head_strlen = strlen(self->header[column]);
+
+//         if ((head_strlen + padding > MAX_FIELD_PRINT_LENGTH) && (self->aggregate[column].longest_field_strlen + padding > MAX_FIELD_PRINT_LENGTH)) column_lengths[column] = MAX_FIELD_PRINT_LENGTH;
+//         else if (head_strlen + padding > self->aggregate[column].longest_field_strlen + padding) column_lengths[column] = head_strlen + padding;
+//         else column_lengths[column] = self->aggregate[column].longest_field_strlen + padding;
+
+//         head_strlens[column] = head_strlen;
+//         printf("c: %d, column_length:%d, head_strlen:%ld", column, column_lengths[column], head_strlens[column]);
+//     }
+
+//     char spaces[MAX_FIELD_PRINT_LENGTH];
+//     uint8_t num_spaces = 0;
+//     char print_string[MAX_FIELD_PRINT_LENGTH];
+
+//     // DOES NOT WORK IF field_strlen > MAX_FIELD_PRINT_LENGTH
+//     // Print
+//     // for (double row = -1.5; row < (intmax_t) self->rowCount; row += 0.5) {
+//     for (intmax_t row = -3; row < (intmax_t) self->rowCount+1; row++) {
+
+//         for (uint32_t column = 0; column < self->columnCount; column++) {
+
+//             // signed long row_truncated = row;
+//             // double row_decimal = row - row_truncated;
+
+//             if (row == -2) {
+
+//                 // Print Header
+//                 // printf("%d, %d, %ld", column, column_lengths[column], head_strlens[column]);
+//                 num_spaces = (column_lengths[column]-head_strlens[column]) / 2;
+//                 // printf("!0");
+//                 create_spaces_string(spaces, num_spaces, false, ' ');
+//                 // printf("%s", spaces);
+
+//                 (column == 0) ? printf("|%s%s%s|", spaces, self->header[column], spaces) : printf("%s%s%s|", spaces, self->header[column], spaces);
+//                 continue;
+//             }
+//             // else if (row_decimal != 0) {
+//             else if (row < 0 || row == (intmax_t) self->rowCount) {
+//                 // Dashes (before/after header and after all data)
+
+//                 create_spaces_string(spaces, column_lengths[column]-1, false, '-');
+//                 (column == 0) ? printf("+%s+", spaces) : printf("%s+", spaces);
+
+//                 continue;
+//             }
+
+//             // Get current field
+//             char *field = NULL;
+//             if (self->grid_v3 != NULL) field = self->grid_v3[(uint32_t)row][column];
+
+//             if (field[0] == '\0') field = self->missingValue;
+
+//             size_t field_strlen = strlen(field);
+
+//             // if (field_strlen > column_lengths[column]) {
+//             //     char replaced_char = field[column_lengths[column]-1-2];
+//             //     field[column_lengths[column]-1-2] = '\0';
+//             //     sprintf(print_string, "%s", field);
+
+//             //     field[column_lengths[column]-1-2] = replaced_char;
+//             //     printf("%s|", print_string);
+//             //     continue;
+//             // }
+
+//             num_spaces = (column_lengths[column]-field_strlen) / 2;
+
+//             create_spaces_string(spaces, num_spaces, false, ' ');
+
+//             if (column == 0) printf("|");
+
+//             (field_strlen & 1 && field_strlen != (size_t)(column_lengths[column]-padding) && head_strlens[column] & 1) ? printf("%s%s%s\b|", spaces, field, spaces) : printf("%s%s%s|", spaces, field, spaces);
+
+//         }
+//         printf("\n");
+//     }
+
+//     return true;
+// }
+
+// bool printDataTable(csvWizard *self) {
+
+//     printf("\t<DATA SQL STYLE>\n\n");
+//     uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than MAX_FIELD_PRINT_LENGTH */
+//     size_t head_strlens[self->columnCount];
+//     uint8_t padding = 5;
+
+
+//     // Go through ever column and remember what the longest string length
+//     for (uint32_t column = 0; column < self->columnCount; column++) {
+
+//         size_t head_strlen = strlen(self->header[column]);
+
+//         if ((head_strlen + padding > MAX_FIELD_PRINT_LENGTH) && (self->aggregate[column].longest_field_strlen + padding > MAX_FIELD_PRINT_LENGTH)) column_lengths[column] = MAX_FIELD_PRINT_LENGTH;
+//         else if (head_strlen > self->aggregate[column].longest_field_strlen) column_lengths[column] = head_strlen + padding;
+//         else column_lengths[column] = self->aggregate[column].longest_field_strlen + padding;
+
+//         head_strlens[column] = head_strlen;
+
+//     }
+
+//     char spaces[MAX_FIELD_PRINT_LENGTH];
+//     uint8_t num_spaces = 0;
+//     char print_string[MAX_FIELD_PRINT_LENGTH];
+
+//     // DOES NOT WORK IF field_strlen > MAX_FIELD_PRINT_LENGTH
+//     // Print
+//     // for (double row = -1.5; row < (intmax_t) self->rowCount; row += 0.5) {
+//     for (intmax_t row = -3; row < (intmax_t) self->rowCount+1; row++) {
+
+//         for (uint32_t column = 0; column < self->columnCount; column++) {
+
+//             // signed long row_truncated = row;
+//             // double row_decimal = row - row_truncated;
+
+//             if (row == -2) {
+
+//                 // Print Header
+
+//                 // if (head_strlens[column] > (size_t)column_lengths[column]-2) {
+//                 //     // printf("too big head");
+//                 //     char replaced_char = self->header[column][column_lengths[column]-1-2];
+//                 //     self->header[column][column_lengths[column]-1-2] = '\0';
+//                 //     sprintf(print_string, "%s", self->header[column]);
+
+//                 //     self->header[column][column_lengths[column]-1-2] = replaced_char;
+//                 //     printf("%s|", print_string);
+//                 //     continue;
+//                 // }
+
+//                 num_spaces = (column_lengths[column]-head_strlens[column]) / 2;
+
+//                 create_spaces_string(spaces, num_spaces, false, ' ');
+
+//                 (column == 0) ? printf("|%s%s%s|", spaces, self->header[column], spaces) : printf("%s%s%s|", spaces, self->header[column], spaces);
+//                 continue;
+//             }
+//             // else if (row_decimal != 0) {
+//             else if (row < 0 || row == (intmax_t) self->rowCount) {
+//                 // Dashes (before/after header and after all data)
+
+//                 create_spaces_string(spaces, column_lengths[column]-2, false, '-');
+//                 (column == 0) ? printf("+%s+", spaces) : printf("%s+", spaces);
+
+//                 continue;
+//             }
+
+//             // Get current field
+//             char *field = NULL;
+//             if (self->grid_v3 != NULL) field = self->grid_v3[(uint32_t)row][column];
+
+//             if (field[0] == '\0') field = self->missingValue;
+
+//             size_t field_strlen = strlen(field);
+
+//             // if (field_strlen > column_lengths[column]) {
+//             //     char replaced_char = field[column_lengths[column]-1-2];
+//             //     field[column_lengths[column]-1-2] = '\0';
+//             //     sprintf(print_string, "%s", field);
+
+//             //     field[column_lengths[column]-1-2] = replaced_char;
+//             //     printf("%s|", print_string);
+//             //     continue;
+//             // }
+
+//             num_spaces = (column_lengths[column]-field_strlen) / 2;
+
+//             create_spaces_string(spaces, num_spaces, false, ' ');
+
+//             if (column == 0) printf("|");
+
+//             (field_strlen & 1 && field_strlen != (size_t)(column_lengths[column]-padding) && head_strlens[column] & 1) ? printf("%s%s%s\b|", spaces, field, spaces) : printf("%s%s%s|", spaces, field, spaces);
+
+//         }
+//         printf("\n");
+//     }
+
+//     return true;
+// }
 
 bool printData(csvWizard *self) {
 
@@ -3650,7 +3744,7 @@ bool printStats(csvWizard *self, char *column_name) {
         ValueCount *current_sorted = (ValueCount*)malloc(sizeof(ValueCount));
         if (current_sorted == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
 
-        bool first_value = true;
+        bool first_value = true, values_exist = false;
 
         // Iterate through alpha value count array
         for (int l = 0; l < 27; l++) {
@@ -3658,6 +3752,8 @@ bool printStats(csvWizard *self, char *column_name) {
 
             // Traverse linked list for current alpha character
             while (tmp != NULL) {
+
+                values_exist = true;
 
                 //  Realloc sorted array
                 if (!first_value) {
@@ -3674,10 +3770,10 @@ bool printStats(csvWizard *self, char *column_name) {
 
             }
 
-
         }
 
-        unique_values[c] = ++current_unique_values;
+        // Keep track of unique values for current non-numeric column
+        unique_values[c] = (values_exist) ? ++current_unique_values : 0;
 
         if (current_unique_values > most_unique_values) most_unique_values = current_unique_values;
 
@@ -3716,48 +3812,76 @@ bool printStats(csvWizard *self, char *column_name) {
     //     }
     //     printf("\n");
     // }
+    bool with_divider = true;
 
-    for (int32_t v = -3; v < most_unique_values; v++) {
+    for (int32_t v = -2; v < most_unique_values+4; v++) {
 
         for (uint32_t c = 0; c < non_numeric_column_count; c++) {
 
             uint32_t column_index = non_numeric_columns[c];
 
-            size_t column_strlen = strlen(self->header[column_index]) + 39;
+            // Column string length sets the length for that column
+            size_t column_strlen = strlen(self->header[column_index]) + 31;
 
             // Print column name
-            if (v == -3) {
-                has_quotes(self->header[c]) ? printf("%s <Aggregate Data>%20c", self->header[column_index], space) : printf("'%s' <Aggregate Data>%20c", self->header[column_index], space);
+            if (v == -2) {
+                has_quotes(self->header[c]) ? printf("%s <Aggregate Data>%10c| ", self->header[column_index], space) : printf("'%s' <Aggregate Data>%10c| ", self->header[column_index], space);
                 continue;
             }
-            else if (v == -2) {
+            else if (v == -1 || v == most_unique_values) {
+                // This create a line break after column head / after values are printed, before unique values is printed
+                char dashes[column_strlen+1];
+                char char_to_print = (v == -1) ? '-' : ' ';
+                create_spaces_string(dashes, column_strlen+1, with_divider, char_to_print);
+                if (c == (uint32_t)non_numeric_column_count-1) dashes[column_strlen-1] = '\0';
+                printf("%s", dashes);
+
+                continue;
+            }
+            else if (v == most_unique_values+1) {
+                // Print Unique Values
                 char unique_string[32];
                 sprintf(unique_string, "Unique values: %u", unique_values[c]);
 
                 int8_t num_spaces = column_strlen - strlen(unique_string);
                 char spaces[num_spaces+1];
-                for (uint8_t s = 0; s < num_spaces+1; s++) spaces[s] = (s == num_spaces) ? '\0' : ' ';
+                create_spaces_string(spaces, num_spaces+1, with_divider, ' ');
 
                 printf("%s%s", unique_string, spaces);
                 continue;
-            } else if (v == -1) {
-                // printf(" ");
-                // for (uint8_t i = 0; i < column_strlen; i++) printf("-");
-                // printf(" ");
+            }
+            else if (v == most_unique_values+2) {
+                // Print Is Null
+                bool is_null = true;
+                uint32_t column_index = non_numeric_columns[c];
+                print_stats_is_not_null_(self, column_strlen, column_index, is_null);
+                continue;
+            }
+            else if (v == most_unique_values+3) {
+                // Print Not Null
+                bool is_null = false;
+                uint32_t column_index = non_numeric_columns[c];
+                print_stats_is_not_null_(self, column_strlen, column_index, is_null);
                 continue;
             }
 
-            if (unique_values[c] <= v) continue;
+
+            // Print spaces if no more values to dislay for this column
+            if (unique_values[c] <= v) {
+                char spaces[column_strlen+1];
+                create_spaces_string(spaces, column_strlen+1, with_divider, ' ');
+                printf("%s", spaces);
+                continue;
+            }
 
             char print_string[64];
-
             has_quotes(sorted[c][v].value) ? sprintf(print_string, "Value: %s", sorted[c][v].value) : sprintf(print_string, "Value: '%s'", sorted[c][v].value);
 
             uint8_t value_strlen = strlen(print_string);
 
             char count_string[32];
 
-            sprintf(count_string, "Count: %ld   ", sorted[c][v].count);
+            sprintf(count_string, "Count: %ld | ", sorted[c][v].count);
 
             size_t count_strlen = strlen(count_string);
 
@@ -3777,7 +3901,9 @@ bool printStats(csvWizard *self, char *column_name) {
             }
 
         }
-        (v == most_unique_values-1) ? printf("\n\n") : printf("\n");
+
+        // (v == most_unique_values-1) ? printf("\n\n") : printf("\n");
+        printf("\n");
     }
 
     // Free arrays
@@ -3788,6 +3914,19 @@ bool printStats(csvWizard *self, char *column_name) {
     return true;
 }
 
+void print_stats_is_not_null_(csvWizard *self, size_t column_strlen, uint32_t column_index, bool is_null) {
+
+    char print_string[32];
+    is_null ? sprintf(print_string, "Is Null %ld", self->aggregate[column_index].is_null) : sprintf(print_string, "Not Null %ld", self->aggregate[column_index].not_null);
+    char spaces[32];
+    bool with_divider = true;
+    uint8_t num_spaces = column_strlen - strlen(print_string) + 1;
+    create_spaces_string(spaces, num_spaces, with_divider, ' ');
+
+    (!is_null && column_index == self->columnCount-1) ? printf("%s%s\n", print_string, spaces) : printf("%s%s", print_string, spaces);
+
+    return;
+}
 
 
 //         // PRINT STATS() (side by side) and Sorted Value Counts Works :)
@@ -3984,7 +4123,7 @@ void freeAll(csvWizard *self) {
 
     if (self == NULL) return;
 
-    if (self->filename != NULL) // temp turned off while filename is read only string literal
+    if (self->filename != NULL)
         free_null(&self->filename);
 
     if (self->file_ptr != NULL)
@@ -4023,6 +4162,7 @@ void freeAll(csvWizard *self) {
 
     if (self->tmp_column != NULL) {free(self->tmp_column); self->tmp_column = NULL;}
 
+    self = NULL;
 
     return;
 }
@@ -4067,7 +4207,6 @@ bool free_grid_v3(csvWizard *self) {
     for (uintmax_t i = 0; i < self->rowCount; i++) {
 
         for (uintmax_t j = 0; j < self->columnCount; j++) {
-            // printf("About to free: %s\n", self->grid_v3[i][j]);
             free_null(&self->grid_v3[i][j]);
         }
 
@@ -4290,59 +4429,3 @@ char *format_number(double value){
 
 }
 
-
-
-//      ___ IF_ERROR() ___
-uint8_t if_error(uint8_t error_code, const char *function_name)
-{
-    /* THIS FUNCTION: 1. Takes error code and function name
-                      2. Creates error_log.csv if doesn't already exist
-                      3. Concatontates error_code with function code to create final error code
-                      4. Generates error message from error code and function name
-                      5. Appends error code, error message and timestamp to error log, prints message to terminal. */
-
-    // Declare array of strings of failed function
-    const char *FAILED_FUNCTIONS[5] = {"malloc()", "scanf()", "realloc()", "fopen()", "fread()"};
-
-    // Decalre array of string of function names, inside of which above functions might fail (for now, simply a list of all functions in this library)
-    const char *LIST_OF_CSV_FUNCTIONS[NUM_OF_FUNCTIONS] = {"build_dblink_list", "build_dict_link_list", "read_file_v1", "string_into_2d_array", "update_csv_index",
-                                            "read_file_v2", "csv_reader_index", "add_quotes", "index_2darray_csv", "split_2darray_by", "headerReader", "csv_dictreader_index",
-                                            "dictReader", "get_field_dict", "update_dict_and_csv", "inf_buffer", "get_uint", "is_ext", "print_lnk_list",
-                                            "print_dict_list", "free_list", "free_dict_list", "free_null", "fclose_null", "if_error"};
-
-    // Find corresponding number for function that failed
-    uint8_t libcsv_function_code = 0;
-    for (uint8_t i = 0; i < NUM_OF_FUNCTIONS; i++) {
-        if (strcasecmp(LIST_OF_CSV_FUNCTIONS[i], function_name) == 0) {
-            libcsv_function_code = i;
-            break;
-        }
-    }
-
-    // Concatonate error codes
-    char concatonated_error_code[5];
-    sprintf(concatonated_error_code, "%i", error_code);
-    sprintf(&concatonated_error_code[1], "%i", libcsv_function_code);
-    uint8_t final_error_code = atoi(concatonated_error_code);
-
-    // Open error_log to append
-    FILE *file = fopen("error_log.csv", "a");
-    if (file == NULL) {printf("Error: fopen failed while trying to log error.\n"); exit(1);}
-
-    // Create timestamp
-    time_t t;
-    time(&t);
-    const char *timestamp = ctime(&t);
-
-    // Append to error log - (timestamp has '\n' at end so no need for '\n' in fprintf())
-    // Note: error messages start indexing from 1 (of course 0 is success), so index into ERROR_MESSAGES using error_code - 1
-    fprintf(file, "%i,%s failed in %s(),%s", final_error_code, FAILED_FUNCTIONS[error_code-1], function_name, timestamp);
-
-    // Print to terminal
-    printf("ERROR: %i,%s failed in %s(),%s", final_error_code, FAILED_FUNCTIONS[error_code-1], function_name, timestamp);
-
-    fclose_null(&file);
-    // exit(final_error_code);
-
-    return final_error_code;
-}

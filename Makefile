@@ -24,7 +24,7 @@ $(OBJ)/%.o:$(SRC)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BIN):$(OBJS)
-	$(CC) -o $@ $^
+	$(CC) -o $@ $^ -lm # Note: Must manually link math library here, because the C standard math library has been separated from the C standard library, so it is not automatically linked by default!
 
 dist:
 	rm -f *.tgz *.tar.gz

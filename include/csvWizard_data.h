@@ -20,6 +20,7 @@ enum ErrorCodes {MALLOC_FAILED=1, REALLOC_FAILED, SCANF_FAILED, FOPEN_FAILED, FR
 #define MISSING_VALUE "---" /* This is the default missing value, which gets assigned to the char * */
 
 #define FILENAME_BUFFER_SIZE 255
+#define MAX_FIELD_PRINT_LENGTH 50 /* This number INCLUDES the borders of the table (i.e. '|' and '+') */
 
 
 // Doubly Linked Node
@@ -54,6 +55,8 @@ typedef struct ValueCount {
 
 typedef struct Aggregate {
     char *column_name; /* This will point to the same char *column_name in the header array */
+
+    // For numeric columns:
     bool is_number;
     double min;
     double lower_qrt;
@@ -62,11 +65,15 @@ typedef struct Aggregate {
     double max;
     double sum;
     double mean;
-
     double std;
+
+    // For numeric AND non-numeric columns:
+    size_t longest_field_strlen;
 
     uintmax_t is_null;
     uintmax_t not_null;
+
+    // For non-numeric columns:
     struct ValueCount **value_counts;
 
 } Aggregate;
@@ -86,10 +93,10 @@ typedef struct csvWizard {
     bool printRowIndex;
     uintmax_t maxPrintRows;
     bool print_truncated_rows;
-    uint32_t longest_field_strlen;
     bool in_place_sort;
     intmax_t row_to_drop; /* Will be set as -1 by default */
     bool generic_header;
+    bool print_filter;
 
     uint8_t max_row_digits;
     bool destructive_mode;
@@ -124,6 +131,8 @@ typedef struct csvWizard {
     // -- Function pointers --
 
     char *(*userInputFilename)(struct csvWizard *self, char *prompt);
+    bool (*changeFilename)(struct csvWizard *self, char *filename);
+
     // .csv - (Functions that read/write directly to CSV file)
     struct {
         bool (*openFile)(struct csvWizard *self, char *filename);
@@ -159,6 +168,7 @@ typedef struct csvWizard {
     bool (*printHeader)(struct csvWizard *self);
     bool (*printColumn)(struct csvWizard *self, char *column_name);
     bool (*printData)(struct csvWizard *self);
+    bool (*printDataTable)(struct csvWizard *self);
     bool (*printStats)(struct csvWizard *self, char *column_name);
     bool (*printShape)(struct csvWizard *self);
     void (*freeAll)(struct csvWizard *self);
@@ -210,6 +220,7 @@ bool rearrange_dict_array(csvWizard *self, dict values[]);
 csvWizard csvWizardConstructor(void);
 
 char *userInputFilename(csvWizard *self, char *prompt);
+bool changeFilename(csvWizard *self, char *filename);
 
 intmax_t findColumnIndex(csvWizard *self, const char *desired_column);
 
@@ -223,11 +234,13 @@ bool changeColumnName(csvWizard *self, char *old_column_name, char *new_column_n
 void formatHeader(csvWizard *self);
 bool printHeader(csvWizard *self);
 bool printColumn(csvWizard *self, char *column_name);
+bool printDataTable(csvWizard *self);
 bool printData(csvWizard *self);
 bool print_data_internal(csvWizard *self);
 bool printHead(csvWizard *self, uintmax_t number_of_rows);
 bool printTail(csvWizard *self, uintmax_t number_of_rows);
 bool printStats(csvWizard *self, char *column_name);
+void print_stats_is_not_null_(csvWizard *self, size_t column_strlen, uint32_t column_index, bool is_null);
 bool printShape(csvWizard *self);
 char *changeMissingValue(csvWizard *self, char *missingValue);
 
@@ -266,10 +279,11 @@ bool dict_grid_replace(csvWizard *self, char *to_replace, char *replace_with, in
 char *getField(csvWizard *self, uintmax_t desired_row, uintmax_t desired_column);
 char *getField2(csvWizard *self, uintmax_t desired_row, char *desired_column);
 
+bool dropRowsFilter(csvWizard *self, char *column_name, char *condition_operator, char *condition_value);
+bool filter(csvWizard *self, csvWizard *filteredData, char *column_name, char *condition_operator, char *condition_value);
 bool printColumnCond(csvWizard *self, char *column_name, char *condition_operator, char *condition_num);
-bool get_fields_cond_grid_v3(csvWizard *self, uintmax_t desired_column, char *condition_operator, char *condition_value);
-bool get_fields_cond_grid(csvWizard *self, uintmax_t desired_column, char *condition_operator, char *condition_value);
-bool get_fields_cond_dict(csvWizard *self, char *desired_column, char *condition_operator, char *condition_value);
+bool filter_internal_(csvWizard *self, uintmax_t desired_column, char *condition_operator, char *condition_value, csvWizard *new_data, bool print, bool drop_rows);
+
 
 
     /* _internal_ */
@@ -294,26 +308,7 @@ bool sortRowsByColumn(csvWizard *self, const char *column_name, const char *asc_
 bool compare_for_sort_(char *field1, char *field2, bool ascending, bool case_sensitive, bool is_number);
 
 
-// Util
-bool is_number(char *s);
-bool is_numeric(char *s);
-bool is_hex(char *s);
-bool has_quotes(char *s);
-bool has_comma(char *s);
-bool add_quotes(char **s);
-char *remove_quotes(csvWizard *self, char *s);
-bool verify_column(char **header, uintmax_t column_count, char *column);
-int strcmp_quotes(const char *s1, const char *s2, bool case_sensitive);
-void get_ptr_to_correct_column(intmax_t correct_column, node **node_ptr, dict_node **dict_ptr);
 
-char *inf_buffer(char *prompt);
-uint64_t get_uint(char *prompt);
-bool is_ext(char *filename, char *ext);
-bool convert_to_csv(csvWizard *self, char *filename);
-
-char *append_last_retrieved_fields(csvWizard *self, char **field);
-
-void calc_max_row_digits(csvWizard *self);
 void print_grid_v3(csvWizard *self);
 void print_grid(csvWizard *self);
 bool print_lnk_list(csvWizard *self, node *head, uintmax_t current_row);
@@ -334,7 +329,6 @@ bool free_value_counts(csvWizard *self);
 void free_last_retrieved_fields(csvWizard *self);
 bool free_null(char **s);
 bool fclose_null(FILE **file);
-uint8_t if_error(uint8_t error_code, const char *function_name);
 
 
 #endif /* CSVWIZARD_DATA_H */

@@ -1,6 +1,9 @@
 #include <csvWizard_file_io.h>
 #include <csvWizard_stats.h>
+#include <csvWizard_util.h>
 
+
+//      OPEN FILE()
 bool openFile(csvWizard *self, char *filename) {
 
     /* This function will use the input parameter filename if one is given. Otherwise it will use self->filename. If both filename and self->filname are NULL, it will return false */
@@ -305,8 +308,13 @@ char ***reader_v3(csvWizard *self) {
 
             if (add_null) {
                 s[i] = '\0'; /* Do not free this string. It will be taken over by node in linked list and freed when linked list is freed. */
-                if (i > self->longest_field_strlen) self->longest_field_strlen = i;
+
+                // Longest field length for this column
+                if (i > self->aggregate[current_column].longest_field_strlen) self->aggregate[current_column].longest_field_strlen = i;
             }
+
+            // Skip breaks in the csv
+            if (s[0] == '\n' && current_column == 0) {free(self->grid_v3[--row_count]); free_null(&s); break;}
 
             if (strcmp(s, self->header[current_column]) == 0) {
                 free_null(&s);
@@ -334,6 +342,7 @@ char ***reader_v3(csvWizard *self) {
                     // Record that this column is a number field if has not already been recorded
                     if (!self->aggregate[current_column].is_number) self->aggregate[current_column].is_number = true;
 
+
                 }
                 else increment_decrement_value_count(self, self->header[current_column], s, true);
 
@@ -348,7 +357,7 @@ char ***reader_v3(csvWizard *self) {
             }
 
             // Append node to linked list
-            if (s[0] == '\n' && current_column == 0) {row_count--; free_null(&s); break;}
+            // if (s[0] == '\n' && current_column == 0) {row_count--; free_null(&s); break;}
             // build_dblink_list(&s, &self->grid_v3[(row_count)-1], &last)
             self->grid_v3[row_count-1][current_column] = s;
 
@@ -376,6 +385,7 @@ char ***reader_v3(csvWizard *self) {
     for (uintmax_t i = 0; i < self->columnCount; i++) self->aggregate[i].mean = self->aggregate[i].sum / self->aggregate[i].not_null;
     calc_std(self);
     find_median(self);
+
 
     return self->grid_v3;
 }
@@ -474,8 +484,13 @@ node **reader(csvWizard *self) {
 
             if (add_null) {
                 s[i] = '\0'; /* Do not free this string. It will be taken over by node in linked list and freed when linked list is freed. */
-                if (i > self->longest_field_strlen) self->longest_field_strlen = i;
+
+                // Longest field length for this column
+                if (i > self->aggregate[current_column].longest_field_strlen) self->aggregate[current_column].longest_field_strlen = i;
             }
+
+            // Skip breaks in the csv
+            if (s[0] == '\n' && current_column == 0) {row_count--; free_null(&s); break;}
 
             if (strcmp(s, self->header[current_column]) == 0) {
                 free_null(&s);
@@ -517,7 +532,7 @@ node **reader(csvWizard *self) {
             }
 
             // Append node to linked list
-            if (s[0] == '\n' && current_column == 0) {row_count--; free_null(&s); break;}
+            // if (s[0] == '\n' && current_column == 0) {printf("row COUNT: %ld\n", row_count);row_count--; free_null(&s); break;}
             build_dblink_list(&s, &self->grid[(row_count)-1], &last);
 
             if (end_of_row) break;
@@ -639,8 +654,13 @@ dict_node **dictReader(csvWizard *self) {
 
             if (add_null) {
                 s[i] = '\0'; /* Do not free this string. It will be taken over by node in linked list and freed when linked list is freed. */
-                if (i > self->longest_field_strlen) self->longest_field_strlen = i;
+
+                // Longest field length for this column
+                if (i > self->aggregate[current_column].longest_field_strlen) self->aggregate[current_column].longest_field_strlen = i;
             }
+
+            // Skip breaks in the csv
+            if (s[0] == '\n' && current_column == 0) {;row_count--; free_null(&s); break;}
 
             if (strcmp(s, self->header[current_column]) == 0) {
                 free_null(&s);
@@ -682,7 +702,7 @@ dict_node **dictReader(csvWizard *self) {
             }
 
             // Append node to linked list
-            if (s[0] == '\n' && current_column == 0) {row_count--; free_null(&s); break;}
+            // if (s[0] == '\n' && current_column == 0) {row_count--; free_null(&s); break;}
             build_dict_link_list(&s, &self->dict_grid[(row_count)-1], &last, &self->header[current_column]);
 
             if (end_of_row) break;

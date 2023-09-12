@@ -63,7 +63,7 @@ obj/csvWizard_stats.o: src/csvWizard_stats.c /usr/include/stdc-predef.h \
  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
- /usr/include/x86_64-linux-gnu/bits/mathcalls.h
+ /usr/include/x86_64-linux-gnu/bits/mathcalls.h include/csvWizard_util.h
 /usr/include/stdc-predef.h:
 include/csvWizard_stats.h:
 include/csvWizard_data.h:
@@ -141,3 +141,4 @@ include/csvWizard_data.h:
 /usr/include/x86_64-linux-gnu/bits/fp-fast.h:
 /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h:
 /usr/include/x86_64-linux-gnu/bits/mathcalls.h:
+include/csvWizard_util.h:
