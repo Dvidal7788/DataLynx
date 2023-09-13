@@ -8,7 +8,25 @@ This is a library of functions written in C, for use in C programs, inspired by 
 <hr>
 
 
-<h5 align="center">BUILD_DBLINK_LIST()</h5>
+<h5 align="center">csvWizardConstructor()</h5>
+<h6 align="center">csvWizard csvWizardConstructor(void)</h6>
+<ul>
+  <li>PARAMETERS: This function takes no parameters</li>
+  <li>TO USE:</li>
+  <ol>
+	<li>Declare a csvWizard object and assign the return of this function to the object</li>
+  </ol>
+	<li>Example Code:</li>
+		```
+csvWizard myData = csvWizardConstructor();
+```
+  <li>RETURN: Returns a csvWizard struct (i.e. 'object').</li>
+</ul>
+![csvWizardConstructor](https://user-images.githubusercontent.com/91298183/267458924-a89e2e29-98ae-4ba9-a588-591f380f3787.png)
+
+<img src="https://user-images.githubusercontent.com/91298183/267458924-a89e2e29-98ae-4ba9-a588-591f380f3787.png">
+
+<h5 align="center">csv.openFile()</h5>
 <h6 align="center">void build_dblink_list(char **s_ptr, node **head, node **last)</h6>
 <ul>
   <li>PARAMETERS: Takes pointer to string that will is intended to be in node, pointer to head node pointer and pointer to last node pointer. All 3 need to be pointers to pointers, so I can changed what they are pointing to inside the function. NOTE: String input must be dyamically allocated string, as this buffer will be taken over by linked list node. Otherwise buffer will be popped off the stack in calling function. Can not be string literal, otherwise will be popped off the stack when this function returns.</li>
