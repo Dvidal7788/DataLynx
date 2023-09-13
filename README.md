@@ -1,30 +1,48 @@
-​​# CSV Library
-Library for reading and updating csv files
+​​# Library in C for Data Wrangling & Analytics
 
-This is a library of functions written in C, for use in C programs, inspired by Python's csv library, giving you similiar functionality to dicts among several other data structures read from csv files.
+This is a library of functions written in C, for use in C programs, inspired by Python's standard CSV library as well as Pandas & SQLite3, giving the user an ease of use similar to Object-Oriented Programming, but with the low-level control that C offers. This library has functionality to read/write from/to CSV files as well as data clean up and statistical analysis functionality. My goal is to bridge the gap between Python and C, and explore what it takes to write the underlying implementation of libraries that one might otherwise take for granted if accustomed to programming in higher-level languages like Python.
+
+---
+>NOTE: In order to acheive Object-Oriented style functionality, the first parameter for every user-facing function must be the address of the dataLynx struct (or 'object') you have declared / constructed using the constructor (e.g. myData.function(&myData)). Although this is of course not a true object in the OOP sense, moving forward I will be referring to dataLynx structs as objects since this is the intended use of the struct.
 
 <hr>
-<h3 align="center">LIST OF FUNCTIONS:</h3>
+<h3 align="center">FUNCTIONS:</h3>
+<div align="center">
+	
+###### The following is a complete list of *user-facing* functions 
+</div>
 <hr>
 
 
-<h5 align="center">csvWizardConstructor()</h5>
-<h6 align="center">csvWizard csvWizardConstructor(void)</h6>
+<h4 align="center">dataLynxConstructor()</h4>
+<h6 align="center">dataLynx dataLynxConstructor(void)</h6>
+
+##### PARAMETERS:
 <ul>
-  <li>PARAMETERS: This function takes no parameters</li>
-  <li>TO USE:</li>
-  <ol>
-	<li>Declare a csvWizard object and assign the return of this function to the object</li>
-  </ol>
-	<li>Example Code:</li>
-		```
-csvWizard myData = csvWizardConstructor();
-```
-  <li>RETURN: Returns a csvWizard struct (i.e. 'object').</li>
+	
+###### <li>This function takes no parameters</li>
 </ul>
-![csvWizardConstructor](https://user-images.githubusercontent.com/91298183/267458924-a89e2e29-98ae-4ba9-a588-591f380f3787.png)
 
-<img src="https://user-images.githubusercontent.com/91298183/267458924-a89e2e29-98ae-4ba9-a588-591f380f3787.png">
+##### To Use:
+<ul>
+
+###### <li>Declare a dataLynx object and assign the return of this function to the object</li>
+</ul>
+
+##### RETURN:
+<ul>
+	
+###### <li>Returns a dataLynx struct (i.e. 'object').</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+dataLynx myData = dataLynxConstructor();
+```
+<hr>
+
 
 <h5 align="center">csv.openFile()</h5>
 <h6 align="center">void build_dblink_list(char **s_ptr, node **head, node **last)</h6>
