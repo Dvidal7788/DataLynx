@@ -19,7 +19,8 @@ This is a library of functions written in C, for use in C programs, inspired by 
 	<li>Declare a csvWizard object and assign the return of this function to the object</li>
   </ol>
 	<li>Example Code:</li>
-		```
+		
+```C
 csvWizard myData = csvWizardConstructor();
 ```
   <li>RETURN: Returns a csvWizard struct (i.e. 'object').</li>
