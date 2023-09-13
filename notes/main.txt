@@ -28,7 +28,6 @@ int main(void)
     // csv.headerReader(&myData);          /* header  */
     // fileReader(&myData);                /* Raw     */
     // fileRowReader(&myData);             /* Rows    */
-
     myData.csv.reader_v3(&myData);      /* Grid_v3 */
     // myData.csv.reader(&myData);         /* Grid    */
     // myData.csv.dictReader(&myData);        /* Dict    */
@@ -37,17 +36,9 @@ int main(void)
     // myData.printData(&myData);
     // myData.printStats(&myData, "all");
 
-    // print one column / one column's stats
-    // myData.printColumn(&myData, "Name");
-    // myData.printStats(&myData, "Name");
-
-    // // Get one specific stat
-    // printf("Sum: %.2f\n\n", myData.getStat(&myData, "Ext", "sum"));
-    // printf("Sum: %.2f\n\n", myData.sum(&myData, "Ext"));
 
 
-    //          -- FIX HEADER --
-    myData.formatHeader(&myData); /* Format to title case (i.e. first letter of every work capitalized) */
+    myData.formatHeader(&myData);
     myData.changeColumnName(&myData, "Dept", "Department");
 
 
@@ -55,27 +46,39 @@ int main(void)
     //      ---- REPLACE ----
     // printf("\nREPLACE:\n");
 
-    myData.replace(&myData, "?", ""); /* Replace all instances if '?' with NULL */
+    myData.replace(&myData, "?", "");
     // myData.replaceInColumn(&myData, "Name", "?", "TEST");
 
 
+    // Print
+    // myData.printData(&myData);
+
+    // print one column
+    // myData.printColumn(&myData, "Name");
+
+    // Print One column's stats
+    // myData.printStats(&myData, "Name");
+
+    // // Print one specific stat
+    // printf("Sum: %.2f\n\n", myData.getStat(&myData, "Ext", "sum"));
+    // printf("Sum: %.2f\n\n", myData.sum(&myData, "Ext"));
 
     // // Sort by numberic column
     // // myData.sortRowsByColumn(&myData, "Salary, Data & Entries", "desc");
 
     // // Sort by non-numeric column
-    // myData.sortRowsByColumn(&myData, "Name", "ASC");
+    // myData.sortRowsByColumn(&myData, "Salary, Data & Entries", "ASC");
 
     // myData.printData(&myData);
 
 
 
-    //      --- Get Field (from memory) ---
+    // Get Field (from memory)
 
-    // printf("Get field: %s\n", myData.getField2(&myData, 2, "Department"));
+    // printf("Get field: %s\n", myData.getField2(&myData, 2, "Departmentooo"));
 
-    //          --- Filter ---
-    // myData.printColumnCond(&myData, "Name", "==", "Annie");
+    //          --- Filter --- - How to return rows so caller does not have to free it?
+    myData.printColumnCond(&myData, "Name", "==", "Annie");
 
     // dropRowsFilter(&myData, "emp_id", "<", "7777");
     // dropRow(&myData, 0);
@@ -156,7 +159,7 @@ int main(void)
     // myData.insertRow2(&myData, values);
 
     // dict values2[] = {{"Name", "Anna"}, {"Address", "123 Main Apt 2"}, {"Phone Number", "215-777"}};
-    dict values2[] = {{"Name", "Annie"}, {"emp_id", "2323"}, {"DEPARTmedNT", "Sales"}, {"Salary,  dATA & ENtRies", "65000"}, {"Test", "c"}, {"Edxt", "452"}};
+    dict values2[] = {{"Name", "Annie"}, {"emp_id", "2323"}, {"DEPARTmedNT", "Salesffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"}, {"Salary,  dATA & ENtRies", "65000"}, {"Test", "c"}, {"Edxt", "452"}};
 
 
     // if (!insertRow2(&myData, values)) return 1;

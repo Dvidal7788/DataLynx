@@ -14,7 +14,7 @@ bool openFile(csvWizard *self, char *filename) {
     const char *func_name = "csv.openFile";
 
 
-    if (filename == NULL && self->filename == NULL) return NULL;
+    if (filename == NULL && self->filename == NULL) return false;
     else if (filename != NULL) {
 
         /* Use input filename parameter */

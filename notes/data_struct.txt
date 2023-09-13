@@ -1,0 +1,15 @@
+Array:
+    - Retreival : CONSTANT TIME O(1)
+    - Resizing (appending, prepending, inserting) - O(n)
+
+
+Linked List:
+    - Retreival : O(n)
+    - Resizing (appending, prepending) - CONSTANT O(1)
+
+    Single
+    Double: Inserting, deleting O(1) ONLY if you have a pointer to the node you want to delete or insert infront ofor behind of
+
+    Uses less memory? How is this??
+
+
