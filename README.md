@@ -1,4 +1,4 @@
-​​# Library in C for Data Wrangling & Analytics
+​​# Library in C for Data Wrangling, Data Cleaning & Analytics
 
 Overview:
 --------
