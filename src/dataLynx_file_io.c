@@ -1,10 +1,10 @@
-#include <csvWizard_file_io.h>
-#include <csvWizard_stats.h>
-#include <csvWizard_util.h>
+#include <dataLynx_file_io.h>
+#include <dataLynx_stats.h>
+#include <dataLynx_util.h>
 
 
 //      OPEN FILE()
-bool openFile(csvWizard *self, char *filename) {
+bool openFile(dataLynx *self, char *filename) {
 
     /* This function will use the input parameter filename if one is given. Otherwise it will use self->filename. If both filename and self->filname are NULL, it will return false */
 
@@ -44,7 +44,7 @@ bool openFile(csvWizard *self, char *filename) {
 
 
 // ---------- CSV.HEADERREADER() ----------
-char **headerReader(csvWizard *self) {
+char **headerReader(dataLynx *self) {
 
     if (self == NULL) return  NULL;
 
@@ -132,7 +132,7 @@ char **headerReader(csvWizard *self) {
 
 
 //      ___ READ FILE ___ (V1 - ONE LONG STRING)
-char *fileReader(csvWizard *self) {
+char *fileReader(dataLynx *self) {
 
     /* THIS FUNCTION: Reads a text based file (i.e. .csv, .txt etc) into one long string */
 
@@ -191,7 +191,7 @@ char *fileReader(csvWizard *self) {
 
 
 //      ___ fileRowReader ___ (V2 - 2D JAGGED ARRAY)
-char **fileRowReader(csvWizard *self) {
+char **fileRowReader(dataLynx *self) {
 
     /* THIS FUNCTION: READS FILE INTO DYNAMICALLY ALLOCATED JAGGED 2D ARRAY (Each row in file corresponds to string in array of strings) */
 
@@ -213,7 +213,7 @@ char **fileRowReader(csvWizard *self) {
 
 
 //       _________ cs.reader_v3() __________
-char ***reader_v3(csvWizard *self) {
+char ***reader_v3(dataLynx *self) {
 
     if (self == NULL) return NULL;
 
@@ -393,7 +393,7 @@ char ***reader_v3(csvWizard *self) {
 
 
 //      _________ csv.reader() __________
-node **reader(csvWizard *self) {
+node **reader(dataLynx *self) {
 
     if (self == NULL) return NULL;
 
@@ -561,7 +561,7 @@ node **reader(csvWizard *self) {
 }
 
 //      _____ CSV DICT READER _____
-dict_node **dictReader(csvWizard *self) {
+dict_node **dictReader(dataLynx *self) {
 
     if (self == NULL) return NULL;
 
@@ -732,7 +732,7 @@ dict_node **dictReader(csvWizard *self) {
         //  ---------- FIELD READERS ----------
 
 //      ___ CSV.FIELDREADER() ___
-char *fieldReader(csvWizard *self, uintmax_t desired_row, uintmax_t desired_column) {
+char *fieldReader(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column) {
 
     // Function name (for use in if_error()) (formerly csv_reader_index)
     const char *func_name = "csv.fieldReader";
@@ -818,7 +818,7 @@ char *fieldReader(csvWizard *self, uintmax_t desired_row, uintmax_t desired_colu
 
 
 //      ___ csv.fieldReader2() ___
-char *fieldReader2(csvWizard *self, uintmax_t desired_row, char *desired_column) {
+char *fieldReader2(dataLynx *self, uintmax_t desired_row, char *desired_column) {
 
     // Function name (for use in if_error()) (formerly csv_dictreader_index())
     // const char *func_name = "csv.fieldReader2";
@@ -845,7 +845,7 @@ char *fieldReader2(csvWizard *self, uintmax_t desired_row, char *desired_column)
 
 
 //      ___ UPDATE_CSV_INDEX() ___
-bool update_csv_index(csvWizard *self, uintmax_t row, uintmax_t column, char *new_field) {
+bool update_csv_index(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field) {
 
     if (self == NULL) return false;
     if (!self->csv_write_permission) return false;
@@ -978,7 +978,7 @@ bool update_csv_index(csvWizard *self, uintmax_t row, uintmax_t column, char *ne
 
 
 //          ____ UPDATE_CSV_INDEX2()___
-bool fieldWriter(csvWizard *self, uintmax_t row, char *column, char *new_field) {
+bool fieldWriter(dataLynx *self, uintmax_t row, char *column, char *new_field) {
 
     if (self == NULL) return false;
     if (!self->csv_write_permission) return false;
@@ -991,7 +991,7 @@ bool fieldWriter(csvWizard *self, uintmax_t row, char *column, char *new_field) 
 
 
 //      _____ csv.backup() _____
-bool backup(csvWizard *self) {
+bool backup(dataLynx *self) {
 
     if (self == NULL) return false;
     if (self->filename == NULL) return false;
@@ -1092,7 +1092,7 @@ bool backup(csvWizard *self) {
 
 
 //          --- CSV.WRITEDATA()  ---
-bool writeData(csvWizard *self, char *new_filename) {
+bool writeData(dataLynx *self, char *new_filename) {
 
     if (self == NULL) return false;
 

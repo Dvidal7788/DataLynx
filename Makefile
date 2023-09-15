@@ -1,4 +1,4 @@
-PROGRAM = csvWizard
+PROGRAM = dataLynx
 CC = gcc
 BIN = bin
 DIST = lib$(PROGRAM)_$(DATE)

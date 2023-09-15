@@ -12,8 +12,8 @@ Overview:
 <hr>
 <h3 align="center">FUNCTIONS:</h3>
 <div align="center">
-	
-###### The following is a complete list of *user-facing* functions. 
+
+###### The following is a complete list of *user-facing* functions.
 ###### (Assume the dataLynx object that was declared has been named myData.)
 </div>
 <hr>
@@ -24,7 +24,7 @@ Overview:
 
 ##### PARAMETERS:
 <ul>
-	
+
 ###### <li>This function takes no parameters</li>
 </ul>
 
@@ -36,7 +36,7 @@ Overview:
 
 ##### RETURN:
 <ul>
-	
+
 ###### <li>Returns a dataLynx struct (i.e. 'object').</li>
 </ul>
 
@@ -54,7 +54,7 @@ dataLynx myData = dataLynxConstructor();
 
 ##### PARAMETERS:
 <ul>
-	
+
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
 ###### <li>String of filename to open. (If the filename within your dataLynx object has already been set, you may pass NULL here.)</li>
 </ul>
@@ -67,7 +67,7 @@ dataLynx myData = dataLynxConstructor();
 
 ##### RETURN:
 <ul>
-	
+
 ###### <li>Returns true if the file is successfully opened</li>
 ###### <li>Returns false if the file is not successfully opened</li>
 </ul>
@@ -87,7 +87,7 @@ myData.csv.openFile(&myData, "csv/staff.csv");
 
 ##### PARAMETERS:
 <ul>
-	
+
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
 </ul>
 
@@ -103,7 +103,7 @@ myData.csv.openFile(&myData, "csv/staff.csv");
 
 ##### RETURN:
 <ul>
-	
+
 ###### <li>Returns the string in which the data is stored. You do not need to assign the string to anything, as it is automatically stored in myData.raw. The string is only returned for convenience (e.g. instances such as: `printf("%s", myData.csv.fileReader(&myData)` require the string be returned.</li>
 ###### <li>Returns NULL if any error occurs</li>
 </ul>
@@ -123,7 +123,7 @@ myData.csv.fileReader(&myData);
 
 ##### PARAMETERS:
 <ul>
-	
+
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
 </ul>
 
@@ -140,7 +140,7 @@ myData.csv.fileReader(&myData);
 
 ##### RETURN:
 <ul>
-	
+
 ###### <li>Returns a pointer to an array of strings in which the data is stored. You do not need to assign the string to anything, as it is automatically stored in myData.rows. The string is only returned for convenience (e.g. instances such as: `printf("%s", myData.csv.fileReader(&myData)` require the string be returned.</li>
 ###### <li>Returns NULL if any error occurs</li>
 </ul>
@@ -160,7 +160,7 @@ myData.csv.fileRowReader(&myData)
 
 ##### PARAMETERS:
 <ul>
-	
+
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
 </ul>
 
@@ -172,7 +172,7 @@ myData.csv.fileRowReader(&myData)
 
 ##### RETURN:
 <ul>
-	
+
 ###### <li>Returns a pointer to a 3D array (i.e. an array of arrays of strings). This is an array, which stores arrays (one for each row), each of which stores strings (one per field)</li>
 </ul>
 
@@ -191,7 +191,7 @@ myData.csv.fileRowReader(&myData)
 
 ##### PARAMETERS:
 <ul>
-	
+
 ###### <li></li>
 </ul>
 
@@ -203,7 +203,7 @@ myData.csv.fileRowReader(&myData)
 
 ##### RETURN:
 <ul>
-	
+
 ###### <li></li>
 </ul>
 
@@ -222,7 +222,7 @@ myData.csv.fileRowReader(&myData)
 
 ##### PARAMETERS:
 <ul>
-	
+
 ###### <li></li>
 </ul>
 
@@ -234,7 +234,7 @@ myData.csv.fileRowReader(&myData)
 
 ##### RETURN:
 <ul>
-	
+
 ###### <li></li>
 </ul>
 

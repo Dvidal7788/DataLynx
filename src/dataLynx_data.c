@@ -1,8 +1,8 @@
-#include <csvWizard.h>
+#include <dataLynx.h>
 
-csvWizard csvWizardConstructor(void) {
+dataLynx dataLynxConstructor(void) {
 
-    csvWizard self;
+    dataLynx self;
 
     self.filename = NULL;
     self.file_ptr = NULL;
@@ -123,7 +123,7 @@ csvWizard csvWizardConstructor(void) {
 
 
 
-bool createHeader(csvWizard *self, char *header[], uint32_t header_size) {
+bool createHeader(dataLynx *self, char *header[], uint32_t header_size) {
 
     /* - This function creates header from list input parameter
        - This function does NOT read from a file. */
@@ -181,7 +181,7 @@ bool createHeader(csvWizard *self, char *header[], uint32_t header_size) {
 
 
 
-bool insertRow(csvWizard *self, char *values[]) {
+bool insertRow(dataLynx *self, char *values[]) {
 
     // Safety checks
     if (self == NULL || values == NULL) return false;
@@ -221,7 +221,7 @@ bool insertRow(csvWizard *self, char *values[]) {
 
 // NULL valuees in insertROw
 
-bool insertRow2(csvWizard *self, dict values[]) {
+bool insertRow2(dataLynx *self, dict values[]) {
 
     // If inserting rows from scratch (i.e. not into existing data structure), will create grid_v3
 
@@ -357,7 +357,7 @@ bool insertRow2(csvWizard *self, dict values[]) {
 }
 
 
-bool rearrange_dict_array(csvWizard *self, dict values[]) {
+bool rearrange_dict_array(dataLynx *self, dict values[]) {
 
     /* THIS FUNCTION:
                 - Rearranges a dict array IF columns are not in correct order according to header */
@@ -406,7 +406,7 @@ bool rearrange_dict_array(csvWizard *self, dict values[]) {
 
 
 
-// bool createRow(csvWizard *self, uintmax_t row, const char *values[]) {
+// bool createRow(dataLynx *self, uintmax_t row, const char *values[]) {
 
 //     /* - This function will NOT update/change data if field already exists. This is ONLY for creating/inserting fields
 //        - Row must be rowCount-1 or rowCount, in which case we start new row, only if column is 0th column. Otherwise return false
@@ -453,7 +453,7 @@ bool rearrange_dict_array(csvWizard *self, dict values[]) {
 //     return true;
 // }
 
-// bool createData(csvWizard *self,  uintmax_t row, const char *header[], ) {
+// bool createData(dataLynx *self,  uintmax_t row, const char *header[], ) {
 
 //     /* - This function will NOT update/change data if field already exists. This is ONLY for creating/inserting fields
 //        - Row must be rowCount-1 or rowCount, in which case we start new row, only if column is 0th column. Otherwise return false
@@ -547,7 +547,7 @@ bool build_dict_link_list(char **s_ptr, dict_node **head, dict_node **last, char
     return true;
 }
 
-char *changeMissingValue(csvWizard *self, char *missingValue) {
+char *changeMissingValue(dataLynx *self, char *missingValue) {
 
     if (self == NULL || missingValue == NULL) return NULL;
 
@@ -571,7 +571,7 @@ char *changeMissingValue(csvWizard *self, char *missingValue) {
     return self->missingValue;
 }
 
-bool changeFilename(csvWizard *self, char *filename) {
+bool changeFilename(dataLynx *self, char *filename) {
 
     if (self == NULL || filename == NULL) return false;
 
@@ -589,7 +589,7 @@ bool changeFilename(csvWizard *self, char *filename) {
 }
 
 //          _______ USER INPUT FILENAME() ________
-char *userInputFilename(csvWizard *self, char *prompt) {
+char *userInputFilename(dataLynx *self, char *prompt) {
 
     if (self == NULL) return NULL;
 
@@ -622,7 +622,7 @@ char *userInputFilename(csvWizard *self, char *prompt) {
 
 
 // -- REPLACE --
-bool replace(csvWizard *self, char *to_replace, char *replace_with) {
+bool replace(dataLynx *self, char *to_replace, char *replace_with) {
 
     if (self == NULL || to_replace == NULL || replace_with == NULL) return false;
 
@@ -633,7 +633,7 @@ bool replace(csvWizard *self, char *to_replace, char *replace_with) {
     return false;
 }
 
-bool replaceInColumn(csvWizard *self, char *column_name, char *to_replace, char *replace_with) {
+bool replaceInColumn(dataLynx *self, char *column_name, char *to_replace, char *replace_with) {
 
     if (self == NULL) return false;
 
@@ -650,7 +650,7 @@ bool replaceInColumn(csvWizard *self, char *column_name, char *to_replace, char 
 
 
 // GRID REPLACE_v3
-bool grid_v3_replace(csvWizard *self, char *to_replace, char *replace_with, intmax_t column) {
+bool grid_v3_replace(dataLynx *self, char *to_replace, char *replace_with, intmax_t column) {
 
     /* column can not be unsinged, bc if -1 is passed, function will replace in all columns */
 
@@ -695,7 +695,7 @@ bool grid_v3_replace(csvWizard *self, char *to_replace, char *replace_with, intm
 
 
 // GRID REPLACE
-bool grid_replace(csvWizard *self, char *to_replace, char *replace_with, intmax_t column) {
+bool grid_replace(dataLynx *self, char *to_replace, char *replace_with, intmax_t column) {
 
     const char *func_name = "grid_replace";
 
@@ -732,7 +732,7 @@ bool grid_replace(csvWizard *self, char *to_replace, char *replace_with, intmax_
 }
 
 
-bool dict_grid_replace(csvWizard *self, char *to_replace, char *replace_with, intmax_t column) {
+bool dict_grid_replace(dataLynx *self, char *to_replace, char *replace_with, intmax_t column) {
 
     const char *func_name = "dict_grid_replace";
 
@@ -771,7 +771,7 @@ bool dict_grid_replace(csvWizard *self, char *to_replace, char *replace_with, in
 
 
 //          DROP COLUMN()
-bool dropColumn(csvWizard *self, char *column_name) {
+bool dropColumn(dataLynx *self, char *column_name) {
 
     if (self == NULL) return false;
 
@@ -904,7 +904,7 @@ bool dropColumn(csvWizard *self, char *column_name) {
 
 
 //      DROP ROW()
-bool dropRow(csvWizard *self, uintmax_t row_to_drop) {
+bool dropRow(dataLynx *self, uintmax_t row_to_drop) {
 
     // Safety checks
     if (self == NULL || row_to_drop > self->rowCount-1) return false;
@@ -1038,7 +1038,7 @@ uint8_t find_alpha_index(char *value) {
 
 
 //      _____ FIND_ROW_COUNT() _____
-uintmax_t find_row_count(csvWizard *self) {
+uintmax_t find_row_count(dataLynx *self) {
 
     if (self == NULL) return 0;
 
@@ -1067,7 +1067,7 @@ uintmax_t find_row_count(csvWizard *self) {
     return self->rowCount;
 }
 
-void formatHeader(csvWizard *self) {
+void formatHeader(dataLynx *self) {
 
     // Each column name
     for (uintmax_t i = 0; i < self->columnCount; i++) {
@@ -1090,7 +1090,7 @@ void formatHeader(csvWizard *self) {
     return;
 }
 
-bool changeColumnName(csvWizard *self, char *old_column_name, char *new_column_name) {
+bool changeColumnName(dataLynx *self, char *old_column_name, char *new_column_name) {
 
     if (self == NULL || old_column_name == NULL || new_column_name == NULL) return false;
     if (self->header == NULL) return false;
@@ -1129,7 +1129,7 @@ bool changeColumnName(csvWizard *self, char *old_column_name, char *new_column_n
 
 
 //      NEW STRIP FUNCTIONS:
-bool stripField(csvWizard *self, uintmax_t row, char *column_name) {
+bool stripField(dataLynx *self, uintmax_t row, char *column_name) {
 
     // Safety checks
     if (self == NULL || column_name == NULL) return false;
@@ -1160,7 +1160,7 @@ bool stripField(csvWizard *self, uintmax_t row, char *column_name) {
     return strip_internal_(self, row, column_index, field, grid_tmp, dict_tmp);
 }
 
-bool strip_internal_(csvWizard *self, uintmax_t row, uintmax_t column, char *field, node *grid_tmp, dict_node *dict_tmp) {
+bool strip_internal_(dataLynx *self, uintmax_t row, uintmax_t column, char *field, node *grid_tmp, dict_node *dict_tmp) {
 
     const char *func_name = "strip_internal_";
 
@@ -1218,7 +1218,7 @@ bool strip_internal_(csvWizard *self, uintmax_t row, uintmax_t column, char *fie
 
 }
 
-bool stripAll(csvWizard *self) {
+bool stripAll(dataLynx *self) {
 
     if (self == NULL) return false;
 
@@ -1253,7 +1253,7 @@ bool stripAll(csvWizard *self) {
 
 
 //         //  ORIGINAL STRIP FUNCTIONS:
-// bool stripColumn(csvWizard *self, char *column_name) {
+// bool stripColumn(dataLynx *self, char *column_name) {
 
 //     if (self == NULL || column_name == NULL) return false;
 
@@ -1277,7 +1277,7 @@ bool stripAll(csvWizard *self) {
 // }
 
 
-// bool strip(csvWizard *self) {
+// bool strip(dataLynx *self) {
 
 //     if (self == NULL) return false;
 
@@ -1374,7 +1374,7 @@ bool stripAll(csvWizard *self) {
 
 
 //          FILTER()
-bool filter(csvWizard *self, csvWizard *filteredData, char *column_name, char *condition_operator, char *condition_value) {
+bool filter(dataLynx *self, dataLynx *filteredData, char *column_name, char *condition_operator, char *condition_value) {
 
     /* THIS FUNCTION: Filters into a NEW data structure (currently only into a grid_v3, but can filter FROM any data structure) */
 
@@ -1395,7 +1395,7 @@ bool filter(csvWizard *self, csvWizard *filteredData, char *column_name, char *c
 
 
 // GET FIELD CONDITION
-bool printColumnCond(csvWizard *self, char *column_name, char *condition_operator, char *condition_value) {
+bool printColumnCond(dataLynx *self, char *column_name, char *condition_operator, char *condition_value) {
 
     // Safety Checks
     if (self == NULL || column_name == NULL || condition_operator == NULL || condition_value == NULL) return false;
@@ -1411,7 +1411,7 @@ bool printColumnCond(csvWizard *self, char *column_name, char *condition_operato
 
 }
 
-bool dropRowsFilter(csvWizard *self, char *column_name, char *condition_operator, char *condition_value) {
+bool dropRowsFilter(dataLynx *self, char *column_name, char *condition_operator, char *condition_value) {
 
     // Safety Checks
     if (self == NULL || column_name == NULL || condition_operator == NULL || condition_value == NULL) return false;
@@ -1431,7 +1431,7 @@ bool dropRowsFilter(csvWizard *self, char *column_name, char *condition_operator
 
 
 //      GET FIELDS CONDITION DICT()
-bool filter_internal_(csvWizard *self, uintmax_t desired_column, char *condition_operator, char *condition_value, csvWizard *new_data, bool print, bool drop_rows) {
+bool filter_internal_(dataLynx *self, uintmax_t desired_column, char *condition_operator, char *condition_value, dataLynx *new_data, bool print, bool drop_rows) {
 
     if (new_data != NULL && drop_rows) return false;
 
@@ -1615,7 +1615,7 @@ bool filter_internal_(csvWizard *self, uintmax_t desired_column, char *condition
 
 
 //          _____ GET_FIELD2() ____
-char *getField2(csvWizard *self, uintmax_t desired_row, char *desired_column) {
+char *getField2(dataLynx *self, uintmax_t desired_row, char *desired_column) {
 
     /* THIS FUNCTION:
         - Uses integer row/string column name to index into data and find field
@@ -1642,7 +1642,7 @@ char *getField2(csvWizard *self, uintmax_t desired_row, char *desired_column) {
 }
 
 //          _____ GET_FIELD() ____
-char *getField(csvWizard *self, uintmax_t desired_row, uintmax_t desired_column) {
+char *getField(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column) {
 
     /* THIS FUNCTION:
         - Uses integer row/column to index into data and find field */
@@ -1685,7 +1685,7 @@ char *getField(csvWizard *self, uintmax_t desired_row, uintmax_t desired_column)
 
 
 //          ____ GET_FIELD_RAW() ____
-char *get_field_raw(csvWizard *self, uintmax_t desired_row, uintmax_t desired_column) {
+char *get_field_raw(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column) {
 
     /* THIS FUNCTION WILL CAUSE ERRORS IF CALLED TWICE FROM THE SAME FUNCTION -> printf("Get Field: %s, %s\n", myData.getField(&myData, 9,2), myData.getField(&myData, 9,2)); */
 
@@ -1752,7 +1752,7 @@ char *get_field_raw(csvWizard *self, uintmax_t desired_row, uintmax_t desired_co
 
 
 //          ____ GET_FIELD_ROWS() ____
-char *get_field_rows(csvWizard *self, uintmax_t desired_row, uintmax_t desired_column) {
+char *get_field_rows(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column) {
 
     /* THIS FUNCTION WILL CAUSE ERRORS IF CALLED TWICE FROM THE SAME FUNCTION -> printf("Get Field: %s, %s\n", myData.getField(&myData, 9,2), myData.getField(&myData, 9,2)); */
     /* THIS FUNCTION: Is intented to only be called from getField(),
@@ -1882,7 +1882,7 @@ char *get_field_rows(csvWizard *self, uintmax_t desired_row, uintmax_t desired_c
 //     return cell_str;
 // }
 
-char *get_field_grid_v3(csvWizard *self, uintmax_t desired_row, uintmax_t desired_column, char *condition_operator, double condition_num) {
+char *get_field_grid_v3(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column, char *condition_operator, double condition_num) {
 
     // NO condition (getField())
     if (condition_operator == NULL) return self->grid_v3[desired_row][desired_column];
@@ -1925,7 +1925,7 @@ char *get_field_grid_v3(csvWizard *self, uintmax_t desired_row, uintmax_t desire
 }
 
 
-char *get_field_grid(csvWizard *self, uintmax_t desired_row, uintmax_t desired_column, char *condition_operator, double condition_num) {
+char *get_field_grid(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column, char *condition_operator, double condition_num) {
 
     /* THIS FUNCTION: allows you to index into array of dicts (i.e. array of doubly linked lists acting as dicts) */
         // Will return NULL if no column matches desired_column or if row is out of range.
@@ -2006,7 +2006,7 @@ char *get_field_grid(csvWizard *self, uintmax_t desired_row, uintmax_t desired_c
 
 
 // _____ INDEX INTO DICT _____
-char *get_field_dict(csvWizard *self, uintmax_t desired_row, char *desired_column) {
+char *get_field_dict(dataLynx *self, uintmax_t desired_row, char *desired_column) {
 
     // Checks
     // if (self == NULL) return NULL;
@@ -2063,7 +2063,7 @@ char *get_field_dict(csvWizard *self, uintmax_t desired_row, char *desired_colum
 
 
 //      ___ FIND_COLUMN_INDEX() ___
-intmax_t findColumnIndex(csvWizard *self, const char *desired_column) {
+intmax_t findColumnIndex(dataLynx *self, const char *desired_column) {
 
     /* Will return the correct integer index location associated with desired_column string.
             - If no column name is found that matches desired_column, will return -1. This is why although index locations are not signed, I still need to return a signed int */
@@ -2108,7 +2108,7 @@ intmax_t findColumnIndex(csvWizard *self, const char *desired_column) {
 //        --- CONVERT DATA STRUCTURES in MEMORY FUNCTIONS ---
 
 //      ___ STRING to 2D Array ___ (V2 - 2D JAGGED ARRAY)
-char **string_into_2d_array(csvWizard *self) {
+char **string_into_2d_array(dataLynx *self) {
 
     if (self == NULL) return NULL;
 
@@ -2190,7 +2190,7 @@ char **string_into_2d_array(csvWizard *self) {
 
 
 //      ___ SPLIT BY ___
-node **split_2darray_by(csvWizard *self, char split_by) {
+node **split_2darray_by(dataLynx *self, char split_by) {
 
     if (self->rows == NULL) return NULL;
 
@@ -2282,7 +2282,7 @@ node **split_2darray_by(csvWizard *self, char split_by) {
 
 
 //          ____ GRID_INTO_DICT_GRID() ____
-dict_node **grid_into_dict_grid(csvWizard *self) {
+dict_node **grid_into_dict_grid(dataLynx *self) {
 
     if (self->grid == NULL) return false;
 
@@ -2330,7 +2330,7 @@ dict_node **grid_into_dict_grid(csvWizard *self) {
 
 
 //          UPDATEFIELD()
-bool updateField(csvWizard *self, uintmax_t row, char *column_name, char *new_value) {
+bool updateField(dataLynx *self, uintmax_t row, char *column_name, char *new_value) {
 
     if (self == NULL || column_name == NULL || new_value == NULL) return false;
 
@@ -2349,7 +2349,7 @@ bool updateField(csvWizard *self, uintmax_t row, char *column_name, char *new_va
 }
 
 //      ____ UPDATE_GRID_V3_INDEX() ____
-bool update_grid_v3_index(csvWizard *self, uintmax_t row, uintmax_t column, char *new_field) {
+bool update_grid_v3_index(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field) {
 
     /* THIS FUNCTION: Allows you to update specific index in array of linked lists (i.e. grid) */
         // Will return false if no row/column matches
@@ -2390,7 +2390,7 @@ bool update_grid_v3_index(csvWizard *self, uintmax_t row, uintmax_t column, char
 
 
 //      ____ UPDATE_GRID_INDEX() ____
-bool update_grid_index(csvWizard *self, uintmax_t desired_row, uintmax_t desired_column, char *new_field) {
+bool update_grid_index(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column, char *new_field) {
 
     /* THIS FUNCTION: Allows you to update specific index in array of linked lists (i.e. grid) */
         // Will return false if no row/column matches
@@ -2445,7 +2445,7 @@ bool update_grid_index(csvWizard *self, uintmax_t desired_row, uintmax_t desired
 
 
 //      _____ UPDATE_DICT_INDEX() _____
-bool update_dict_index(csvWizard *self, uintmax_t desired_row, char *desired_column, char *new_field) {
+bool update_dict_index(dataLynx *self, uintmax_t desired_row, char *desired_column, char *new_field) {
 
     /* THIS FUNCTION: Allows you to update specific index in array of dicts */
         // Will return false if no column matches desired_column or if row is out of range.
@@ -2498,7 +2498,7 @@ bool update_dict_index(csvWizard *self, uintmax_t desired_row, char *desired_col
 
 
 //         SORT BY COLUMN()
-bool sortRowsByColumn(csvWizard *self, const char *column_name, const char *asc_desc) {
+bool sortRowsByColumn(dataLynx *self, const char *column_name, const char *asc_desc) {
 
     if (self == NULL || column_name == NULL) return false;
 
@@ -2729,7 +2729,7 @@ int strcmp_quotes(const char *s1_input, const char *s2_input, bool case_sensitiv
 
 
 
-bool printHead(csvWizard *self, uintmax_t number_of_rows) {
+bool printHead(dataLynx *self, uintmax_t number_of_rows) {
     if (self == NULL) return NULL;
 
     if (number_of_rows >= self->rowCount) return print_data_internal(self);
@@ -2746,7 +2746,7 @@ bool printHead(csvWizard *self, uintmax_t number_of_rows) {
 
 }
 
-bool printTail(csvWizard *self, uintmax_t number_of_rows) {
+bool printTail(dataLynx *self, uintmax_t number_of_rows) {
     if (self == NULL) return NULL;
 
     if (number_of_rows >= self->rowCount) return print_data_internal(self);
@@ -2762,7 +2762,7 @@ bool printTail(csvWizard *self, uintmax_t number_of_rows) {
 
 }
 
-bool printShape(csvWizard *self) {
+bool printShape(dataLynx *self) {
 
     if (self == NULL) return false;
 
@@ -2772,7 +2772,7 @@ bool printShape(csvWizard *self) {
     return true;
 }
 
-bool printColumn(csvWizard *self, char *column_name) {
+bool printColumn(dataLynx *self, char *column_name) {
 
     if (self == NULL || column_name == NULL)  return false;
 
@@ -2814,7 +2814,7 @@ bool printColumn(csvWizard *self, char *column_name) {
 }
 
 //      NOT CENTERED
-bool printDataTable(csvWizard *self) {
+bool printDataTable(dataLynx *self) {
     // TO DO scientifi notation, all data structure
     printf("\t<DATA SQL STYLE>\n\n");
     uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than MAX_FIELD_PRINT_LENGTH */
@@ -2985,7 +2985,7 @@ bool printDataTable(csvWizard *self) {
 
 
 //          LATEST VERSION CENTERED
-// bool printDataTable(csvWizard *self) {
+// bool printDataTable(dataLynx *self) {
 
 //     printf("\t<DATA SQL STYLE>\n\n");
 //     uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than MAX_FIELD_PRINT_LENGTH */
@@ -3087,7 +3087,7 @@ bool printDataTable(csvWizard *self) {
 //     return true;
 // }
 
-// bool printDataTable(csvWizard *self) {
+// bool printDataTable(dataLynx *self) {
 
 //     printf("\t<DATA SQL STYLE>\n\n");
 //     uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than MAX_FIELD_PRINT_LENGTH */
@@ -3177,7 +3177,7 @@ bool printDataTable(csvWizard *self) {
 //     return true;
 // }
 
-// bool printDataTable(csvWizard *self) {
+// bool printDataTable(dataLynx *self) {
 
 //     printf("\t<DATA SQL STYLE>\n\n");
 //     uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than MAX_FIELD_PRINT_LENGTH */
@@ -3277,7 +3277,7 @@ bool printDataTable(csvWizard *self) {
 //     return true;
 // }
 
-bool printData(csvWizard *self) {
+bool printData(dataLynx *self) {
 
     if (self == NULL) return false;
 
@@ -3296,7 +3296,7 @@ bool printData(csvWizard *self) {
 }
 
 // ___ PRINT_HEADER() ___
-bool printHeader(csvWizard *self)
+bool printHeader(dataLynx *self)
 {
 
     if (self->header == NULL) return false;
@@ -3325,7 +3325,7 @@ bool printHeader(csvWizard *self)
 
 
 //  ______ PRINT_DATA() ______
-bool print_data_internal(csvWizard *self) {
+bool print_data_internal(dataLynx *self) {
     // Print file name
     printf("\n\t<Data from file: %s>\n", self->filename);
 
@@ -3399,7 +3399,7 @@ bool print_data_internal(csvWizard *self) {
 
 
 
-void print_grid_v3(csvWizard *self) {
+void print_grid_v3(dataLynx *self) {
 
     // Print v3
     uint64_t i = 0;
@@ -3438,7 +3438,7 @@ void print_grid_v3(csvWizard *self) {
 
 
 //      ___PRINT_GRID() ___
-void print_grid(csvWizard *self) {
+void print_grid(dataLynx *self) {
 
     // Print array of double link lists (grid)
 
@@ -3462,7 +3462,7 @@ void print_grid(csvWizard *self) {
 }
 
 //      ___ PRINT_LINK_LIST ___
-bool print_lnk_list(csvWizard *self, node *head, uintmax_t current_row)
+bool print_lnk_list(dataLynx *self, node *head, uintmax_t current_row)
 {
     // if (self == NULL) return false;
     if (head == NULL) return false;
@@ -3497,7 +3497,7 @@ bool print_lnk_list(csvWizard *self, node *head, uintmax_t current_row)
 
 
 // ____ PRINT_DICT_LIST() ____
-bool print_dict_grid(csvWizard *self)
+bool print_dict_grid(dataLynx *self)
 {
     if (self == NULL) return false;
     if (self->dict_grid == NULL) return  false;
@@ -3550,7 +3550,7 @@ bool print_dict_grid(csvWizard *self)
 }
 
 
-bool print_dict_grid2(csvWizard *self)
+bool print_dict_grid2(dataLynx *self)
 {
     if (self == NULL) return false;
     if (self->dict_grid == NULL) return  false;
@@ -3611,7 +3611,7 @@ void stat_print_(char *stat_name, double stat, uint8_t column_strlen) {
 
 
         // PRINT STATS() (side by side) and Sorted Value Counts Works :)
-bool printStats(csvWizard *self, char *column_name) {
+bool printStats(dataLynx *self, char *column_name) {
 
     if (self == NULL) return false;
 
@@ -3914,7 +3914,7 @@ bool printStats(csvWizard *self, char *column_name) {
     return true;
 }
 
-void print_stats_is_not_null_(csvWizard *self, size_t column_strlen, uint32_t column_index, bool is_null) {
+void print_stats_is_not_null_(dataLynx *self, size_t column_strlen, uint32_t column_index, bool is_null) {
 
     char print_string[32];
     is_null ? sprintf(print_string, "Is Null %ld", self->aggregate[column_index].is_null) : sprintf(print_string, "Not Null %ld", self->aggregate[column_index].not_null);
@@ -3930,7 +3930,7 @@ void print_stats_is_not_null_(csvWizard *self, size_t column_strlen, uint32_t co
 
 
 //         // PRINT STATS() (side by side) and Sorted Value Counts Works :)
-// bool printStats(csvWizard *self, char *column_name) {
+// bool printStats(dataLynx *self, char *column_name) {
 
 //     if (self == NULL) return false;
 
@@ -4119,7 +4119,7 @@ void print_stats_is_not_null_(csvWizard *self, size_t column_strlen, uint32_t co
 
 
 //          -- FREE ALL --
-void freeAll(csvWizard *self) {
+void freeAll(dataLynx *self) {
 
     if (self == NULL) return;
 
@@ -4167,7 +4167,7 @@ void freeAll(csvWizard *self) {
     return;
 }
 
-bool free_header(csvWizard *self) {
+bool free_header(dataLynx *self) {
 
     if (self->header == NULL) return false;
 
@@ -4181,7 +4181,7 @@ bool free_header(csvWizard *self) {
 
 
 //      FREE 2D ARRAY
-bool free_2d_array(csvWizard *self) {
+bool free_2d_array(dataLynx *self) {
 
     // Free 2D array
     if (self == NULL) return false;
@@ -4198,7 +4198,7 @@ bool free_2d_array(csvWizard *self) {
 }
 
 //      FREE GRID_V3
-bool free_grid_v3(csvWizard *self) {
+bool free_grid_v3(dataLynx *self) {
 
     if (self == NULL) return false;
     if (self->grid_v3 == NULL) return false;
@@ -4222,7 +4222,7 @@ bool free_grid_v3(csvWizard *self) {
 }
 
 //      FREE GRID
-bool free_grid(csvWizard *self) {
+bool free_grid(dataLynx *self) {
 
     if (self == NULL) return false;
     if (self->grid == NULL) return false;
@@ -4262,7 +4262,7 @@ bool free_list(node *head)
 
 
 //       FREE DICT GRID
-bool free_dict_grid(csvWizard *self)
+bool free_dict_grid(dataLynx *self)
 {
     /* THIS FUNCTION: Frees douby linked list of dict_nodes */
     if (self == NULL) return false;
@@ -4303,7 +4303,7 @@ bool free_dict_list(dict_node *head) {
 
 
 //      FREE VALUE COUNTS()
-bool free_value_counts(csvWizard *self) {
+bool free_value_counts(dataLynx *self) {
 
     if (self == NULL) return false;
 
@@ -4335,7 +4335,7 @@ bool free_value_counts(csvWizard *self) {
     return true;
 }
 
-void free_last_retrieved_fields(csvWizard *self) {
+void free_last_retrieved_fields(dataLynx *self) {
 
     node *tmp = NULL;
     while (self->last_retrieved_fields != NULL) {

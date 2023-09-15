@@ -1,13 +1,13 @@
-#include <csvWizard.h>
+#include <dataLynx.h>
 
 
-// EXAMPLE CODE FOR CSV LIBRARY
+// EXAMPLE CODE FOR dataLynx Library
 int main(void)
 {
     // ----- Set Up ------
 
     // Create main 'object'
-    csvWizard myData = csvWizardConstructor();
+    dataLynx myData = dataLynxConstructor();
 
     // User input filename until a valid file is given
     while (true) {
@@ -82,7 +82,7 @@ int main(void)
 
 
     //          --- Filter into NEW Object/Data Structure ---
-    // csvWizard filteredData = csvWizardConstructor();
+    // dataLynx filteredData = dataLynxConstructor();
 
     // filter(&myData, &filteredData, "emp_id", ">", "8888");
 

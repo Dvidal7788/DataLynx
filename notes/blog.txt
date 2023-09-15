@@ -1,8 +1,0 @@
-8.1.23
-    - getField(): printf("Get Field: %s, %s\n\n", myData.getField(&myData, 9,2), myData.getField(&myData, 9,2)); /* Get Field does not work with more than one instance in a printf() statement because (going left to right), it calls the function, but before using the string, has to call the other function, before printf() can return, so the  string from first instance of getField() is freed */
-        - raw and rows will always work like this unless I decide to change it
-    - csv.fieldReader will only work with more than one iteration if last_retrieved_field is turned into 2d array
-    - same goes for raw and rows - currently getField is turned off for these 2
-
-8.2.23
-    - It seems as though Valgrind forces realloc() to realloc to another location, because this exposes if any other pointers are now broken. If realloc() does not realloc to a new memory location, you can be fooled into thinking your pointers are still valid (which they are in that instance), but will not be in the even that realloc does have to realloc to a new location..

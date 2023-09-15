@@ -1,13 +1,13 @@
-#include <csvWizard_stats.h>
-#include <csvWizard_data.h>
-#include <csvWizard_util.h>
+#include <dataLynx_stats.h>
+#include <dataLynx_data.h>
+#include <dataLynx_util.h>
 #include <math.h>
 
 
 //                          ------- STATS -------
 
 //          __ CREATE_STATS() ____
-bool create_stats(csvWizard *self) {
+bool create_stats(dataLynx *self) {
 
     if (self->aggregate != NULL) {
         free_value_counts(self);
@@ -38,7 +38,7 @@ bool create_stats(csvWizard *self) {
 
 
 //      ___ Stats() ___
-double getStat(csvWizard *self, char *column_name, char *operation) {
+double getStat(dataLynx *self, char *column_name, char *operation) {
 
     if (self == NULL) return 0;
     if (column_name == NULL) return 0;
@@ -76,31 +76,31 @@ double getStat(csvWizard *self, char *column_name, char *operation) {
 }
 
 /* This batch of functions will not have safety checks, because stats() has safety checks, so no need to have redundant code */
-double min(csvWizard *self, char *column_name) {
+double min(dataLynx *self, char *column_name) {
     return getStat(self, column_name, "min");
 }
 
-double max(csvWizard *self, char *column_name) {
+double max(dataLynx *self, char *column_name) {
     return getStat(self, column_name, "max");
 }
 
-double sum(csvWizard *self, char *column_name) {
+double sum(dataLynx *self, char *column_name) {
     return getStat(self, column_name, "sum");
 }
 
-double mean(csvWizard *self, char *column_name) {
+double mean(dataLynx *self, char *column_name) {
     return getStat(self, column_name, "mean");
 }
 
-uintmax_t isNull(csvWizard *self, char *column_name) {
+uintmax_t isNull(dataLynx *self, char *column_name) {
     return (uintmax_t)getStat(self, column_name, "isnull");
 }
 
-uintmax_t notNull(csvWizard *self, char *column_name) {
+uintmax_t notNull(dataLynx *self, char *column_name) {
     return (uintmax_t)getStat(self, column_name, "notnull");
 }
 
-bool find_median(csvWizard *self) {
+bool find_median(dataLynx *self) {
 
     // This function does not account for empty fields yet
     self->in_place_sort = false;
@@ -173,7 +173,7 @@ bool find_median(csvWizard *self) {
 // CALC STATS ONE AT A TIME:
 
 //      ____AGGREGATE_RAW() _____
-double aggregate_raw(csvWizard *self, char *column_name, char *operation) {
+double aggregate_raw(dataLynx *self, char *column_name, char *operation) {
 
     if (self == NULL) return 0;
     if (self->raw == NULL) return 0;
@@ -265,7 +265,7 @@ double aggregate_raw(csvWizard *self, char *column_name, char *operation) {
 
 
 //      ____AGGREGATE_ROWS() _____
-double aggregate_rows(csvWizard *self, char *column_name, char *operation) {
+double aggregate_rows(dataLynx *self, char *column_name, char *operation) {
 
     if (self == NULL) return 0;
     if (self->rows == NULL) return 0;
@@ -352,7 +352,7 @@ double aggregate_rows(csvWizard *self, char *column_name, char *operation) {
 
 
 //      ____AGGREGATE_GRID() _____
-double aggregate_grid(csvWizard *self, char *column_name, char *operation) {
+double aggregate_grid(dataLynx *self, char *column_name, char *operation) {
 
     if (self == NULL) return 0;
     if (self->grid == NULL) return 0;
@@ -400,7 +400,7 @@ double aggregate_grid(csvWizard *self, char *column_name, char *operation) {
 
 
 //      ____AGGREGATE_DICT_GRID() _____
-double aggregate_dict_grid(csvWizard *self, char *column_name, char *operation) {
+double aggregate_dict_grid(dataLynx *self, char *column_name, char *operation) {
 
     if (self == NULL) return 0;
     if (self->dict_grid == NULL) return 0;
@@ -447,7 +447,7 @@ double aggregate_dict_grid(csvWizard *self, char *column_name, char *operation) 
 }
 
 
-void calc_std(csvWizard *self) {
+void calc_std(dataLynx *self) {
 
     for (uint32_t column = 0; column < self->columnCount; column++) {
 
@@ -492,7 +492,7 @@ void calc_std(csvWizard *self) {
 
 
 
-// bool calc_median(csvWizard *self) {
+// bool calc_median(dataLynx *self) {
 //     typedef struct Median {
 //         uintmax_t greater;
 //         uintmax_t less;
@@ -552,7 +552,7 @@ void calc_std(csvWizard *self) {
 // }
 
 // // Bubble sort algorithm
-// void bubble_sort(csvWizard *self, int n) {
+// void bubble_sort(dataLynx *self, int n) {
 
 //     for (int i = 0; i < self->rowCount; i++) {
 //         for (int j = 0; j < self->rowCount - i - 1; j++) {
@@ -566,7 +566,7 @@ void calc_std(csvWizard *self) {
 // }
 
 //          FIND NEW MIN()
-double find_new_min(csvWizard *self, uintmax_t column, double old_field_float, double new_field_float) {
+double find_new_min(dataLynx *self, uintmax_t column, double old_field_float, double new_field_float) {
 
     bool pivot_assigned = false; /* Only used if caled from dropRow()*/
 
@@ -619,7 +619,7 @@ double find_new_min(csvWizard *self, uintmax_t column, double old_field_float, d
 }
 
 //          FIND NEW MAX()
-double find_new_max(csvWizard *self, uintmax_t column, double old_field_float, double new_field_float) {
+double find_new_max(dataLynx *self, uintmax_t column, double old_field_float, double new_field_float) {
 
     bool pivot_assigned = false; /* Only used if caled from dropRow()*/
 
@@ -672,7 +672,7 @@ double find_new_max(csvWizard *self, uintmax_t column, double old_field_float, d
 }
 
 //      UPDATE STATS()
-bool update_stats(csvWizard *self, uintmax_t column, char *old_field, char *new_field) {
+bool update_stats(dataLynx *self, uintmax_t column, char *old_field, char *new_field) {
 
     /* THIS FUNCTION: updates stats when CHANGING/UPDATING an EXISTING VALUE to a NEW VALUE. Not to be confused with update_stats_new_row() which updates stats when a whole new row of data is inserted.
         - Must check if 1st char is '\0' because we do not need to add empty strings to value counts. Thats what .is_null is for.*/
@@ -765,7 +765,7 @@ bool update_stats(csvWizard *self, uintmax_t column, char *old_field, char *new_
 
 
 
-void update_stats_new_row(csvWizard *self, char *values[]) {
+void update_stats_new_row(dataLynx *self, char *values[]) {
 
     for (uint32_t column = 0; column < self->columnCount; column++) {
 
@@ -812,7 +812,7 @@ void update_stats_new_row(csvWizard *self, char *values[]) {
 
 
 //      CREATE VALUE COUNTS()
-bool create_value_counts(csvWizard *self, uintmax_t column_index) {
+bool create_value_counts(dataLynx *self, uintmax_t column_index) {
 
     char *func_name = "create_value_counts";
 
@@ -834,7 +834,7 @@ bool create_value_counts(csvWizard *self, uintmax_t column_index) {
 
 
 // //      SORT VALUE COUNTS()
-// void sort_value_counts(csvWizard *self) {
+// void sort_value_counts(dataLynx *self) {
 
 
 //     for (uintmax_t i = 0; i < self->columnCount; i++) {
@@ -913,7 +913,7 @@ bool create_value_counts(csvWizard *self, uintmax_t column_index) {
 //     return;
 // }
 
-void sort_value_counts(csvWizard *self) {
+void sort_value_counts(dataLynx *self) {
 
     for (uintmax_t column; column < self->columnCount; column++) {
 
@@ -973,7 +973,7 @@ void sort_value_counts(csvWizard *self) {
 }
 
 //      APPEND VALUE COUNTS()
-bool prepend_value_count(csvWizard *self, uintmax_t column_index, char *value, uint8_t alpha_index) {
+bool prepend_value_count(dataLynx *self, uintmax_t column_index, char *value, uint8_t alpha_index) {
 
     if (self == NULL) return false;
     if (value == NULL) return false;
@@ -1002,7 +1002,7 @@ bool prepend_value_count(csvWizard *self, uintmax_t column_index, char *value, u
 
 
 //      ADD VALUE COUNT()
-bool increment_decrement_value_count(csvWizard *self, char *column_name, char *value, bool increment) {
+bool increment_decrement_value_count(dataLynx *self, char *column_name, char *value, bool increment) {
 
     if (self == NULL) return false;
     if (column_name == NULL) return false;
@@ -1087,7 +1087,7 @@ bool increment_decrement_value_count(csvWizard *self, char *column_name, char *v
 
 
 //          REMOVE VALUE COUNT NODE()
-void remove_value_count_node(csvWizard *self, uintmax_t column_index, uint8_t alpha_index, uintmax_t node_index) {
+void remove_value_count_node(dataLynx *self, uintmax_t column_index, uint8_t alpha_index, uintmax_t node_index) {
 
     /* MAKE SURE THIS WORKS IF node_index == 0*/
 
@@ -1110,7 +1110,7 @@ void remove_value_count_node(csvWizard *self, uintmax_t column_index, uint8_t al
 }
 
 
-uint16_t valueCount(csvWizard *self, char *value, char *column_name) {
+uint16_t valueCount(dataLynx *self, char *value, char *column_name) {
 
     if (self == NULL || column_name == NULL || value == NULL) return 0;
 
@@ -1129,6 +1129,6 @@ uint16_t valueCount(csvWizard *self, char *value, char *column_name) {
     return (tmp != NULL) ? tmp->count : 0;
 }
 
-bool isInColumn(csvWizard *self, char *value, char *column_name) {
+bool isInColumn(dataLynx *self, char *value, char *column_name) {
     return valueCount(self, value, column_name);
 }

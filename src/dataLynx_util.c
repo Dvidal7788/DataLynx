@@ -1,4 +1,4 @@
-#include <csvWizard.h>
+#include <dataLynx.h>
 
 //          ----- UTILITY FUCTIONS -----
 
@@ -153,7 +153,7 @@ bool add_quotes(char **s)
 
 
 //      REMOVE QUOTES()
-char *remove_quotes(csvWizard *self, char *s) {
+char *remove_quotes(dataLynx *self, char *s) {
 
     /* This function is NON destructive (unlike add_quotes) */
 
@@ -273,7 +273,7 @@ uint64_t get_uint(char *prompt)
     return x;
 }
 
-bool convert_to_csv(csvWizard *self, char *filename) {
+bool convert_to_csv(dataLynx *self, char *filename) {
     /*DOES NOT WORK YET*/
     if (is_ext(filename, ".csv")) return true;
 
@@ -345,7 +345,7 @@ bool convert_to_csv(csvWizard *self, char *filename) {
 
 }
 
-char *append_last_retrieved_fields(csvWizard *self, char **field)
+char *append_last_retrieved_fields(dataLynx *self, char **field)
 {
     if (field == NULL) return false;
     if (*field == NULL) return false;
@@ -388,7 +388,7 @@ bool is_ext(char *filename, char *ext)
 }
 
 
-void calc_max_row_digits(csvWizard *self) {
+void calc_max_row_digits(dataLynx *self) {
 
     uintmax_t temp = self->rowCount;
 
