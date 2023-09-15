@@ -28,7 +28,7 @@ Overview:
 ###### <li>This function takes no parameters</li>
 </ul>
 
-##### To Use:
+##### Use:
 <ul>
 
 ###### <li>Declare a dataLynx object and assign the return of this function to the object</li>
@@ -59,7 +59,7 @@ dataLynx myData = dataLynxConstructor();
 ###### <li>String of filename to open. (If the filename within your dataLynx object has already been set, you may pass NULL here.)</li>
 </ul>
 
-##### To Use:
+##### Use:
 <ul>
 
 ###### <li>The function will attempt to open the file of the filename given. If a filename has already been set and a NULL is passed in place of a filename, the function will open the filename already in memory. If a filename has already been set and new filename is passed as a parameter, the function will open the new filename passed in.</li>
@@ -91,7 +91,7 @@ myData.csv.openFile(&myData, "csv/staff.csv");
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
 </ul>
 
-##### To Use:
+##### Use:
 <ul>
 
 ###### <li>This function reads the file that has already been opened using csv.openFile() into memory.</li>
@@ -127,7 +127,7 @@ myData.csv.fileReader(&myData);
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
 </ul>
 
-##### To Use:
+##### Use:
 <ul>
 
 ###### <li>This function reads the file that has already been opened using csv.openFile() into memory.</li>
@@ -154,6 +154,7 @@ myData.csv.fileRowReader(&myData)
 <hr>
 
 
+                                                                    <!-- CSV.READER_V3 -->
 
 <h4 align="center">csv.reader_v3()</h4>
 <h6 align="center">char ***reader_v3(dataLynx *self)</h6>
@@ -164,7 +165,77 @@ myData.csv.fileRowReader(&myData)
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
 </ul>
 
-##### To Use:
+##### Use:
+<ul>
+
+###### <li>This function reads the file that has already been opened using csv.openFile() into memory.</li>
+###### <li>The header, as always, will be stored as an array of strings (i.e. one string per column name).</li>
+###### <li>*The data will be stored in memory as a 3D array (i.e. an array of arrays, in which each secondary array is an array of strings). In other words, this is an array, which stores arrays (one for each row), each of which stores strings (one per field). See diagram below.*.</li>
+
+</ul>
+
+##### RETURN:
+<ul>
+
+###### <li>On success, returns a pointer to a 3D array.</li>
+###### <li>Note: You do not need to assign this return value to anything. It is automatically assigned within the function to a pointer within your dataLynx object. The data structure only gets returned for  convenience.</li>
+###### <li>On failure, returns NULL.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.csv.reader_v3(&myData);
+```
+<hr>
+
+
+                              <!-- CSV.READER -->
+<h4 align="center">csv.reader()</h4>
+<h6 align="center">node **reader(dataLynx *self);</h6>
+
+##### PARAMETERS:
+<ul>
+
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+</ul>
+
+##### Use:
+<ul>
+
+###### <li>This function reads the file that has already been opened using csv.openFile() into memory.</li>
+###### <li>The header, as always, will be stored as an array of strings (i.e. one string per column name).</li>
+###### <li>*The data will be stored in memory as an array of linked lists. Each linked list represents a row. Each node in the linked list represents a value (i.e. field). See diagram below.*.</li>
+</ul>
+
+##### RETURN:
+<ul>
+
+###### <li>On success, returns a pointer to an array of linked lists.</li>
+###### <li>On failure, returns NULL.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.csv.reader(&myData);
+```
+<hr>
+
+
+
+<h4 align="center"></h4>
+<h6 align="center"></h6>
+
+##### PARAMETERS:
+<ul>
+
+###### <li></li>
+</ul>
+
+##### Use:
 <ul>
 
 ###### <li></li>
@@ -173,7 +244,7 @@ myData.csv.fileRowReader(&myData)
 ##### RETURN:
 <ul>
 
-###### <li>Returns a pointer to a 3D array (i.e. an array of arrays of strings). This is an array, which stores arrays (one for each row), each of which stores strings (one per field)</li>
+###### <li></li>
 </ul>
 
 
@@ -195,7 +266,7 @@ myData.csv.fileRowReader(&myData)
 ###### <li></li>
 </ul>
 
-##### To Use:
+##### Use:
 <ul>
 
 ###### <li></li>
@@ -226,7 +297,7 @@ myData.csv.fileRowReader(&myData)
 ###### <li></li>
 </ul>
 
-##### To Use:
+##### Use:
 <ul>
 
 ###### <li></li>
@@ -245,5 +316,68 @@ myData.csv.fileRowReader(&myData)
 
 ```
 <hr>
+
+
+
+<h4 align="center"></h4>
+<h6 align="center"></h6>
+
+##### PARAMETERS:
+<ul>
+
+###### <li></li>
+</ul>
+
+##### Use:
+<ul>
+
+###### <li></li>
+</ul>
+
+##### RETURN:
+<ul>
+
+###### <li></li>
+</ul>
+
+
+##### Example Code:
+
+```C
+
+```
+<hr>
+
+
+
+<h4 align="center"></h4>
+<h6 align="center"></h6>
+
+##### PARAMETERS:
+<ul>
+
+###### <li></li>
+</ul>
+
+##### Use:
+<ul>
+
+###### <li></li>
+</ul>
+
+##### RETURN:
+<ul>
+
+###### <li></li>
+</ul>
+
+
+##### Example Code:
+
+```C
+
+```
+<hr>
+
 
 
