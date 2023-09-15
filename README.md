@@ -154,8 +154,8 @@ myData.csv.fileRowReader(&myData)
 <hr>
 
 
-                                                                    <!-- CSV.READER_V3 -->
 
+<!-- CSV.READER_V3 -->
 <h4 align="center">csv.reader_v3()</h4>
 <h6 align="center">char ***reader_v3(dataLynx *self)</h6>
 
@@ -191,7 +191,7 @@ myData.csv.reader_v3(&myData);
 <hr>
 
 
-                              <!-- CSV.READER -->
+<!-- CSV.READER -->
 <h4 align="center">csv.reader()</h4>
 <h6 align="center">node **reader(dataLynx *self);</h6>
 
