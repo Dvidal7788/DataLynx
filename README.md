@@ -496,20 +496,21 @@ myData.sortRowsByColumn(&myData, "Department", "HELLO!");
 
 
 
-<!-- -->
-<h4 align="center"></h4>
-<h6 align="center"></h6>
+<!-- DROP ROW-->
+<h4 align="center">dropRow()</h4>
+<h6 align="center">bool dropRow(dataLynx *self, uintmax_t row_to_drop)</h6>
 
 ##### PARAMETERS:
 <ul>
 
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>Integer of the row index you wish to drop (i.e. remove) from the data.</li>
 </ul>
 
 ##### Use:
 <ul>
 
-###### <li></li>
+###### <li>Supply the integer index of the row you wish to drop and the function will remove it.</li>
 </ul>
 
 ##### RETURN:
@@ -522,8 +523,12 @@ myData.sortRowsByColumn(&myData, "Department", "HELLO!");
 ##### Example Code:
 
 ```C
-
+myData.dropRow(&myData, 8);
 ```
+<ul>
+
+###### <li>This will drop (i.e. remove) the 9th row (i.e. index location 8, as everything is of course 0 indexed) from the data. The row count will be decremented by 1 and aggregate data (i.e. statistical data & value counts) will be updated accordingly.</li>
+</ul>
 <hr>
 
 
@@ -532,20 +537,24 @@ myData.sortRowsByColumn(&myData, "Department", "HELLO!");
 
 
 
-<!-- -->
-<h4 align="center"></h4>
-<h6 align="center"></h6>
+
+<!-- DROP ROWS FILTER-->
+<h4 align="center">dropRowsFilter()</h4>
+<h6 align="center">bool dropRowsFilter(dataLynx *self, char *column_name, char *condition_operator, char *condition_value);</h6>
 
 ##### PARAMETERS:
 <ul>
 
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>String of the column name the filter will apply to.</li>
+###### <li>String of the condition operator (i.e. "<", ">", "<=", ">=", or "==").</li>
+###### <li>String of the condition value (this can represent an integer, double or string, but must be passed in as a string.)</li>
 </ul>
 
 ##### Use:
 <ul>
 
-###### <li></li>
+###### <li>Supply the parameters and the function will </li>
 </ul>
 
 ##### RETURN:
@@ -558,8 +567,12 @@ myData.sortRowsByColumn(&myData, "Department", "HELLO!");
 ##### Example Code:
 
 ```C
-
+myData.dropRowsFilter(&myData, "Profit", ">=", "800");
 ```
+<ul>
+
+###### <li>This will drop (i.e. remove) all rows in data in which the value in the 'Profit' column is greater than or equal to 800.</li>
+</ul>
 <hr>
 
 
