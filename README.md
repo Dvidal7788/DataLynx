@@ -10,7 +10,11 @@ Overview:
 >###### NOTE: In order to acheive Object-Oriented style functionality, the first parameter for every user-facing function must be the address of the dataLynx struct (or 'object') you have declared / constructed using the constructor (e.g. `myData.function(&myData)`). Although this is of course not a true object in the OOP sense, moving forward I will be referring to dataLynx structs as objects since this is the intended use of the struct. All memory management is handled for you, as long as you run `myData.freeAll(&myData)` at the end of your program.
 
 <hr>
-<h3 align="center">FUNCTIONS:</h3>
+<div align="center">
+  
+FUNCTIONS:
+=========
+</div>
 <div align="center">
 
 ###### The following is a complete list of *user-facing* functions.
@@ -19,6 +23,8 @@ Overview:
 <hr>
 
 
+
+<!-- CONSTRUCTOR -->
 <h4 align="center">dataLynxConstructor()</h4>
 <h6 align="center">dataLynx dataLynxConstructor(void)</h6>
 
@@ -80,7 +86,11 @@ myData.csv.openFile(&myData, "csv/staff.csv");
 ```
 <hr>
 
-
+<div align="center">
+  
+Functions for Reading a CSV file into memory:
+--------
+</div>
 
 <h4 align="center">csv.fileReader()</h4>
 <h6 align="center">char *fileReader(dataLynx *self)</h6>
@@ -259,8 +269,11 @@ myData.csv.dictReader(&myData);
 ```
 <hr>
 
-
-#### Data Cleaning
+<div align="center">
+  
+Functions for Data Cleaning:
+--------
+</div>
 
 <!-- FORMAT HEADER-->
 <h4 align="center">formatHeader()</h4>
