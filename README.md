@@ -344,34 +344,49 @@ myData.changeColumnName(&myData, "Dept", "Department");
 
 
 
-<!-- -->
-<h4 align="center"></h4>
-<h6 align="center"></h6>
+<!-- REPLACE -->
+<h4 align="center">replaceAll()</h4>
+<h6 align="center">bool replaceAll(dataLynx *self, char *to_replace, char *replace_with);</h6>
 
 ##### PARAMETERS:
 <ul>
 
-###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of the value you want to replaced.</li>
+###### <li>String of the value you want to replace it with.</li>
 </ul>
 
 ##### Use:
 <ul>
 
-###### <li></li>
+###### <li>Supply the parameters and the function will replace all instances of the string supplied for to_replace with the string supplied for replace_with.</li>
 </ul>
 
 ##### RETURN:
 <ul>
 
-###### <li></li>
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
 </ul>
 
 
 ##### Example Code:
 
 ```C
-
+myData.replaceAll(&myData, 'Tom', 'Thomas');
 ```
+<ul>
+  
+###### <li>Will replace *all* instances of 'Tom' in the data with 'Thomas'.</li>
+</ul>
+
+```C
+myData.replaceAll(&myData, '?', '');
+```
+<ul>
+  
+###### <li>Will replace *all* instances of '?' in the data with an empty string.</li>
+</ul>
 <hr>
 
 
