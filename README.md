@@ -271,7 +271,7 @@ myData.csv.dictReader(&myData);
 
 <div align="center">
   
-Functions for Data Cleaning:
+Functions for Data Wrangling / Data Cleaning:
 --------
 </div>
 
@@ -317,7 +317,7 @@ myData.formatHeader(&myData);
 <ul>
 
 ###### <li>Pointer to (i.e. address of) dataLynx object.</li>
-###### <li>String of the old column name that you want to change.</li>
+###### <li>String of the old column name that you want to change. (Case sensitive)</li>
 ###### <li>String of the new column name that you want it changed to.</li>
 </ul>
 
@@ -352,7 +352,7 @@ myData.changeColumnName(&myData, "Dept", "Department");
 <ul>
 
 ###### <li>Pointer to (i.e. address of) dataLynx object.</li>
-###### <li>String of the value you want to replaced.</li>
+###### <li>String of the value you want to replaced. (Case sensitive)</li>
 ###### <li>String of the value you want to replace it with.</li>
 </ul>
 
@@ -385,9 +385,114 @@ myData.replaceAll(&myData, '?', '');
 ```
 <ul>
   
-###### <li>Will replace *all* instances of '?' in the data with an empty string.</li>
+###### <li>Will replace *all* instances of '?' in the data with an empty string. (This will make the Is NULL/Not NULL counts accurate, as '?' is not seen as a NULL value. More on this in later sections.) You may also pass NULL in place of an empty string to acheive the same result.</li>
 </ul>
 <hr>
+
+
+
+<!--  REPLACE IN COLUMN -->
+<h4 align="center">replaceInColumn()</h4>
+<h6 align="center">bool replaceInColumn(dataLynx *self, char *column_name, char *to_replace, char *replace_with);</h6>
+
+##### PARAMETERS:
+<ul>
+
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>String of the column name that you want values to be altered in. (Case sensitive)</li>
+###### <li>String of the value that you want to replaced. (Case sensitive)</li>
+###### <li>String of the value that you want to replace that value with.</li>
+</ul>
+
+##### Use:
+<ul>
+
+###### <li>Supply the parameters and the function will replace all instances of to_replace that appear *only* in the column who's name matches the column_name string supplied as input.</li>
+</ul>
+
+##### RETURN:
+<ul>
+
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.replaceInColumn(&myData, 'First Name', 'Tom', 'Thomas');
+```
+<ul>
+  
+###### <li>Will replace *all* instances of 'Tom' in the data with 'Thomas'.</li>
+</ul>
+
+```C
+myData.replaceAll(&myData, '?', '');
+```
+<ul>
+  
+###### <li>Will replace all instances of '?' (*only* in the column who's name matches with column_name) with an empty string. (This will make the Is NULL/Not NULL counts accurate, as '?' is not seen as a NULL value. More on this in later sections.) You may also pass NULL in place of an empty string to acheive the same result.</li>
+</ul>
+<hr>
+
+
+
+<!-- SORT ROWS BY COLUMN-->
+<h4 align="center">sortRowsByColumn()</h4>
+<h6 align="center">bool sortRowsByColumn(dataLynx *self, const char *column_name, const char *asc_desc);</h6>
+
+##### PARAMETERS:
+<ul>
+
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>String of the column name who want to sort the rows by. (Case sensitive)</li>
+###### <li>String determining whether you want the columns sorted ascending or descending. Accepts abbreviated 'asc'/'desc' as well as 'ascending'/'descending'. (Case *in*sensitive). (Note: If anything other than 'asc', 'desc', 'ascending', or 'descending' is supplied here, the function will sort by ascending, as this is the default.</li>
+</ul>
+
+##### Use:
+<ul>
+
+###### <li>Supply the parameters and the function will sort the rows in the data by the column provided.</li>
+</ul>
+
+##### RETURN:
+<ul>
+
+###### <li></li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.sortRowsByColumn(&myData, "Employee ID", "ascending");
+```
+<ul>
+
+###### <li>This will sort the rows by 'Employee ID' ascending.</li>
+</ul>
+```C
+myData.sortRowsByColumn(&myData, "First Name", "DESC");
+```
+<ul>
+
+###### <li>This will sort the rows by 'First Name' descending. (Remember: 'asc', 'desc', 'ascending', *and* 'ascending' are all acceptable and are case *in*sensitive.)</li>
+</ul>
+
+```C
+myData.sortRowsByColumn(&myData, "Department", "HELLO!");
+```
+<ul>
+
+###### <li>This will sort the rows by 'Department' ascending. (Remember: ascending is default, if an invalid input is supplied here.)</li>
+</ul>
+
+
+<hr>
+
+
 
 
 
@@ -423,6 +528,10 @@ myData.replaceAll(&myData, '?', '');
 
 
 
+
+
+
+
 <!-- -->
 <h4 align="center"></h4>
 <h6 align="center"></h6>
@@ -452,6 +561,43 @@ myData.replaceAll(&myData, '?', '');
 
 ```
 <hr>
+
+
+
+
+
+
+<!-- -->
+<h4 align="center"></h4>
+<h6 align="center"></h6>
+
+##### PARAMETERS:
+<ul>
+
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+</ul>
+
+##### Use:
+<ul>
+
+###### <li></li>
+</ul>
+
+##### RETURN:
+<ul>
+
+###### <li></li>
+</ul>
+
+
+##### Example Code:
+
+```C
+
+```
+<hr>
+
+
 
 
 
