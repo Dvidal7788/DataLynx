@@ -104,8 +104,8 @@ myData.csv.openFile(&myData, "csv/staff.csv");
 ##### RETURN:
 <ul>
 
-###### <li>Returns the string in which the data is stored. You do not need to assign the string to anything, as it is automatically stored in myData.raw. The string is only returned for convenience (e.g. instances such as: `printf("%s", myData.csv.fileReader(&myData)` require the string be returned.</li>
-###### <li>Returns NULL if any error occurs</li>
+###### <li>On success, returns the string in which the data is stored. You do not need to assign the string to anything, as it is automatically stored in myData.raw. The string is only returned for convenience (e.g. instances such as: `printf("%s", myData.csv.fileReader(&myData)` require the string be returned.</li>
+###### <li>On failure, returns NULL if any error occurs</li>
 </ul>
 
 
@@ -141,8 +141,8 @@ myData.csv.fileReader(&myData);
 ##### RETURN:
 <ul>
 
-###### <li>Returns a pointer to an array of strings in which the data is stored. You do not need to assign the string to anything, as it is automatically stored in myData.rows. The string is only returned for convenience (e.g. instances such as: `printf("%s", myData.csv.fileReader(&myData)` require the string be returned.</li>
-###### <li>Returns NULL if any error occurs</li>
+###### <li>On success, returns a pointer to an array of strings in which the data is stored. You do not need to assign the string to anything, as it is automatically stored in myData.rows. The string is only returned for convenience (e.g. instances such as: `printf("%s", myData.csv.fileReader(&myData)` require the string be returned.</li>
+###### <li>On failure, returns NULL if any error occurs</li>
 </ul>
 
 
@@ -221,6 +221,41 @@ myData.csv.reader_v3(&myData);
 
 ```C
 myData.csv.reader(&myData);
+```
+<hr>
+
+
+
+<!-- CSV.DICTREADER -->
+<h4 align="center">csv.dictReader()</h4>
+<h6 align="center">dict_node **dictReader(dataLynx *self);</h6>
+
+##### PARAMETERS:
+<ul>
+
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+</ul>
+
+##### Use:
+<ul>
+
+###### <li>This function reads the file that has already been opened using csv.openFile() into memory.</li>
+###### <li>The header, as always, will be stored as an array of strings (i.e. one string per column name).</li>
+###### <li>*The data will be stored in memory as an array of dict-style linked lists. Each linked list represents a row. Each node in the linked list represents a value (i.e. field). In addition to storing a value, each node also stores the column name that corresponds with that particular value (e.g. {'Employee ID', '4511'}), in which 'Employee ID' is the column name and '4511' is the corresponding value for that row (i.e. linked list) that this particular node is in. See diagram below.*.</li>
+</ul>
+
+##### RETURN:
+<ul>
+
+###### <li>On success, returns a pointer to an array of dict-style linked lists.</li>
+###### <li>On failure, returns NULL.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.csv.dictReader(&myData);
 ```
 <hr>
 
