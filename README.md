@@ -68,8 +68,8 @@ dataLynx myData = dataLynxConstructor();
 ##### RETURN:
 <ul>
 
-###### <li>Returns true if the file is successfully opened</li>
-###### <li>Returns false if the file is not successfully opened</li>
+###### <li>On sucess, returns true if the file is successfully opened</li>
+###### <li>On failure, returns false if the file is not successfully opened</li>
 </ul>
 
 
@@ -260,14 +260,85 @@ myData.csv.dictReader(&myData);
 <hr>
 
 
+#### Data Cleaning
 
+<!-- FORMAT HEADER-->
+<h4 align="center">formatHeader()</h4>
+<h6 align="center">bool formatHeader(dataLynx *self);</h6>
+
+##### PARAMETERS:
+<ul>
+
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+</ul>
+
+##### Use:
+<ul>
+
+###### <li>Will format all column names in the header to be Title Case (i.e first letter of each word capitalized) and will replace '_' (underscore) with a ' ' (space).</li>
+###### <li>Ex: 'first_name' will be changed to 'First Name'.</li>
+###### <li>Ex: 'employee_id' will be changed to 'Employee ID'. NOTE: It was NOT changed to 'Employee Id' in this example, because this function identifies the word 'id' and will capitalize 'D' as well.</li>
+</ul>
+
+##### RETURN:
+<ul>
+
+###### <li>Returns true if any change is made to any column name.</li>
+###### <li>Returns false if no changes are made.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.formatHeader(&myData);
+```
+<hr>
+
+
+<!-- CHANGE COLUMN NAME-->
+<h4 align="center">changeColumnName()</h4>
+<h6 align="center">bool changeColumnName(dataLynx *self, char *old_column_name, char *new_column_name);</h6>
+
+##### PARAMETERS:
+<ul>
+
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of the old column name that you want to change.</li>
+###### <li>String of the new column name that you want it changed to.</li>
+</ul>
+
+##### Use:
+<ul>
+
+###### <li>Simply supply the function with the name of the column you wish to change (i.e. old_column_name) and the name you wish to change it to.</li>
+</ul>
+
+##### RETURN:
+<ul>
+
+###### <li>On success, will return true.</li>
+###### <li>On failure, will return false. (This can include a malloc failure, invalid pointers etc, as well as an invalid old_column_name supplied as input.)</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.changeColumnName(&myData, "Dept", "Department");
+```
+<hr>
+
+
+
+<!-- -->
 <h4 align="center"></h4>
 <h6 align="center"></h6>
 
 ##### PARAMETERS:
 <ul>
 
-###### <li></li>
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
 </ul>
 
 ##### Use:
@@ -292,13 +363,14 @@ myData.csv.dictReader(&myData);
 
 
 
+<!-- -->
 <h4 align="center"></h4>
 <h6 align="center"></h6>
 
 ##### PARAMETERS:
 <ul>
 
-###### <li></li>
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
 </ul>
 
 ##### Use:
@@ -323,75 +395,14 @@ myData.csv.dictReader(&myData);
 
 
 
+<!-- -->
 <h4 align="center"></h4>
 <h6 align="center"></h6>
 
 ##### PARAMETERS:
 <ul>
 
-###### <li></li>
-</ul>
-
-##### Use:
-<ul>
-
-###### <li></li>
-</ul>
-
-##### RETURN:
-<ul>
-
-###### <li></li>
-</ul>
-
-
-##### Example Code:
-
-```C
-
-```
-<hr>
-
-
-
-<h4 align="center"></h4>
-<h6 align="center"></h6>
-
-##### PARAMETERS:
-<ul>
-
-###### <li></li>
-</ul>
-
-##### Use:
-<ul>
-
-###### <li></li>
-</ul>
-
-##### RETURN:
-<ul>
-
-###### <li></li>
-</ul>
-
-
-##### Example Code:
-
-```C
-
-```
-<hr>
-
-
-
-<h4 align="center"></h4>
-<h6 align="center"></h6>
-
-##### PARAMETERS:
-<ul>
-
-###### <li></li>
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
 </ul>
 
 ##### Use:
