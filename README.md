@@ -554,13 +554,14 @@ myData.dropRow(&myData, 8);
 ##### Use:
 <ul>
 
-###### <li>Supply the parameters and the function will </li>
+###### <li>Supply the parameters and the function will drop (i.e. remove) all rows in the data that meet the provided condition.</li>
 </ul>
 
 ##### RETURN:
 <ul>
 
-###### <li></li>
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
 </ul>
 
 
@@ -578,7 +579,189 @@ myData.dropRowsFilter(&myData, "Profit", ">=", "800");
 
 
 
+<!-- FILTER-->
+<h4 align="center">filter()</h4>
+<h6 align="center">bool filter(dataLynx *self, dataLynx *filteredData, char *column_name, char *condition_operator, char *condition_value)</h6>
 
+##### PARAMETERS:
+<ul>
+
+###### <li>Pointer to (i.e. address of) original dataLynx object</li>
+###### <li>Pointer to (i.e. address of) new dataLynx object</li>
+###### <li>String of the column name the filter will apply to.</li>
+###### <li>String of the condition operator (i.e. "<", ">", "<=", ">=", or "==").</li>
+###### <li>String of the condition value (this can represent an integer, double or string, but must be passed in as a string.)</li>
+</ul>
+
+##### Use:
+<ul>
+
+###### <li>Supply the paramters and the function will make a copy of all the rows in the original dataLynx object that meet the condition.</li>
+###### <li>The new dataLynx object will then be filled with these rows (i.e. any that met the provided condition).</li>
+</ul>
+
+##### RETURN:
+<ul>
+
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+dataLynx filteredData = dataLynxConstructor();
+myData.filter(&myData, &filteredData, "Profit", ">=", "800");
+```
+
+<ul>
+
+###### <li>This will fill the new dataLynx object (named 'filteredData' in this example) with the rows from the original dataLynx object (named 'myData' in this example) in which the value in the 'Profit' column is greater than or equal to 800 (i.e. all rows that meet the condition).</li>
+###### <li>Note: The original dataLynx object remains unaffected.</li>
+</ul>
+<hr>
+
+
+
+
+
+<!-- DROP COLUMN() -->
+<h4 align="center">dropColumn()</h4>
+<h6 align="center">bool dropColumn(dataLynx *self, char *column_name);</h6>
+
+##### PARAMETERS:
+<ul>
+
+###### <li>Pointer to (i.e. address of) original dataLynx object</li>
+###### <li>String of column name you wish to remove from the data structure.</li>
+
+</ul>
+
+##### Use:
+<ul>
+
+###### <li>Supply the parameters and (as long as a valid column name is provided) the function will remove the desired column from the data.</li>
+</ul>
+
+##### RETURN:
+<ul>
+
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.dropColumn(&myData, "Gross Profit");
+```
+
+<ul>
+
+###### <li>This will remove the "Gross Profit" column from the data.</li>
+</ul>
+<hr>
+
+
+
+
+<!-- GET FIELD() -->
+<h4 align="center">getField()</h4>
+<h6 align="center">char *getField(dataLynx *self, uintmax_t desired_row, char *desired_column);</h6>
+
+##### PARAMETERS:
+<ul>
+
+###### <li>Pointer to (i.e. address of) original dataLynx object.</li>
+###### <li>Integer row index location of field you wish to access.</li>
+###### <li>String of column name of field you wish to access.</li>
+
+</ul>
+
+##### Use:
+<ul>
+
+###### <li>Supply the paramters and (as long as a valid row integer/column name is provided) the function will return a string of the field you requested.</li>
+</ul>
+
+##### RETURN:
+<ul>
+
+###### <li>On success, returns a string (i.e. a pointer, which points to the requested field in the data structure).</li>
+###### <li>On failure, returns NULL.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+char *field = myData.getField(&myData, 3, "Employee ID");
+```
+
+<ul>
+
+###### <li>This will store the location of the field at row 3/column "Employee ID" in the pointer named field, for easy access. Do not free, as this points to the location in the data structure where the field exists.</li>
+</ul>
+```C
+printf("%s", myData.getField(&myData, 3, "Employee ID"));
+```
+
+<ul>
+
+###### <li>This will print the field at row 3/column "Employee ID".</li>
+</ul>
+<hr>
+
+
+
+<!-- GET FIELD2() -->
+<h4 align="center">getField2()</h4>
+<h6 align="center">char *getField2(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column);</h6>
+
+##### PARAMETERS:
+<ul>
+
+###### <li>Pointer to (i.e. address of) original dataLynx object.</li>
+###### <li>Integer row index location of field you wish to access.</li>
+###### <li>Integer of column index location of field you wish to access.</li>
+
+</ul>
+
+##### Use:
+<ul>
+
+###### <li>Supply the paramters and (as long as a valid row integer/column integer is provided) the function will return a string of the field you requested.</li>
+</ul>
+
+##### RETURN:
+<ul>
+
+###### <li>On success, returns a string (i.e. a pointer, which points to the requested field in the data structure).</li>
+###### <li>On failure, returns NULL.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+char *field = myData.getField(&myData, 3, 0);
+```
+
+<ul>
+
+###### <li>This will store the location of the field at row 3/column 0 in the pointer named field, for easy access. Do not free, as this points to the location in the data structure where the field exists.</li>
+</ul>
+```C
+printf("%s", myData.getField(&myData, 3, 0));
+```
+
+<ul>
+
+###### <li>This will print the field at row 3/column 0.</li>
+</ul>
+<hr>
 
 <!-- -->
 <h4 align="center"></h4>
@@ -587,7 +770,8 @@ myData.dropRowsFilter(&myData, "Profit", ">=", "800");
 ##### PARAMETERS:
 <ul>
 
-###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>Pointer to (i.e. address of) original dataLynx object</li>
+
 </ul>
 
 ##### Use:
@@ -599,7 +783,8 @@ myData.dropRowsFilter(&myData, "Profit", ">=", "800");
 ##### RETURN:
 <ul>
 
-###### <li></li>
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
 </ul>
 
 
@@ -608,9 +793,14 @@ myData.dropRowsFilter(&myData, "Profit", ">=", "800");
 ```C
 
 ```
+
+<ul>
+
+###### <li></li>
+</ul>
 <hr>
 
 
-
+###### Wow, you made it to the end of the README file! I'll let you in on a secret: You don't actually need to access the functions through the dataLynx object. For example, instead of `myData.dropRow(&myData, 7);` to drop the row at index location 7, you could simply write `dropRow(&myData, 7);`. This project was started with the intention of emulating features of Object-Oriented Programming, which is why the former syntax has been used in all examples. However, I have made the functions publicly accessible for ultimate flexibility, so feel free to use the shorter syntax instead... One more secret: you can use the internal functions too! They are not private! But be careful, because the internal functions have less error checking, as that is done mainly in the client facing functions. Use at your own risk!
 
 
