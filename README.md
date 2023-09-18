@@ -126,8 +126,8 @@ Functions for Reading/Writing from/to a CSV file:
 ##### RETURN:
 <ul>
 
-###### <li>On sucess, returns true if the file is successfully opened</li>
-###### <li>On failure, returns false if the file is not successfully opened</li>
+###### <li>On sucess, returns true (file is successfully opened).</li>
+###### <li>On failure, returns false (file is not successfully opened.)</li>
 </ul>
 
 
