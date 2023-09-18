@@ -130,6 +130,7 @@ myData.csv.openFile(&myData, "csv/staff.csv");
   
 Functions for Reading/Writing from/to a CSV file:
 --------
+###### (These functions are all available within the .csv namespace within your dataLynx object (i.e. `myData.csv.exampleFunction()`)
 </div>
 
 <h4 align="center">csv.fileReader()</h4>
@@ -388,10 +389,48 @@ myData.fieldReader2(&myData, 0, 1);
 </ul>
 <hr>
 
+<!-- CSV.FIELDWRITER-->
+<h4 align="center">csv.fieldWriter()</h4>
+<h6 align="center"></h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li></li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li></li>
+</ul>
+
+
+##### Example Code:
+
+```C
+
+```
+
+<ul>
+ 
+###### <li>.</li>
+</ul>
+<hr>
 
 
 
-                                                                                    <!-- FUNCTIONS FOR DATA WRANGLING / DATA CLEANINING -->
+
+
+
+
+<!-- FUNCTIONS FOR DATA WRANGLING / DATA CLEANINING -->
 <div align="center">
   
 Functions for Data Wrangling / Data Cleaning:
@@ -411,7 +450,7 @@ Functions for Data Wrangling / Data Cleaning:
 ##### Use:
 <ul>
 
-###### <li>Will format all column names in the header to be Title Case (i.e first letter of each word capitalized) and will replace '_' (underscore) with a ' ' (space).</li>
+###### <li>Will format all column names in the header to be Title Case (i.e first letter of each word capitalized) and will replace '_' (underscore) with ' ' (space).</li>
 ###### <li>Ex: 'first_name' will be changed to 'First Name'.</li>
 ###### <li>Ex: 'employee_id' will be changed to 'Employee ID'. NOTE: It was NOT changed to 'Employee Id' in this example, because this function identifies the word 'id' and will capitalize 'D' as well.</li>
 </ul>
@@ -956,7 +995,7 @@ bool value_exists = myData.inInColumn(&myData, "David", "First Name");
 ##### Example Code:
 
 ```C
-bool value_exists = myData.inInData(&myData, "David");
+bool value_exists = myData.isInData(&myData, "David");
 ```
 
 <ul>
