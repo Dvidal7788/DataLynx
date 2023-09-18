@@ -56,7 +56,7 @@ FUNCTIONS
 <div align="center">
 
 ###### The following is a complete list of *user-facing* functions (i.e. 'methods' as they exist in the dataLynx object).
-###### (Assume that the dataLynx object that has been declared is named 'myData' for the purposes of these examples.)
+###### (Assume that the dataLynx object that has been declared is named 'myData' for the purposes of these s.)
 </div>
 <hr>
 
@@ -85,11 +85,23 @@ FUNCTIONS
 </ul>
 
 
-##### Example Code:
+#####  Code:
 
 ```C
 dataLynx myData = dataLynxConstructor();
 ```
+<hr>
+
+
+
+
+<!-- FUNCTIONS FOR READ/WRITE FROM/TO CSV -->
+<div align="center">
+  
+Functions for Reading/Writing from/to a CSV file:
+--------
+###### (These functions are all available within the .csv namespace within your dataLynx object (i.e. `myData.csv.exampleFunction()`)
+</div>
 <hr>
 
 
@@ -106,7 +118,9 @@ dataLynx myData = dataLynxConstructor();
 ##### Use:
 <ul>
 
-###### <li>The function will attempt to open the file of the filename given. If a filename has already been set and a NULL is passed in place of a filename, the function will open the filename already in memory. If a filename has already been set and new filename is passed as a parameter, the function will open the new filename passed in.</li>
+###### <li>Before reading or writing from/to a CSV, you must open the file.</li>
+###### <li>This function will attempt to open the file of the filename given.</li>
+###### <li>This function will use the filename provided as input if one is given, however if you have already set the filename within the dataLynx object, you may pass NULL in place of a fileame, and the function will use the filename already stored in the dataLynx object.</li>
 </ul>
 
 ##### RETURN:
@@ -117,21 +131,13 @@ dataLynx myData = dataLynxConstructor();
 </ul>
 
 
-##### Example Code:
+#####  Code:
 
 ```C
 myData.csv.openFile(&myData, "csv/staff.csv");
 ```
 <hr>
 
-
-<!-- FUNCTIONS FOR READ/WRITE FROM/TO CSV -->
-<div align="center">
-  
-Functions for Reading/Writing from/to a CSV file:
---------
-###### (These functions are all available within the .csv namespace within your dataLynx object (i.e. `myData.csv.exampleFunction()`)
-</div>
 
 <h4 align="center">csv.fileReader()</h4>
 <h6 align="center">char *fileReader(dataLynx *self)</h6>
@@ -391,12 +397,15 @@ myData.fieldReader2(&myData, 0, 1);
 
 <!-- CSV.FIELDWRITER-->
 <h4 align="center">csv.fieldWriter()</h4>
-<h6 align="center"></h6>
+<h6 align="center">bool fieldWriter(dataLynx *self, uintmax_t row, char *column, char *new_field)</h6>
 
 ##### PARAMETERS:
 <ul>
     
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>Integer row index location of field you wish to update/write to.</li>
+###### <li>String of column name of field you wish to update/write to.</li>
+###### <li>String of new value you wish to update field to.</li>
 </ul>
 
 ##### To Use:
@@ -408,19 +417,20 @@ myData.fieldReader2(&myData, 0, 1);
 ##### RETURN:
 <ul>
     
-###### <li></li>
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
 </ul>
 
 
 ##### Example Code:
 
 ```C
-
+myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 ```
 
 <ul>
  
-###### <li>.</li>
+###### <li>This will update the value at row 3/column "Last Name" to "Smith". (The previous value in this field will be erased.)</li>
 </ul>
 <hr>
 
@@ -1014,6 +1024,85 @@ bool value_exists = myData.isInData(&myData, "David");
 Functions for Statistics / Aggregate Data:
 --------
 </div
+
+<!-- GETSTAT() -->
+<h4 align="center">getStat()</h4>
+<h6 align="center">double getStat(dataLynx *self, char *column_name, char *operation)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>String of column name you wish to get the stat from.</li>
+###### <li>String of the stat you wish to retrieve (i.e. min, max, sum, mean, std, 25th percentile, median, 75th percentile, is null, not null).</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Note: min, max, sum, mean, std, 25th percentile, median & 75th percentile are only available for numeric columns. If you try to access these stats from a non-numeric column, the function will return 0.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns the statistic requested.</li>
+###### <li>On failure (i.e. invalid column name, either that does not exist at all or is a non-numeric column), returns 0. Do NOT mistake this for a valid statistic (as of course 0 could be a vaid statistic of a numeric column).</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+
+```
+
+<ul>
+ 
+###### <li>.</li>
+</ul>
+<hr>
+
+
+
+
+
+<h4 align="center"></h4>
+<h6 align="center"></h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li></li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li></li>
+</ul>
+
+
+##### Example Code:
+
+```C
+
+```
+
+<ul>
+ 
+###### <li>.</li>
+</ul>
+<hr>
+
+
+
 
 
 ###### WOW, you made it to the end of the README file! I'll let you in on a secret: you do not need to access the functions through the dataLynx object. For example, instead of `myData.dropRow(&myData, 7);` to drop the row at index location 7, you could simply write `dropRow(&myData, 7);`. This project was started with the intention of emulating features of Object-Oriented Programming, which is why the former syntax has been used in all examples. However, I have made the functions publicly accessible for ultimate flexibility, so feel free to use the shorter syntax instead... One more secret: you can use the internal functions too! They are *not* private! But be careful, because the internal functions have less error checking, as that is done mainly in the client facing functions. Use at your own risk!
