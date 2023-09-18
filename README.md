@@ -125,7 +125,7 @@ myData.csv.openFile(&myData, "csv/staff.csv");
 <hr>
 
 
-                                                                        <!-- FUNCTIONS FOR READ/WRITE FROM/TO CSV -->
+<!-- FUNCTIONS FOR READ/WRITE FROM/TO CSV -->
 <div align="center">
   
 Functions for Reading/Writing from/to a CSV file:
@@ -968,7 +968,7 @@ bool value_exists = myData.inInData(&myData, "David");
 
 
 
-                                                                      <!-- STATISTICS / AGGREGATE DATA -->
+<!-- STATISTICS / AGGREGATE DATA -->
 <a id="stats"></a>
 <div align="center">
   
