@@ -10,15 +10,53 @@ Overview:
 >###### NOTE: In order to acheive Object-Oriented style functionality, the first parameter for every user-facing function must be the address of the dataLynx struct (or 'object') you have declared / constructed using the constructor (e.g. `myData.function(&myData)`). Although this is of course not a true object in the OOP sense, moving forward I will be referring to dataLynx structs as objects since this is the intended use of the struct. All memory management is handled for you, as long as you run `myData.freeAll(&myData)` at the end of your program.
 
 <hr>
+
+
 <div align="center">
   
-FUNCTIONS:
+Statistics / Aggregate Data
+=========
+
+###### (This library provides you with the following statistical / aggregate data)
+</div>
+
+
+##### For numeric columns:
+<ul>
+  
+###### <li>Min</li>
+###### <li>Max</li>
+###### <li>Sum</li>
+###### <li>Mean</li>
+###### <li>Standard Deviation</li>
+###### <li>25th percentile (lower quartile)</li>
+###### <li>Median (50th percentile)</li>
+###### <li>75th percentile (upper quartile)</li>
+###### <li>Is Null (number of empty field in a given column)</li>
+###### <li>Not Null (number of non-empty field in a given column)</li>
+</ul>
+
+##### For non-numeric columns:
+<ul>
+  
+###### <li>Value Counts for each unique value in a given column (i.e. how many times that specific value appears a column).</li>
+###### <li>Is Null (number of empty field in a given column)</li>
+###### <li>Not Null (number of non-empty field in a given column)</li>
+</ul>
+<div align="center">
+
+###### (See [Functions for Statistical / Aggregate Data](#stats) below for more details.)
+</div>
+<hr>
+<div align="center">
+  
+FUNCTIONS
 =========
 </div>
 <div align="center">
 
-###### The following is a complete list of *user-facing* functions.
-###### (Assume the dataLynx object that was declared has been named myData.)
+###### The following is a complete list of *user-facing* functions (i.e. 'methods' as they exist in the dataLynx object).
+###### (Assume that the dataLynx object that has been declared is named 'myData' for the purposes of these examples.)
 </div>
 <hr>
 
@@ -86,9 +124,11 @@ myData.csv.openFile(&myData, "csv/staff.csv");
 ```
 <hr>
 
+
+                                                                        <!-- FUNCTIONS FOR READ/WRITE FROM/TO CSV -->
 <div align="center">
   
-Functions for Reading a CSV file into memory:
+Functions for Reading/Writing from/to a CSV file:
 --------
 </div>
 
@@ -269,6 +309,89 @@ myData.csv.dictReader(&myData);
 ```
 <hr>
 
+
+<!-- CSV.FIELDREADER() -->
+<h4 align="center">csv.fieldReader()</h4>
+<h6 align="center">char *fieldReader(dataLynx *self, uintmax_t desired_row, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>Integer row index location of field you wish to access.</li>
+###### <li>String of column name of field you wish to access.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and (as long as a valid row integer/column name is provided), the function will read the deisred field directly from the opened CSV (must have already used csv.openFile()).This prevents the need for reading the entire CSV into memory, if you are only looking for one or a few fields.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns string containing the value at the provided row integer/column name. (Do not free. You only need to run freeAll() at the end of your program or when you are done with that specific dataLynx object.)</li>
+###### <li>On failure, returns NULL.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.fieldReader(&myData, 0, "First Name");
+```
+
+<ul>
+ 
+###### <li>This will return a string with the value in row 0, column name "First Name".</li>
+</ul>
+<hr>
+
+
+
+<!-- CSV.FIELDREADER2() -->
+<h4 align="center">csv.fieldReader2()</h4>
+<h6 align="center">char *fieldReader2(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>Integer row index location of field you wish to access.</li>
+###### <li>Integer column index location of field you wish to access.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and (as long as a valid row integer/column integer is provided), the function will read the deisred field directly from the opened CSV (must have already used csv.openFile()).This prevents the need for reading the entire CSV into memory, if you are only looking for one or a few fields.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns string containing the value at the provided row integer/column integer. (Do not free. You only need to run freeAll() at the end of your program or when you are done with that specific dataLynx object.)</li>
+###### <li>On failure, returns NULL.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.fieldReader2(&myData, 0, 1);
+```
+
+<ul>
+ 
+###### <li>This will return a string with the value in row 0, column 1.</li>
+</ul>
+<hr>
+
+
+
+
+                                                                                    <!-- FUNCTIONS FOR DATA WRANGLING / DATA CLEANINING -->
 <div align="center">
   
 Functions for Data Wrangling / Data Cleaning:
@@ -704,6 +827,7 @@ char *field = myData.getField(&myData, 3, "Employee ID");
 
 ###### <li>This will store the location of the field at row 3/column "Employee ID" in the pointer named field, for easy access. Do not free, as this points to the location in the data structure where the field exists.</li>
 </ul>
+
 ```C
 printf("%s", myData.getField(&myData, 3, "Employee ID"));
 ```
@@ -746,15 +870,16 @@ printf("%s", myData.getField(&myData, 3, "Employee ID"));
 ##### Example Code:
 
 ```C
-char *field = myData.getField(&myData, 3, 0);
+char *field = myData.getField2(&myData, 3, 0);
 ```
 
 <ul>
 
 ###### <li>This will store the location of the field at row 3/column 0 in the pointer named field, for easy access. Do not free, as this points to the location in the data structure where the field exists.</li>
 </ul>
+
 ```C
-printf("%s", myData.getField(&myData, 3, 0));
+printf("%s", myData.getField2(&myData, 3, 0));
 ```
 
 <ul>
@@ -763,44 +888,95 @@ printf("%s", myData.getField(&myData, 3, 0));
 </ul>
 <hr>
 
-<!-- -->
-<h4 align="center"></h4>
-<h6 align="center"></h6>
+<!-- IS IN COLUMN()-->
+<h4 align="center">isInColumn()</h4>
+<h6 align="center">bool isInColumn(dataLynx *self, char *value, char *column_name)</h6>
 
 ##### PARAMETERS:
 <ul>
 
 ###### <li>Pointer to (i.e. address of) original dataLynx object</li>
+###### <li>String of value you want to know is in a the data or not.</li>
+###### <li>String of column name you want to search in.</li>
 
 </ul>
 
 ##### Use:
 <ul>
 
-###### <li></li>
+###### <li>Supply the parameters and the function will search for any instances of the provided value in the column name provided.</li>
 </ul>
 
 ##### RETURN:
 <ul>
 
-###### <li>On success, returns true.</li>
-###### <li>On failure, returns false.</li>
+###### <li>If the value provided is in the column provided, returns true. (Will return true regardless of how many times the value appears. This function only checks *that* it appears in the column.)</li>
+###### <li>If the value provided is *not* in the column provided, returns false.</li>
 </ul>
 
 
 ##### Example Code:
 
 ```C
-
+bool value_exists = myData.inInColumn(&myData, "David", "First Name");
 ```
 
 <ul>
 
-###### <li></li>
+###### <li>This will store true or false in the bool declared as 'value_exists', based on whether or not the value "David" is in the column named "First Name" at all.</li>
 </ul>
 <hr>
 
 
-###### Wow, you made it to the end of the README file! I'll let you in on a secret: You don't actually need to access the functions through the dataLynx object. For example, instead of `myData.dropRow(&myData, 7);` to drop the row at index location 7, you could simply write `dropRow(&myData, 7);`. This project was started with the intention of emulating features of Object-Oriented Programming, which is why the former syntax has been used in all examples. However, I have made the functions publicly accessible for ultimate flexibility, so feel free to use the shorter syntax instead... One more secret: you can use the internal functions too! They are not private! But be careful, because the internal functions have less error checking, as that is done mainly in the client facing functions. Use at your own risk!
+<!-- IS IN DATA()-->
+<h4 align="center">isInData()</h4>
+<h6 align="center">bool isInData(dataLynx *self, char *value)</h6>
+
+##### PARAMETERS:
+<ul>
+
+###### <li>Pointer to (i.e. address of) original dataLynx object</li>
+###### <li>String of value you want to know is in a the data or not.</li>
+
+</ul>
+
+##### Use:
+<ul>
+
+###### <li>Supply the parameters and the function will search for any instances of the provided value in the data.</li>
+</ul>
+
+##### RETURN:
+<ul>
+
+###### <li>If the value provided is in the data, returns true. (Will return true regardless of how many times the value appears. This function only checks *that* it appears in the data.)</li>
+###### <li>If the value provided is *not* in the column provided, returns false.</li>
+</ul>
+
+##### Example Code:
+
+```C
+bool value_exists = myData.inInData(&myData, "David");
+```
+
+<ul>
+
+###### <li>This will store true or false in the bool declared as 'value_exists', based on whether or not the value "David" appears in the data at all.</li>
+</ul>
+<hr>
+
+
+
+
+                                                                      <!-- STATISTICS / AGGREGATE DATA -->
+<a id="stats"></a>
+<div align="center">
+  
+Functions for Statistics / Aggregate Data:
+--------
+</div
+
+
+###### WOW, you made it to the end of the README file! I'll let you in on a secret: you do not need to access the functions through the dataLynx object. For example, instead of `myData.dropRow(&myData, 7);` to drop the row at index location 7, you could simply write `dropRow(&myData, 7);`. This project was started with the intention of emulating features of Object-Oriented Programming, which is why the former syntax has been used in all examples. However, I have made the functions publicly accessible for ultimate flexibility, so feel free to use the shorter syntax instead... One more secret: you can use the internal functions too! They are *not* private! But be careful, because the internal functions have less error checking, as that is done mainly in the client facing functions. Use at your own risk!
 
 
