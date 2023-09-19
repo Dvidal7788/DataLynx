@@ -63,7 +63,7 @@ myData.csv.fileReader(&myData);
   </li>
     <ul>
   
-  ###### <li>The example code above will read an opened CSV file into memory as raw data.</li></ul>
+  ###### <li>The example code above will read an opened CSV file into memory as raw data.</li>
     </ul>
   </ul>
 
@@ -81,7 +81,7 @@ myData.csv.fileRowReader(&myData);
   </li>
     <ul>
   
-  ###### <li>The example code above will read an opened CSV file into memory as row data (i.e. an array of strings).</li></ul>
+  ###### <li>The example code above will read an opened CSV file into memory as row data (i.e. an array of strings).</li>
     </ul>
   </ul>
 
@@ -104,7 +104,7 @@ myData.csv.reader_v3(&myData);
   </li>
     <ul>
   
-  ###### <li>The example code above will read an opened CSV file into memory as a 3D array.</li></ul>
+  ###### <li>The example code above will read an opened CSV file into memory as a 3D array.</li>
     </ul>
   </ul>
 
@@ -120,7 +120,7 @@ myData.csv.reader(&myData);
   </li>
     <ul>
   
-  ###### <li>The example code above will read an opened CSV file into memory as grid data (i.e. an array of linked lists).</li></ul>
+  ###### <li>The example code above will read an opened CSV file into memory as grid data (i.e. an array of linked lists).</li>
     </ul>
   </ul>
   
