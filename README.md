@@ -70,7 +70,7 @@ Statistics / Aggregate Data
   
 FUNCTIONS
 =========
-<a>id="functions"</a>
+<a id="functions"></a>
 </div>
 <div align="center">
 
