@@ -29,7 +29,7 @@ Table of Contents
   ###### <li>[Functions for Statistical / Aggregate Data](#stats)</li>
   ###### <li>[Functions for Printing](#print)</li>
 </ul>
-
+<hr>
 
 
 <!-- DATALYNX OBJECT -->
@@ -43,7 +43,7 @@ The DataLynx 'Object'
 ###### The dataLynx 'object' is of course actually a struct with function pointers, pointers to data structures and parameters that the user can set to alter the behavior of the 'object'. For full flexibility, there are multiple data structures to choose from. This is a big part of what I mean when I say "I want to bridge the gap between Python and C". I wanted to offer the ease of use of higher-level languages and libraries like Python's built in CSV library, and Pandas, but still offer a C programmer the control that they are used to in being able to choose the underlying structure that makes up that highe-level structures found in Python (lists, dictionaries etc). Below is a list and description of the data structures available.
 <div align="center">
   
-##### Data Structures:
+##### DATA STRUCTURES:
 </div>
 
 ##### Simple Data Structures:
@@ -61,10 +61,11 @@ The DataLynx 'Object'
 myData.csv.fileReader(&myData);
 ```
   </li>
-    <ul>
+  <ul>
   
   ###### <li>The example code above will read an opened CSV file into memory as raw data.</li>
-    </ul>
+  
+  </ul>
   </ul>
 
 ##### <li>Rows</li>
@@ -79,10 +80,11 @@ myData.csv.fileReader(&myData);
 myData.csv.fileRowReader(&myData);
 ```
   </li>
-    <ul>
+  <ul>
   
   ###### <li>The example code above will read an opened CSV file into memory as row data (i.e. an array of strings).</li>
-    </ul>
+  
+  </ul>
   </ul>
 
 </ul>
@@ -95,6 +97,7 @@ myData.csv.fileRowReader(&myData);
   <ul>
   
   ###### <li>This is a 3D array.</li>
+  ###### <li>This is array of arrays, in which each secondary array is an array of strings. In other words, this is an array, which stores arrays (one for each row), each of which stores strings (one per field).</li>
 
   <li>
 
@@ -102,10 +105,11 @@ myData.csv.fileRowReader(&myData);
 myData.csv.reader_v3(&myData);
 ```
   </li>
-    <ul>
+  <ul>
   
   ###### <li>The example code above will read an opened CSV file into memory as a 3D array.</li>
-    </ul>
+  
+  </ul>
   </ul>
 
   ##### <li>Grid</li>
@@ -118,10 +122,11 @@ myData.csv.reader_v3(&myData);
 myData.csv.reader(&myData);
 ```
   </li>
-    <ul>
+  <ul>
   
   ###### <li>The example code above will read an opened CSV file into memory as grid data (i.e. an array of linked lists).</li>
-    </ul>
+  
+  </ul>
   </ul>
   
   ##### <li>Dict Grid</li>
@@ -135,17 +140,18 @@ myData.csv.reader(&myData);
 myData.csv.dictReader(&myData);
 ```
   </li>
-    <ul>
+  <ul>
   
   ###### <li>The example code above will read an opened CSV file into memory as dict-grid data (i.e. an array of dict-style linked lists).</li>
-    </ul>
+  
+  </ul>
   </ul>
 
 </ul>
 
 
 
-
+<hr>
 
 <!-- AGGREGATE DATA -->
 <div align="center">
