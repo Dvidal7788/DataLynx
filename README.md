@@ -33,9 +33,41 @@ Table of Contents
 
 
 <!-- DATALYNX OBJECT -->
+<div align="center">
+  
 The DataLynx 'Object'
 =========
+</div>
 <a id="dataLynx"></a>
+
+###### The dataLynx 'object' is of course actually a struct with function pointers, pointers to data structures and parameters that the user can set to alter the behavior of the 'object'. For full flexibility, there are multiple data structures to choose from. This is a big part of what I mean when I say "I want to bridge the gap between Python and C". I wanted to offer the ease of use of higher-level languages and libraries like Python's built in CSV library, and Pandas, but still offer a C programmer the control that they are used to in being able to choose the underlying structure that makes up that highe-level structures found in Python (lists, dictionaries etc). Below is a list and description of the data structures available.
+
+##### Data Structures:
+<ul>
+  
+##### <li>Raw Data</li>
+<ul>
+  
+###### <li>This is a string. It is one long string containg the entire dataset, hence the 'raw data'.</li>
+</ul>
+##### <li>Raw Data</li>
+##### <li>Grid V3</li>
+<ul>
+  
+###### <li>This is a 3D array.</li>
+###### <li>An array containing pointers to arrays (each correlating to 1 row) of strings (each correlating to 1 value in the row).</li>
+</ul>
+
+##### <li>Grid</li>
+<ul>
+  
+###### <li>This is an array of linked lists.</li>
+###### <li>An array containing pointers to arrays (each correlating to 1 row) of strings (each correlating to 1 value in the row).</li>
+</ul>
+##### <li>Dict Grid</li>
+
+</ul>
+
 
 
 
