@@ -645,6 +645,7 @@ myData.sortRowsByColumn(&myData, "Employee ID", "ascending");
 
 ###### <li>This will sort the rows by 'Employee ID' ascending.</li>
 </ul>
+
 ```C
 myData.sortRowsByColumn(&myData, "First Name", "DESC");
 ```
