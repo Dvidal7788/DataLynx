@@ -632,7 +632,8 @@ myData.replaceAll(&myData, '?', '');
 ##### RETURN:
 <ul>
 
-###### <li></li>
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false (i.e. invalid dataLynx object address or invalid column name).</li>
 </ul>
 
 
@@ -643,7 +644,7 @@ myData.sortRowsByColumn(&myData, "Employee ID", "ascending");
 ```
 <ul>
 
-###### <li>This will sort the rows by 'Employee ID' ascending.</li>
+###### <li>This will sort the rows by 'Employee ID' in ascending order.</li>
 </ul>
 
 ```C
@@ -651,7 +652,7 @@ myData.sortRowsByColumn(&myData, "First Name", "DESC");
 ```
 <ul>
 
-###### <li>This will sort the rows by 'First Name' descending. (Remember: 'asc', 'desc', 'ascending', *and* 'ascending' are all acceptable and are case *in*sensitive.)</li>
+###### <li>This will sort the rows by 'First Name' in descending order. (Remember: 'asc', 'desc', 'ascending', *and* 'ascending' are all acceptable and are case *in*sensitive.)</li>
 </ul>
 
 ```C
@@ -659,7 +660,7 @@ myData.sortRowsByColumn(&myData, "Department", "HELLO!");
 ```
 <ul>
 
-###### <li>This will sort the rows by 'Department' ascending. (Remember: ascending is default, if an invalid input is supplied here.)</li>
+###### <li>This will sort the rows by 'Department' in ascending order. (Remember: ascending is default, if an invalid input is supplied for the ascending/descending parameter.)</li>
 </ul>
 
 
