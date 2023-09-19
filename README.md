@@ -526,6 +526,7 @@ myData.changeColumnName(&myData, "Dept", "Department");
 ###### <li>Pointer to (i.e. address of) dataLynx object.</li>
 ###### <li>Integer row index of field you wish to update.</li>
 ###### <li>String of column name of field you wish to update.</li>
+###### <li>String of the new value you wish to update the desired field to.</li>
 </ul>
 
 ##### To Use:
