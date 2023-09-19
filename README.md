@@ -44,6 +44,7 @@ The DataLynx 'Object'
 <div align="center">
   
 ##### DATA STRUCTURES:
+###### (Regardless of which data structure you choose, the header will be always be stored as a 2D array (i.e. an array of strings) separately from the rest of the data.)
 </div>
 
 ##### Simple Data Structures:
@@ -74,7 +75,7 @@ myData.csv.fileReader(&myData);
 ##### <li>Rows</li>
 <ul>
 
-  ###### <li>This is an array of strings. Each string in the array correlates to 1 row. Each row is stored as one long string.</li>
+  ###### <li>This is a 2D array (i.e. an array of strings). Each string in the array correlates to 1 row. Each row is stored as one long string.</li>
   ###### <li></li>
   <li>
 
@@ -98,8 +99,8 @@ myData.csv.fileRowReader(&myData);
   ##### <li>Grid V3</li>
   <ul>
   
-  ###### <li>This is a 3D array.</li>
-  ###### <li>This is array of arrays, in which each secondary array is an array of strings. In other words, this is an array, which stores arrays (one for each row), each of which stores strings (one per field).</li>
+  ###### <li>This is a 3D array (i.e. an array of arrays, in which each secondary array is an array of strings).</li>
+  ###### <li>In other words, this is an array, which stores arrays (one for each row), each of which stores strings (one per field).</li>
 
   <li>
 
