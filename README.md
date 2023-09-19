@@ -41,30 +41,105 @@ The DataLynx 'Object'
 <a id="dataLynx"></a>
 
 ###### The dataLynx 'object' is of course actually a struct with function pointers, pointers to data structures and parameters that the user can set to alter the behavior of the 'object'. For full flexibility, there are multiple data structures to choose from. This is a big part of what I mean when I say "I want to bridge the gap between Python and C". I wanted to offer the ease of use of higher-level languages and libraries like Python's built in CSV library, and Pandas, but still offer a C programmer the control that they are used to in being able to choose the underlying structure that makes up that highe-level structures found in Python (lists, dictionaries etc). Below is a list and description of the data structures available.
-
+<div align="center">
+  
 ##### Data Structures:
-<ul>
+</div>
+
+##### Simple Data Structures:
+<ul> 
   
-##### <li>Raw Data</li>
-<ul>
+  ##### <li>Raw Data</li>
+  <ul>
   
-###### <li>This is a string. It is one long string containg the entire dataset, hence the 'raw data'.</li>
-</ul>
-##### <li>Raw Data</li>
-##### <li>Grid V3</li>
-<ul>
+  ###### <li>This is a string. It is *one* long string containg the entire dataset, hence 'raw data'.</li>
+  ###### <li> From this point the data can be parsed into various data structures. Typically, however, you will do this is in one fell swoop using csv.reader(), csv.dictReader or csv.reader_v3() (all of which     internally use csv.fileReader() to first read the file into memory before parsing into various data structures. More on these data structures later.) I have provided the option to break this up into multiple steps for ultimate flexibility (e.g. if doing minimal or no data processing, you might want to read the file using fileReader(), because the string takes significantly less memory than the other data structures).</li>
+  ###### <li> NOTE: *This data structure is intended to only be used as a simpler, less memory-intensive data structure for certain instances. This data strucure does NOT offer the full capability of data processing that other data structures (like those created by csv.reader, csv.dictReader & csv.reader_v3) offer*.</li>
+  <li>
+
+  ```C
+myData.csv.fileReader(&myData);
+```
+  </li>
+    <ul>
   
-###### <li>This is a 3D array.</li>
-###### <li>An array containing pointers to arrays (each correlating to 1 row) of strings (each correlating to 1 value in the row).</li>
+  ###### <li>The example code above will read an opened CSV file into memory as raw data.</li></ul>
+    </ul>
+  </ul>
+
+##### <li>Rows</li>
+<ul>
+
+  ###### <li>This is an array of strings. Each string in the array correlates to 1 row. Each row is stored as one long string.</li>
+  ###### <li></li>
+  ###### <li> NOTE: *This data structure is intended to only be used as a simpler, less memory-intensive data structure for certain instances. This data strucure does NOT offer the full capability of data processing that other data structures (like those created by csv.reader, csv.dictReader & csv.reader_v3) offer*.</li>
+  <li>
+
+  ```C
+myData.csv.fileRowReader(&myData);
+```
+  </li>
+    <ul>
+  
+  ###### <li>The example code above will read an opened CSV file into memory as row data (i.e. an array of strings).</li></ul>
+    </ul>
+  </ul>
+
 </ul>
 
-##### <li>Grid</li>
+
+##### Full Functionality Data Structures:
 <ul>
   
-###### <li>This is an array of linked lists.</li>
-###### <li>An array containing pointers to arrays (each correlating to 1 row) of strings (each correlating to 1 value in the row).</li>
-</ul>
-##### <li>Dict Grid</li>
+  ##### <li>Grid V3</li>
+  <ul>
+  
+  ###### <li>This is a 3D array.</li>
+
+  <li>
+
+  ```C
+myData.csv.reader_v3(&myData);
+```
+  </li>
+    <ul>
+  
+  ###### <li>The example code above will read an opened CSV file into memory as a 3D array.</li></ul>
+    </ul>
+  </ul>
+
+  ##### <li>Grid</li>
+  <ul>
+
+  ###### <li>This is an array of linked lists. Each linked list in the array correlates to 1 row. Each node in the linked list correlates to one field in the data.</li>
+  <li>
+
+  ```C
+myData.csv.reader(&myData);
+```
+  </li>
+    <ul>
+  
+  ###### <li>The example code above will read an opened CSV file into memory as grid data (i.e. an array of linked lists).</li></ul>
+    </ul>
+  </ul>
+  
+  ##### <li>Dict Grid</li>
+  <ul>
+
+  ###### <li>This is an array of dict-style linked lists. Each linked list in the array correlates to 1 row. Each node in the linked list correlates to one field in the data.</li>
+  ###### <li>Each node in the linked lists contains not only a string of the value associated with that field, but also a string of the column name that that particular field is in, hence '*dict*-style linked lists'.</li>
+  <li>
+
+  ```C
+myData.csv.dictReader(&myData);
+```
+  </li>
+    <ul>
+  
+  ###### <li>The example code above will read an opened CSV file into memory as dict-grid data (i.e. an array of dict-style linked lists).</li>
+    </ul>
+  </ul>
 
 </ul>
 
@@ -222,7 +297,7 @@ myData.csv.openFile(&myData, "csv/staff.csv");
 ###### <li>This function reads the file that has already been opened using csv.openFile() into memory.</li>
 ###### <li>The header, as always, will be stored as an array of strings (i.e. one string per column name).</li>
 ###### <li>*The data will be stored in memory as one long string (i.e. raw data)*.</li>
-###### <li> From this point the data can be parsed into various data structures. Typically, however, you will do this is in one fell swoop using csv.reader(), csv.dictReader or csv.reader_v3() (all of which internally use csv.fileReader() to first read the file into memory before parsing into various data structures. More on these data structures later.) I have provided the option to break this up into multiple steps for ultimate flexibility (e.g. if doing minimal or no data processing, you might want to read the file using fileReader(), because the string takes significantly less memory than the other data structures.</li>
+###### <li> From this point the data can be parsed into various data structures. Typically, however, you will do this is in one fell swoop using csv.reader(), csv.dictReader or csv.reader_v3() (all of which internally use csv.fileReader() to first read the file into memory before parsing into various data structures. More on these data structures later.) I have provided the option to break this up into multiple steps for ultimate flexibility (e.g. if doing minimal or no data processing, you might want to read the file using fileReader(), because the string takes significantly less memory than the other data structures).</li>
 ###### <li> NOTE: *The data structure that this function creates is intended to only be used as a simpler, less memory-intensive data structure for certain instances. This data strucure does NOT offer the full capability of data processing that other data structures (like those created by csv.reader, csv.dictReader & csv.reader_v3) offer*.</li>
 </ul>
 
