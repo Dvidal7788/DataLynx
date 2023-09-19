@@ -12,7 +12,25 @@ Overview:
 <hr>
 
 
+
 <div align="center">
+
+<!-- TABLE OF CONTENTS -->
+Table of Contents
+=========
+</div>
+
+##### [Aggregate Data (Statistics/Value Counts)](#stat_list)
+##### [Function (i.e. 'method') List](#functions)
+<ul>
+  
+  ###### <li>[Functions for Reading/Writing from/to a CSV file](#csv)</li> 
+  ###### <li>[Functions for Statistical / Aggregate Data](#stats)</li>
+</ul>
+
+
+<div align="center">
+<a id="stat_list"></a>
   
 Statistics / Aggregate Data
 =========
@@ -52,6 +70,7 @@ Statistics / Aggregate Data
   
 FUNCTIONS
 =========
+<a>id="functions"</a>
 </div>
 <div align="center">
 
@@ -96,6 +115,7 @@ dataLynx myData = dataLynxConstructor();
 
 
 <!-- FUNCTIONS FOR READ/WRITE FROM/TO CSV -->
+<a id="csv"></a>
 <div align="center">
   
 Functions for Reading/Writing from/to a CSV file:
