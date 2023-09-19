@@ -516,6 +516,57 @@ myData.changeColumnName(&myData, "Dept", "Department");
 
 
 
+<!-- UPDATE FIELD-->
+<h4 align="center">updateField()</h4>
+<h6 align="center">bool updateField(dataLynx *self, uintmax_t row, char *column, char *new_value)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer row index of field you wish to update.</li>
+###### <li>String of column name of field you wish to update.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and (as long as the row/column name provided is valid), the function will update the field at that location to the new value provided.</li>
+###### <li>If you wish to update the desired field to be blank/empty field/NULL, simply input an empty string (e.g. "") as the new_value parameter. NULL strings will be rejected.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, return true.</li>
+###### <li>On faiure, return false (e.g. invalid dataLynx object address, out of range row index, invalid column name or invalid pointer (i.e. string) to the new value).</li>
+###### <li>NOTE: Whether updating a field in a numeric OR non-numeric column, the input parameter for the new value will be a string for simplicity's sake.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.updateField(&myData, 3, "Revenue", "$34,000");
+```
+<ul>
+ 
+###### <li>This will update (i.e. change) the value currently in row 3/column name "Revenue" to be 34,000.</li>
+###### <li>NOTE: commas and dollar signs *are* accepted with numeric inputs.</li>
+</ul>
+
+```C
+myData.updateField(&myData, 4, "Department", "Sales");
+```
+<ul>
+ 
+###### <li>This will update (i.e. change) the value currently in row 4/column name "Department" to be "Sales".</li>
+</ul>
+<hr>
+
+
+
+
 <!-- REPLACE -->
 <h4 align="center">replaceAll()</h4>
 <h6 align="center">bool replaceAll(dataLynx *self, char *to_replace, char *replace_with);</h6>
@@ -690,7 +741,8 @@ myData.sortRowsByColumn(&myData, "Department", "HELLO!");
 ##### RETURN:
 <ul>
 
-###### <li></li>
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false (i.e. out of range row index supplied as parameter, malloc/realloc failure, or invalid dataLynx object address).</li>
 </ul>
 
 
