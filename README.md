@@ -49,8 +49,8 @@ The DataLynx 'Object'
 ##### Simple Data Structures:
 <ul>
   
-  >###### NOTE: *The simple data structures (e.g. 'raw' & 'rows') are intended to only be used as a simpler, less memory-intensive data structures for certain instances. These data strucures do NOT offer the full capability of data processing that other data structures offer (i.e. Grid V3, Grid & Dict Grid)*.
-  >###### From this point the data can be parsed into various data structures. Typically, however, you will do this is in one fell swoop using csv.reader(), csv.dictReader or csv.reader_v3() (all of which     internally use csv.fileReader() to first read the file into memory before parsing into various data structures. More on these data structures later.) I have provided the option to break this up into multiple steps for ultimate flexibility (e.g. if doing minimal or no data processing, you might want to read the file using fileReader(), because the string takes significantly less memory than the other data structures).
+  >###### NOTE: *The simple data structures (e.g. 'raw' & 'rows') are intended only to be used as a simpler, less memory-intensive data structures for certain instances. These data strucures do NOT offer the full capability of data processing that other data structures offer (i.e. Grid V3, Grid & Dict Grid)*. They are only offered for convenience and full flexibility.
+  >###### From this point the data can be parsed into various data structures, however, typically you will do this is in one fell swoop using csv.reader(), csv.dictReader or csv.reader_v3() (all of which     internally use csv.fileReader() to first read the file into memory before parsing into various data structures. More on these data structures later.) I have provided the option to break this up into multiple steps for ultimate flexibility (e.g. if doing minimal or no data processing, you might want to read the file using fileReader(), because the string takes significantly less memory than the other data structures).
   </ul>
 <ul> 
   
