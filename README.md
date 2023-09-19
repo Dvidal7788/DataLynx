@@ -20,19 +20,31 @@ Table of Contents
 =========
 </div>
 
-##### [Aggregate Data (Statistics/Value Counts)](#stat_list)
+##### [About the DataLynx 'object'](#dataLynx)
+##### [Statistics / Value Counts (Aggregate Data)](#stat_list)
 ##### [Function (i.e. 'method') List](#functions)
 <ul>
   
   ###### <li>[Functions for Reading/Writing from/to a CSV file](#csv)</li> 
   ###### <li>[Functions for Statistical / Aggregate Data](#stats)</li>
+  ###### <li>[Functions for Printing](#print)</li>
 </ul>
 
 
+
+<!-- DATALYNX OBJECT -->
+The DataLynx 'Object'
+=========
+<a id="dataLynx"></a>
+
+
+
+
+<!-- AGGREGATE DATA -->
 <div align="center">
 <a id="stat_list"></a>
   
-Statistics / Aggregate Data
+Statistics / Value Counts (Aggregate Data)
 =========
 
 ###### (This library provides you with the following statistical / aggregate data)
@@ -67,7 +79,11 @@ Statistics / Aggregate Data
 </div>
 <hr>
 <div align="center">
-  
+
+
+
+
+<!-- FUNCTIONS -->
 FUNCTIONS
 =========
 <a id="functions"></a>
@@ -1140,7 +1156,13 @@ Functions for Statistics / Aggregate Data:
 
 
 
-
+<!-- FUNCTIONS FOR PRINTING-->
+<a id="print"></a>
+<div align="center">
+  
+Functions for Printing:
+--------
+</div
 
 <h4 align="center"></h4>
 <h6 align="center"></h6>
@@ -1180,6 +1202,6 @@ Functions for Statistics / Aggregate Data:
 
 
 
-###### WOW, you made it to the end of the README file! I'll let you in on a secret: you do not need to access the functions through the dataLynx object. For example, instead of `myData.dropRow(&myData, 7);` to drop the row at index location 7, you could simply write `dropRow(&myData, 7);`. This project was started with the intention of emulating features of Object-Oriented Programming, which is why the former syntax has been used in all examples. However, I have made the functions publicly accessible for ultimate flexibility, so feel free to use the shorter syntax instead... One more secret: you can use the internal functions too! They are *not* private! But be careful, because the internal functions have less error checking, as that is done mainly in the client facing functions. Use at your own risk!
+###### WOW, you made it to the end of the README file! I'll let you in on a secret: you do not need to access the functions through the dataLynx object. For example, instead of `myData.dropRow(&myData, 7);` to drop the row at index location 7, you could simply write `dropRow(&myData, 7);`. This project was started with the intention of emulating features of Object-Oriented Programming, which is why the former syntax has been used in all examples. However, I have made the functions publicly accessible for ultimate flexibility, so feel free to use the shorter syntax instead... One more secret: you can use the internal functions too! They are *not* private! But be careful, because the internal functions have less error checking, as that is done mainly in the client-facing functions. Use at your own risk!
 
 
