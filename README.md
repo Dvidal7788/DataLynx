@@ -19,16 +19,18 @@ Overview:
 Table of Contents
 =========
 </div>
+<ol>
 
-##### [About the DataLynx 'object'](#dataLynx)
-##### [Statistics / Value Counts (Aggregate Data)](#stat_list)
-##### [Function (i.e. 'method') List](#functions)
-<ul>
+##### <li>[The DataLynx 'Object'](#dataLynx)</li>
+##### <li>[Statistics / Value Counts (Aggregate Data)](#stat_list)</li>
+##### <li>[Function List (i.e. 'methods')](#functions)</li>
+  <ul>
   
   ###### <li>[Functions for Reading/Writing from/to a CSV file](#csv)</li> 
   ###### <li>[Functions for Statistical / Aggregate Data](#stats)</li>
   ###### <li>[Functions for Printing](#print)</li>
-</ul>
+  </ul>
+</ol>
 <hr>
 
 
@@ -1280,8 +1282,9 @@ Functions for Printing:
 --------
 </div
 
-<h4 align="center"></h4>
-<h6 align="center"></h6>
+<!-- PRINT HEADER() -->
+<h4 align="center">printHeader()</h4>
+<h6 align="center">bool printHeader(dataLynx *self)</h6>
 
 ##### PARAMETERS:
 <ul>
@@ -1292,7 +1295,114 @@ Functions for Printing:
 ##### To Use:
 <ul>
 
-###### <li></li>
+###### <li>This function will print only the header of the data stored in the dataLynx object.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.printHeader(&myData);
+```
+
+<hr>
+
+
+
+
+
+<!-- PRINT DATA() -->
+<h4 align="center">printData()</h4>
+<h6 align="center">bool printData(dataLynx *self)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>If the number of rows in the data set exceeds the number set by self.maxPrintRows (ex: `myData.maxPrintRows`), this function will print the 1st 10 and last 10 rows.</li>
+###### <li>If the number of rows in the data set does not exceed the number set by self.maxPrintRows, this function will print the entire data set in the style of whichever data structure is currently in use by that dataLynx object.</li>
+###### <li>By default, self.maxPrintRows is set to 25, however you can set this number to any number 0 or greater that you wish.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.printData(&myData);
+```
+
+<hr>
+
+
+
+<!-- PRINT DATA TABLE -->
+<h4 align="center">printDataTable()</h4>
+<h6 align="center">bool printDataTable(dataLynx *self)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will print the entire dataset as a dynamically generated table (i.e. in the style of an SQLite3 table), regardless of which data structure you're dataLynx object is currently utilizing.</li>
+###### <li>If the value of a field exceeds the value set by self.maxFieldPrintLength, the value will be truncated. By default this is set to 50, however, you may change this value to whatever you like. This becomes important, for example if password hashes are stored in your data, which can easily be 128 characters or more (e.g. SHA-512 produces a 128 character long string) and can make it difficult to see other data in your data set, even with a large monitor. SQLite3 does not have a built-in way of setting the maximum print length of fields, which is something I've aimed to improve with this feature.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.printDataTable(&myData);
+```
+
+<hr>
+
+<!-- PRINT HEAD()-->
+<h4 align="center">printHead()</h4>
+<h6 align="center">bool printHead(dataLynx *self, uintmax_t number_of_rows)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer of the number of rows you wish to print.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and the function will print the from the beginning (i.e. head) of the data set until the number of rows requested is met.</li>
+###### <li>NOT to be confused with printHeader(). </li>
 </ul>
 
 ##### RETURN:
@@ -1305,13 +1415,90 @@ Functions for Printing:
 ##### Example Code:
 
 ```C
-
+myData.printHead(&myData, 5);
 ```
 
 <ul>
  
-###### <li>.</li>
+###### <li>This will print the 1st 5 rows of the data.</li>
 </ul>
+<hr>
+
+
+
+
+<!-- PRINT TAIL()-->
+<h4 align="center">printTail()</h4>
+<h6 align="center">bool printTail(dataLynx *self, uintmax_t number_of_rows)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer of the number of rows you wish to print.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and the function will print the from the *end* (i.e. tail) of the data set until the number of rows requested is met.</li>
+###### <li>NOT to be confused with printHeader(). </li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.printTail(&myData, 5);
+```
+
+<ul>
+ 
+###### <li>This will print the *last* 5 rows of the data.</li>
+</ul>
+<hr>
+
+
+
+<!-- PRINT STATS() -->
+<h4 align="center">printStats()</h4>
+<h6 align="center">bool printStats(dataLynx *self)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will print the aggregate data for every column in the data set.</li>
+##### <li>For numeric columns, this function will print min, max, sum, mean, standard deviation, 25th percentile, median, 75th percentile, is null and not null.</li>
+##### <li>For non-numeric column, this function will print the value count for every unique value in the data set, as well as is null/not null counts.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.printStats(&myData);
+```
+
 <hr>
 
 
