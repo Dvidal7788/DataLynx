@@ -1175,11 +1175,6 @@ myData.insertRow2(&myData, values);
 ###### <li>If *no* data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
 </ul>
 
-```C
-dict values[] = {{"Employee ID", "4511"}, {"First Name", "John"}, {"Last Name","Doe"}, {"Department", "Sales"}, {"Ext", "333"}, {"Salary", "70000"}};
-myData.insertRow(&myData, values);
-```
-
 <hr>
 
 
