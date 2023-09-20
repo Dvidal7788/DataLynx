@@ -616,12 +616,11 @@ myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 
 
 ##### Example Code:
-
 ```C
 myData.csv.fieldWriter2(&myData, 3, 2, "Smith");
 ```
 <ul>
- 
+  
 ###### <li>This will update the value at row 3/column 2 to "Smith". (The previous value in this field will be erased.)</li>
 </ul>
 <hr>
