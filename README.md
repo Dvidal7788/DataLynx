@@ -547,7 +547,7 @@ myData.fieldReader2(&myData, 0, 1);
 </ul>
 <hr>
 
-<!-- CSV.FIELDWRITER-->
+<!-- CSV.FIELDWRITER() -->
 <h4 align="center">csv.fieldWriter()</h4>
 <h6 align="center">bool fieldWriter(dataLynx *self, uintmax_t row, char *column, char *new_field)</h6>
 
@@ -557,13 +557,13 @@ myData.fieldReader2(&myData, 0, 1);
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
 ###### <li>Integer row index location of field you wish to update/write to.</li>
 ###### <li>String of column name of field you wish to update/write to.</li>
-###### <li>String of new value you wish to update field to.</li>
+###### <li>String of new value you wish to update the field to.</li>
 </ul>
 
 ##### To Use:
 <ul>
 
-###### <li></li>
+###### <li>Supply the parameters and the function will update the value in the field located at the row/column name provided to the new value provided.</li>
 </ul>
 
 ##### RETURN:
@@ -587,6 +587,44 @@ myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 
 
 
+
+<!-- CSV.FIELDWRITER2() -->
+<h4 align="center">csv.fieldWriter2()</h4>
+<h6 align="center">bool fieldWriter2(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>Integer row index location of field you wish to update/write to.</li>
+###### <li>Integer of column index of field you wish to update/write to.</li>
+###### <li>String of new value you wish to update the field to.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and the function will update the value in the field located at the row/column index provided to the new value provided.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.csv.fieldWriter2(&myData, 3, 2, "Smith");
+```
+<ul>
+ 
+###### <li>This will update the value at row 3/column 2 to "Smith". (The previous value in this field will be erased.)</li>
+</ul>
+<hr>
 
 
 
