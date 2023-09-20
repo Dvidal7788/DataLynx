@@ -1078,6 +1078,9 @@ myData.dropColumn(&myData, "Gross Profit");
 ##### Example Code:
 
 ```C
+// INSERT INTO DATA STRUCTURE:
+
+// Create values array
 char *values[] = {
                   "4511",
                   "John",
@@ -1086,6 +1089,8 @@ char *values[] = {
                   "333",
                   "70000"
 };
+
+// Insert row into data set
 myData.insertRow(&myData, values);
 ```
 <ul>
@@ -1094,7 +1099,7 @@ myData.insertRow(&myData, values);
 </ul>
 
 ```C
-// USE insertRow() to CREATE DATA STRUCTURE FROM SCRATCH (1st method):
+// CREATE DATA STRUCTURE FROM SCRATCH (1st method):
 
 // Set column count
 myData.columnCount = 6;
@@ -1118,7 +1123,7 @@ myData.insertRow(&myData, values);
 
 
 ```C
-// USE insertRow() to CREATE DATA STRUCTURE FROM SCRATCH (2nd method):
+// CREATE DATA STRUCTURE FROM SCRATCH (2nd method):
 // Create header array
 char *header[] = {
                   "Employee ID",
@@ -1195,6 +1200,8 @@ myData.insertRow(&myData, values);
 ##### Example Code:
 
 ```C
+// INSERT INTO EXISTING DATA STRUCTURE - OR - CREATE DATA STRUCTURE FROM SCRATCH:
+
 // Create array of dicts (i.e. {column name, value})
 dict values[] = {
                   {"Employee ID", "4511"},
