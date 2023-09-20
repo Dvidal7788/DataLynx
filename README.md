@@ -1164,9 +1164,9 @@ myData.insertRow(&myData, values);
 
 
 
-<!-- INSERT ROW 2()-->
-<h4 align="center">insertRow2()</h4>
-<h6 align="center">bool insertRow2(dataLynx *self, dict values[])</h6>
+<!-- INSERT ROW DICT()-->
+<h4 align="center">insertRowDict()</h4>
+<h6 align="center">bool insertRowDict(dataLynx *self, dict values[])</h6>
 
 ##### PARAMETERS:
 <ul>
@@ -1183,9 +1183,9 @@ myData.insertRow(&myData, values);
 ###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
   <ul>
     
-###### <li>If calling insertRow2() to create a data structure from scratch, the function will automatically create a header from the column names provided in the dict array.</li>
+###### <li>If calling insertRowDict() to create a data structure from scratch, the function will automatically create a header from the column names provided in the dict array.</li>
 ##### <li>The function will then insert the row using the values provided in the dict array.</li>
-###### <li>NOTE: This will *only* create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow()/insertRow2(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
+###### <li>NOTE: This will *only* create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow()/insertRowDict(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
   </ul>
 </ul>
 
@@ -1213,7 +1213,7 @@ dict values[] = {
 };
 
 // Insert
-myData.insertRow2(&myData, values);
+myData.insertRowDict(&myData, values);
 ```
 <ul>
  
