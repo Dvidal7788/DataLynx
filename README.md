@@ -1090,10 +1090,12 @@ myData.insertRow(&myData, values);
 ```
 <ul>
  
-###### <li>If a data structure already exists in the dataLynx object, this will insert a new row with the values contained in the array named values.</li>
+###### <li>If a data structure already exists in the dataLynx object, this will insert a new row with the values contained in the values array.</li>
 </ul>
 
 ```C
+// USE insertRow() to CREATE DATA STRUCTURE FROM SCRATCH (1st method):
+
 // Set column count
 myData.columnCount = 6;
 
@@ -1111,12 +1113,13 @@ myData.insertRow(&myData, values);
 
 <ul>
  
-###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
+###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the values array.</li>
 </ul>
 
 
 ```C
-// Create header
+// USE insertRow() to CREATE DATA STRUCTURE FROM SCRATCH (2nd method):
+// Create header array
 char *header[] = {
                   "Employee ID",
                   "First Name",
@@ -1125,10 +1128,14 @@ char *header[] = {
                   "Ext",
                   "Salary"
 };
-unsigned int header_size = 6;
-myData.createHeader(&myData, header, header_size);
 
-// Insert 1st row of data
+// Declare column count
+unsigned int column_count = 6;
+
+// Create header using above parameters
+myData.createHeader(&myData, header, column_count);
+
+// Create array of values
 char *values[] = {
                   "4511",
                   "John",
@@ -1137,12 +1144,14 @@ char *values[] = {
                   "333",
                   "70000"
 };
+
+// Insert 1st row of data
 myData.insertRow(&myData, values);
 ```
 
 <ul>
  
-###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
+###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the values array.</li>
 </ul>
 
 <hr>
@@ -1186,6 +1195,7 @@ myData.insertRow(&myData, values);
 ##### Example Code:
 
 ```C
+// Create array of dicts (i.e. {column name, value})
 dict values[] = {
                   {"Employee ID", "4511"},
                   {"First Name", "John" },
@@ -1194,12 +1204,14 @@ dict values[] = {
                   {"Ext",        "333"  },
                   {"Salary",     "70000"}
 };
+
+// Insert
 myData.insertRow2(&myData, values);
 ```
 <ul>
  
-###### <li>If a data structure already exists in the dataLynx object, this will insert a new row with the values contained in the array named values.</li>
-###### <li>If *no* data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
+###### <li>If a data structure already exists in the dataLynx object, this will insert a new row with the values contained in the values array.</li>
+###### <li>If *no* data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the values array.</li>
 </ul>
 
 <hr>
@@ -1209,7 +1221,7 @@ myData.insertRow2(&myData, values);
 <!-- CREATE HEADER()-->
 <a id="create_header"></a>
 <h4 align="center">createHeader()</h4>
-<h6 align="center">bool createHeader(dataLynx *self, char *header[], uint32_t header_size)</h6>
+<h6 align="center">bool createHeader(dataLynx *self, char *header[], uint32_t column_count)</h6>
 
 ##### PARAMETERS:
 <ul>
