@@ -42,7 +42,7 @@ The DataLynx 'Object'
 </div>
 <a id="dataLynx"></a>
 
-###### The dataLynx 'object' is of course actually a struct with function pointers, pointers to data structures and parameters that the user can set to alter the behavior of the 'object'. For full flexibility, there are multiple data structures to choose from. This is a big part of what I mean when I say "I want to bridge the gap between Python and C". I wanted to offer the ease of use of higher-level languages and libraries like Python's built in CSV library, and Pandas, but still offer a C programmer the control that they are used to in being able to choose the underlying structure that makes up that highe-level structures found in Python (lists, dictionaries etc). Below is a list and description of the data structures available.
+###### The dataLynx 'object' is of course actually a struct with function pointers, pointers to data structures and parameters that the user can set to alter the behavior of the 'object'. For full flexibility, there are multiple data structures to choose from. This is a big part of what I mean when I say "I want to bridge the gap between Python and C". I wanted to offer the ease of use of higher-level languages and libraries like Python's built in CSV library, and Pandas, but still offer a C programmer the control that they are used to in being able to choose the underlying structures that make up that higher-level structures found in Python (lists, dictionaries etc). Below is a list and description of the data structures available.
 <div align="center">
   
 ##### DATA STRUCTURES:
@@ -238,7 +238,7 @@ FUNCTIONS
 </ul>
 
 
-#####  Code:
+#####  Example Code:
 
 ```C
 dataLynx myData = dataLynxConstructor();
@@ -285,7 +285,7 @@ Functions for Reading/Writing from/to a CSV file:
 </ul>
 
 
-#####  Code:
+#####  Example Code:
 
 ```C
 myData.csv.openFile(&myData, "csv/staff.csv");
@@ -293,6 +293,7 @@ myData.csv.openFile(&myData, "csv/staff.csv");
 <hr>
 
 
+<!-- CSV.FILEREADER() -->
 <h4 align="center">csv.fileReader()</h4>
 <h6 align="center">char *fileReader(dataLynx *self)</h6>
 
@@ -328,7 +329,7 @@ myData.csv.fileReader(&myData);
 <hr>
 
 
-
+<!-- CSV.FILEROWREADER() -->
 <h4 align="center">csv.fileRowReader()</h4>
 <h6 align="center">char **fileRowReader(dataLynx *self)</h6>
 
@@ -502,7 +503,6 @@ myData.csv.dictReader(&myData);
 ```C
 myData.fieldReader(&myData, 0, "First Name");
 ```
-
 <ul>
  
 ###### <li>This will return a string with the value in row 0, column name "First Name".</li>
@@ -1038,10 +1038,216 @@ myData.filter(&myData, &filteredData, "Profit", ">=", "800");
 ```C
 myData.dropColumn(&myData, "Gross Profit");
 ```
-
 <ul>
 
 ###### <li>This will remove the "Gross Profit" column from the data.</li>
+</ul>
+<hr>
+
+
+
+<!-- INSERT ROW() -->
+
+<h4 align="center">insertRow()</h4>
+<h6 align="center">bool insertRow(dataLynx *self, char *values[])</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>An array of strings, each string containing a value corresponding to the columns of the dataset. The values must be in the correct column order.</li>
+###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
+  <ul>
+    
+###### <li>Either set the column count then self.insertRow() (this will automatically create a generic header (e.g. "Column 1", "Column 2", etc...) OR use [createHeader()](#create_header) to create a header with the column names of your choosing, then use insertRow().</li>
+###### <li>NOTE: This will only create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
+  </ul>
+  
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and the function will insert the row of data provided in the array of strings (i.e. values) into the data set (i.e. the row will be appended to the end of the data set).</li>
+###### <li>If the row is successfully inserted, the row count (i.e. self.rowCount) will be incremented by 1.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+myData.insertRow(&myData, values);
+```
+
+<ul>
+ 
+###### <li>If a data structure already exists in the dataLynx object, this will insert a new row with the values contained in the array named values.</li>
+</ul>
+
+```C
+// Set column count
+myData.columnCount = 6;
+
+// Insert 1st row of data
+char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+myData.insertRow(&myData, values);
+```
+
+<ul>
+ 
+###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data strucutre (Grid V3) and insert a row with the values contained in the array named values.</li>
+</ul>
+
+
+```C
+// Create header
+char *header[] = {"Employee ID", "First Name", "Last Name", "Department", "Ext", "Salary"};
+unsigned int header_size = 6;
+myData.createHeader(&myData, header, header_size);
+
+// Insert 1st row of data
+char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+myData.insertRow(&myData, values);
+```
+
+<ul>
+ 
+###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data strucutre (Grid V3) and insert a row with the values contained in the array named values.</li>
+</ul>
+
+<hr>
+
+
+<!-- INSERT ROW 2()-->
+
+<h4 align="center">insertRow2()</h4>
+<h6 align="center">bool insertRow2(dataLynx *self, dict values[])</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>An array of dicts, each dict containing a string of the column name and a string of the value corresponding to that column name. These dicts do NOT need to be in correct column order!</li>
+###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
+  <ul>
+    
+###### <li>Either set the column count then self.insertRow() (this will automatically create a generic header (e.g. "Column 1", "Column 2", etc...) OR use [createHeader()](#create_header) to create a header with the column names of your choosing, then use insertRow().</li>
+###### <li>NOTE: This will only create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
+  </ul>
+  
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and the function will insert the row of data provided in the array of strings (i.e. values) into the data set (i.e. the row will be appended to the end of the data set).</li>
+###### <li>If the row is successfully inserted, the row count (i.e. self.rowCount) will be incremented by 1.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+myData.insertRow2(&myData, values);
+```
+
+<ul>
+ 
+###### <li>If a data structure already exists in the dataLynx object, this will insert a new row with the values contained in the array named values.</li>
+</ul>
+
+```C
+// Set column count
+myData.columnCount = 6;
+
+// Insert 1st row of data
+char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+myData.insertRow(&myData, values);
+```
+
+<ul>
+ 
+###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data strucutre (Grid V3) and insert a row with the values contained in the array named values.</li>
+</ul>
+
+
+```C
+// Create header
+char *header[] = {"Employee ID", "First Name", "Last Name", "Department", "Ext", "Salary"};
+unsigned int header_size = 6;
+myData.createHeader(&myData, header, header_size);
+
+// Insert 1st row of data
+dict values[] = {{"Employee ID", "4511"}, "John", "Doe", "Sales", "333", "70000"};
+myData.insertRow(&myData, values);
+```
+
+<ul>
+ 
+###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data strucutre (Grid V3) and insert a row with the values contained in the array named values.</li>
+</ul>
+
+<hr>
+
+
+
+<!-- CREATE HEADER()-->
+<a id="create_header"></a>
+<h4 align="center">createHeader()</h4>
+<h6 align="center">bool createHeader(dataLynx *self, char *header[], uint32_t header_size)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Array of strings containing all of the column names you want in the header. You may input NULL here if you wish to create a generic header (e.g. "Column 1", "Column 2", etc...)</li>
+###### <li>An integer of the number of columns. Must be correct or you run the risk of overrunning the header buffer.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and the function will create a header from the column names provided in the header parameter.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, return true.</li>
+###### <li>On failure, return false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+// Set up parameters
+char *header[] = {"Employee ID", "First Name", "Last Name", "Department", "Ext", "Salary"};
+unsigned int header_size = 6;
+
+// Create header
+myData.createHeader(&myData, header, header_size);
+```
+
+<ul>
+ 
+###### <li>This will create a header in the dataLynx object with the column names provided.</li>
 </ul>
 <hr>
 
@@ -1236,7 +1442,7 @@ Functions for Statistics / Aggregate Data:
 
 <!-- GETSTAT() -->
 <h4 align="center">getStat()</h4>
-<h6 align="center">double getStat(dataLynx *self, char *column_name, char *operation)</h6>
+<h6 align="center">double getStat(dataLynx *self, char *column_name, char *stat)</h6>
 
 ##### PARAMETERS:
 <ul>
@@ -1263,12 +1469,12 @@ Functions for Statistics / Aggregate Data:
 ##### Example Code:
 
 ```C
-
+myData.getStat(&myData, "Revenue", "std");
 ```
 
 <ul>
  
-###### <li>.</li>
+###### <li>This will return the standard deviation for the "Revenue" column in the data set. NOTE: "standard deviation" is also accepted and will return the same value.</li>
 </ul>
 <hr>
 
@@ -1331,9 +1537,9 @@ myData.printHeader(&myData);
 ##### To Use:
 <ul>
 
-###### <li>If the number of rows in the data set exceeds the number set by self.maxPrintRows (ex: `myData.maxPrintRows`), this function will print the 1st 10 and last 10 rows.</li>
 ###### <li>If the number of rows in the data set does not exceed the number set by self.maxPrintRows, this function will print the entire data set in the style of whichever data structure is currently in use by that dataLynx object.</li>
-###### <li>By default, self.maxPrintRows is set to 25, however you can set this number to any number 0 or greater that you wish.</li>
+###### <li>If the number of rows in the data set exceeds the number set by self.maxPrintRows (ex: `myData.maxPrintRows`), this function will print the 1st 10 and last 10 rows.</li>
+###### <li>By default, self.maxPrintRows is set to 25, however you can set this to any number 0 or greater that you wish.</li>
 </ul>
 
 ##### RETURN:
