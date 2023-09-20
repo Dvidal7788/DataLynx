@@ -1218,7 +1218,7 @@ myData.insertRowDict(&myData, values);
 <ul>
  
 ###### <li>If a data structure already exists in the dataLynx object, this will insert a new row with the values contained in the values array.</li>
-###### <li>If *no* data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the values array.</li>
+###### <li>If *no* data structure exists yet in the dataLynx object, this will create a header from the column names in the dict array, then create a new data structure (Grid V3) and insert a row with the corresponding values contained in the dict array.</li>
 </ul>
 
 <hr>
