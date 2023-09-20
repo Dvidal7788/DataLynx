@@ -1159,7 +1159,12 @@ myData.insertRow(&myData, values);
 ##### Example Code:
 
 ```C
-dict values[] = {{"Employee ID", "4511"}, {"First Name", "John"}, {"Last Name","Doe"}, {"Department", "Sales"}, {"Ext", "333"}, {"Salary", "70000"}};
+dict values[] = {{"Employee ID", "4511"},
+                  {"First Name", "John"},
+                  {"Last Name", "Doe"},
+                  {"Department", "Sales"},
+                  {"Ext", "333"},
+                  {"Salary", "70000"}};
 myData.insertRow2(&myData, values);
 ```
 <ul>
