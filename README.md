@@ -78,7 +78,6 @@ myData.csv.fileReader(&myData);
 <ul>
 
   ###### <li>This is a 2D array (i.e. an array of strings). Each string in the array correlates to 1 row. Each row is stored as one long string.</li>
-  ###### <li></li>
   <li>
 
   ```C
