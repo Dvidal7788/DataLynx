@@ -542,7 +542,6 @@ myData.fieldReader(&myData, 0, "First Name");
 ```C
 myData.fieldReader2(&myData, 0, 1);
 ```
-
 <ul>
  
 ###### <li>This will return a string with the value in row 0, column 1.</li>
@@ -581,7 +580,6 @@ myData.fieldReader2(&myData, 0, 1);
 ```C
 myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 ```
-
 <ul>
  
 ###### <li>This will update the value at row 3/column "Last Name" to "Smith". (The previous value in this field will be erased.)</li>
@@ -995,7 +993,6 @@ myData.dropRowsFilter(&myData, "Profit", ">=", "800");
 dataLynx filteredData = dataLynxConstructor();
 myData.filter(&myData, &filteredData, "Profit", ">=", "800");
 ```
-
 <ul>
 
 ###### <li>This will fill the new dataLynx object (named 'filteredData' in this example) with the rows from the original dataLynx object (named 'myData' in this example) in which the value in the 'Profit' column is greater than or equal to 800 (i.e. all rows that meet the condition).</li>
@@ -1056,20 +1053,19 @@ myData.dropColumn(&myData, "Gross Profit");
     
 ###### <li>Pointer to (i.e. address of) dataLynx object.</li>
 ###### <li>An array of strings, each string containing a value corresponding to the columns of the dataset. The values must be in the correct column order.</li>
-###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
-  <ul>
-    
-###### <li>Either set the column count then self.insertRow() (this will automatically create a generic header (e.g. "Column 1", "Column 2", etc...) OR use [createHeader()](#create_header) to create a header with the column names of your choosing, then use insertRow().</li>
-###### <li>NOTE: This will only create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
-  </ul>
-  
 </ul>
 
 ##### To Use:
 <ul>
 
-###### <li>Supply the parameters and the function will insert the row of data provided in the array of strings (i.e. values) into the data set (i.e. the row will be appended to the end of the data set).</li>
+###### <li>Supply the parameters and the function will insert the row of data provided from the array of strings (i.e. values) into the data set (i.e. the row will be appended to the end of the data set).</li>
 ###### <li>If the row is successfully inserted, the row count (i.e. self.rowCount) will be incremented by 1.</li>
+###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
+  <ul>
+    
+###### <li>Either set the column count then self.insertRow() (this will automatically create a generic header (e.g. "Column 1", "Column 2", etc...) OR use [createHeader()](#create_header) to create a header with the column names of your choosing, then use insertRow().</li>
+###### <li>NOTE: This will *only* create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
+  </ul>
 </ul>
 
 ##### RETURN:
@@ -1086,7 +1082,6 @@ myData.dropColumn(&myData, "Gross Profit");
 char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
 myData.insertRow(&myData, values);
 ```
-
 <ul>
  
 ###### <li>If a data structure already exists in the dataLynx object, this will insert a new row with the values contained in the array named values.</li>
@@ -1103,7 +1098,7 @@ myData.insertRow(&myData, values);
 
 <ul>
  
-###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data strucutre (Grid V3) and insert a row with the values contained in the array named values.</li>
+###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
 </ul>
 
 
@@ -1120,14 +1115,15 @@ myData.insertRow(&myData, values);
 
 <ul>
  
-###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data strucutre (Grid V3) and insert a row with the values contained in the array named values.</li>
+###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
 </ul>
 
 <hr>
 
 
-<!-- INSERT ROW 2()-->
 
+
+<!-- INSERT ROW 2()-->
 <h4 align="center">insertRow2()</h4>
 <h6 align="center">bool insertRow2(dataLynx *self, dict values[])</h6>
 
@@ -1136,20 +1132,20 @@ myData.insertRow(&myData, values);
     
 ###### <li>Pointer to (i.e. address of) dataLynx object.</li>
 ###### <li>An array of dicts, each dict containing a string of the column name and a string of the value corresponding to that column name. These dicts do NOT need to be in correct column order!</li>
-###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
-  <ul>
-    
-###### <li>Either set the column count then self.insertRow() (this will automatically create a generic header (e.g. "Column 1", "Column 2", etc...) OR use [createHeader()](#create_header) to create a header with the column names of your choosing, then use insertRow().</li>
-###### <li>NOTE: This will only create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
-  </ul>
-  
 </ul>
 
 ##### To Use:
 <ul>
 
-###### <li>Supply the parameters and the function will insert the row of data provided in the array of strings (i.e. values) into the data set (i.e. the row will be appended to the end of the data set).</li>
+###### <li>Supply the parameters and the function will insert the row of data provided from the array of dicts into the data set (i.e. the row will be appended to the end of the data set).</li>
 ###### <li>If the row is successfully inserted, the row count (i.e. self.rowCount) will be incremented by 1.</li>
+###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
+  <ul>
+    
+###### <li>If calling insertRow2() to create a data structure from scratch, the function will automatically create a header from the column names provided in the dict array.</li>
+##### <li>The function will then insert the row using the values provided in the dict array.</li>
+###### <li>NOTE: This will *only* create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow()/insertRow2(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
+  </ul>
 </ul>
 
 ##### RETURN:
@@ -1163,45 +1159,19 @@ myData.insertRow(&myData, values);
 ##### Example Code:
 
 ```C
-char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+dict values[] = {{"Employee ID", "4511"}, {"First Name", "John"}, {"Last Name","Doe"}, {"Department", "Sales"}, {"Ext", "333"}, {"Salary", "70000"}};
 myData.insertRow2(&myData, values);
 ```
-
 <ul>
  
 ###### <li>If a data structure already exists in the dataLynx object, this will insert a new row with the values contained in the array named values.</li>
+###### <li>If *no* data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
 </ul>
 
 ```C
-// Set column count
-myData.columnCount = 6;
-
-// Insert 1st row of data
-char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+dict values[] = {{"Employee ID", "4511"}, {"First Name", "John"}, {"Last Name","Doe"}, {"Department", "Sales"}, {"Ext", "333"}, {"Salary", "70000"}};
 myData.insertRow(&myData, values);
 ```
-
-<ul>
- 
-###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data strucutre (Grid V3) and insert a row with the values contained in the array named values.</li>
-</ul>
-
-
-```C
-// Create header
-char *header[] = {"Employee ID", "First Name", "Last Name", "Department", "Ext", "Salary"};
-unsigned int header_size = 6;
-myData.createHeader(&myData, header, header_size);
-
-// Insert 1st row of data
-dict values[] = {{"Employee ID", "4511"}, "John", "Doe", "Sales", "333", "70000"};
-myData.insertRow(&myData, values);
-```
-
-<ul>
- 
-###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data strucutre (Grid V3) and insert a row with the values contained in the array named values.</li>
-</ul>
 
 <hr>
 
