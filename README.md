@@ -1078,7 +1078,14 @@ myData.dropColumn(&myData, "Gross Profit");
 ##### Example Code:
 
 ```C
-char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+char *values[] = {
+                  "4511",
+                  "John",
+                  "Doe",
+                  "Sales",
+                  "333",
+                  "70000"
+};
 myData.insertRow(&myData, values);
 ```
 <ul>
@@ -1091,7 +1098,14 @@ myData.insertRow(&myData, values);
 myData.columnCount = 6;
 
 // Insert 1st row of data
-char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+char *values[] = {
+                  "4511",
+                  "John",
+                  "Doe",
+                  "Sales",
+                  "333",
+                  "70000"
+};
 myData.insertRow(&myData, values);
 ```
 
@@ -1103,12 +1117,26 @@ myData.insertRow(&myData, values);
 
 ```C
 // Create header
-char *header[] = {"Employee ID", "First Name", "Last Name", "Department", "Ext", "Salary"};
+char *header[] = {
+                  "Employee ID",
+                  "First Name",
+                  "Last Name",
+                  "Department",
+                  "Ext",
+                  "Salary"
+};
 unsigned int header_size = 6;
 myData.createHeader(&myData, header, header_size);
 
 // Insert 1st row of data
-char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+char *values[] = {
+                  "4511",
+                  "John",
+                  "Doe",
+                  "Sales",
+                  "333",
+                  "70000"
+};
 myData.insertRow(&myData, values);
 ```
 
