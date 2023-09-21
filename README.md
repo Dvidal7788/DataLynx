@@ -473,7 +473,7 @@ myData.csv.dictReader(&myData);
 
 <!-- CSV.FIELDREADER() -->
 <h4 align="center">csv.fieldReader()</h4>
-<h6 align="center">char *fieldReader(dataLynx *self, uintmax_t desired_row, char *column_name)</h6>
+<h6 align="center">char *fieldReader(dataLynx *self, uintmax_t row, char *column_name)</h6>
 
 ##### PARAMETERS:
 <ul>
@@ -512,7 +512,7 @@ myData.fieldReader(&myData, 0, "First Name");
 
 <!-- CSV.FIELDREADER2() -->
 <h4 align="center">csv.fieldReader2()</h4>
-<h6 align="center">char *fieldReader2(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column)</h6>
+<h6 align="center">char *fieldReader2(dataLynx *self, uintmax_t row, uintmax_t column)</h6>
 
 ##### PARAMETERS:
 <ul>
