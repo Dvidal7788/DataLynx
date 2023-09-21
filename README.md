@@ -486,7 +486,7 @@ myData.csv.dictReader(&myData);
 ##### To Use:
 <ul>
 
-###### <li>Supply the parameters and (as long as a valid row integer/column name is provided), the function will read the deisred field directly from the opened CSV (must have already used csv.openFile()).This prevents the need for reading the entire CSV into memory, if you are only looking for one or a few fields.</li>
+###### <li>Supply the parameters and (as long as a valid row integer/column name is provided), the function will read the desired field directly from the opened CSV (must have already used csv.openFile()).This prevents the need for reading the entire CSV into memory, if you are only looking for one or a few fields.</li>
 </ul>
 
 ##### RETURN:
@@ -525,7 +525,7 @@ myData.fieldReader(&myData, 0, "First Name");
 ##### To Use:
 <ul>
 
-###### <li>Supply the parameters and (as long as a valid row integer/column integer is provided), the function will read the deisred field directly from the opened CSV (must have already used csv.openFile()).This prevents the need for reading the entire CSV into memory, if you are only looking for one or a few fields.</li>
+###### <li>Supply the parameters and (as long as a valid row integer/column integer is provided), the function will read the desired field directly from the opened CSV (must have already used csv.openFile()).This prevents the need for reading the entire CSV into memory, if you are only looking for one or a few fields.</li>
 </ul>
 
 ##### RETURN:
