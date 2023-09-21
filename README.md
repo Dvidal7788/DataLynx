@@ -63,7 +63,7 @@ The DataLynx 'Object'
   ###### <li>This is a string. It is *one* long string containg the entire dataset, hence 'raw data'.</li>
   <li>
 
-```C
+  ```C
 myData.csv.fileReader(&myData);
 ```
   </li>
@@ -78,9 +78,10 @@ myData.csv.fileReader(&myData);
 <ul>
 
   ###### <li>This is a 2D array (i.e. an array of strings). Each string in the array correlates to 1 row. Each row is stored as one long string.</li>
+  ###### <li></li>
   <li>
 
-```C
+  ```C
 myData.csv.fileRowReader(&myData);
 ```
   </li>
@@ -105,7 +106,7 @@ myData.csv.fileRowReader(&myData);
 
   <li>
 
-```C
+  ```C
 myData.csv.reader_v3(&myData);
 ```
   </li>
@@ -122,7 +123,7 @@ myData.csv.reader_v3(&myData);
   ###### <li>This is an array of linked lists. Each linked list in the array correlates to 1 row. Each node in the linked list correlates to one field in the data.</li>
   <li>
 
-```C
+  ```C
 myData.csv.reader(&myData);
 ```
   </li>
@@ -140,7 +141,7 @@ myData.csv.reader(&myData);
   ###### <li>Each node in the linked lists contains not only a string of the value associated with that field, but also a string of the column name that that particular field is in, hence '*dict*-style linked lists'.</li>
   <li>
 
-```C
+  ```C
 myData.csv.dictReader(&myData);
 ```
   </li>
@@ -473,7 +474,7 @@ myData.csv.dictReader(&myData);
 
 <!-- CSV.FIELDREADER() -->
 <h4 align="center">csv.fieldReader()</h4>
-<h6 align="center">char *fieldReader(dataLynx *self, uintmax_t row, char *column_name)</h6>
+<h6 align="center">char *fieldReader(dataLynx *self, uintmax_t desired_row, char *column_name)</h6>
 
 ##### PARAMETERS:
 <ul>
@@ -486,7 +487,7 @@ myData.csv.dictReader(&myData);
 ##### To Use:
 <ul>
 
-###### <li>Supply the parameters and (as long as a valid row integer/column name is provided), the function will read the desired field directly from the opened CSV (must have already used csv.openFile()).This prevents the need for reading the entire CSV into memory, if you are only looking for one or a few fields.</li>
+###### <li>Supply the parameters and (as long as a valid row integer/column name is provided), the function will read the deisred field directly from the opened CSV (must have already used csv.openFile()).This prevents the need for reading the entire CSV into memory, if you are only looking for one or a few fields.</li>
 </ul>
 
 ##### RETURN:
@@ -512,7 +513,7 @@ myData.fieldReader(&myData, 0, "First Name");
 
 <!-- CSV.FIELDREADER2() -->
 <h4 align="center">csv.fieldReader2()</h4>
-<h6 align="center">char *fieldReader2(dataLynx *self, uintmax_t row, uintmax_t column)</h6>
+<h6 align="center">char *fieldReader2(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column)</h6>
 
 ##### PARAMETERS:
 <ul>
@@ -525,7 +526,7 @@ myData.fieldReader(&myData, 0, "First Name");
 ##### To Use:
 <ul>
 
-###### <li>Supply the parameters and (as long as a valid row integer/column integer is provided), the function will read the desired field directly from the opened CSV (must have already used csv.openFile()).This prevents the need for reading the entire CSV into memory, if you are only looking for one or a few fields.</li>
+###### <li>Supply the parameters and (as long as a valid row integer/column integer is provided), the function will read the deisred field directly from the opened CSV (must have already used csv.openFile()).This prevents the need for reading the entire CSV into memory, if you are only looking for one or a few fields.</li>
 </ul>
 
 ##### RETURN:
@@ -547,7 +548,7 @@ myData.fieldReader2(&myData, 0, 1);
 </ul>
 <hr>
 
-<!-- CSV.FIELDWRITER() -->
+<!-- CSV.FIELDWRITER-->
 <h4 align="center">csv.fieldWriter()</h4>
 <h6 align="center">bool fieldWriter(dataLynx *self, uintmax_t row, char *column, char *new_field)</h6>
 
@@ -557,13 +558,13 @@ myData.fieldReader2(&myData, 0, 1);
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
 ###### <li>Integer row index location of field you wish to update/write to.</li>
 ###### <li>String of column name of field you wish to update/write to.</li>
-###### <li>String of new value you wish to update the field to.</li>
+###### <li>String of new value you wish to update field to.</li>
 </ul>
 
 ##### To Use:
 <ul>
 
-###### <li>Supply the parameters and the function will update the value in the field located at the row/column name provided to the new value provided.</li>
+###### <li></li>
 </ul>
 
 ##### RETURN:
@@ -587,43 +588,6 @@ myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 
 
 
-
-<!-- CSV.FIELDWRITER2() -->
-<h4 align="center">csv.fieldWriter2()</h4>
-<h6 align="center">bool fieldWriter2(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field)</h6>
-
-##### PARAMETERS:
-<ul>
-    
-###### <li>Pointer to (i.e. address of) dataLynx object</li>
-###### <li>Integer row index location of field you wish to update/write to.</li>
-###### <li>Integer of column index of field you wish to update/write to.</li>
-###### <li>String of new value you wish to update the field to.</li>
-</ul>
-
-##### To Use:
-<ul>
-
-###### <li>Supply the parameters and the function will update the value in the field located at the row/column index provided to the new value provided.</li>
-</ul>
-
-##### RETURN:
-<ul>
-    
-###### <li>On success, returns true.</li>
-###### <li>On failure, returns false.</li>
-</ul>
-
-
-##### Example Code:
-```C
-myData.csv.fieldWriter2(&myData, 3, 2, "Smith");
-```
-<ul>
-  
-###### <li>This will update the value at row 3/column 2 to "Smith". (The previous value in this field will be erased.)</li>
-</ul>
-<hr>
 
 
 
@@ -1115,85 +1079,43 @@ myData.dropColumn(&myData, "Gross Profit");
 ##### Example Code:
 
 ```C
-// INSERT INTO DATA STRUCTURE:
-
-// Create values array
-char *values[] = {
-                  "4511",
-                  "John",
-                  "Doe",
-                  "Sales",
-                  "333",
-                  "70000"
-};
-
-// Insert row into data set
+char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
 myData.insertRow(&myData, values);
 ```
 <ul>
  
-###### <li>If a data structure already exists in the dataLynx object, this will insert a new row with the values contained in the values array.</li>
+###### <li>If a data structure already exists in the dataLynx object, this will insert a new row with the values contained in the array named values.</li>
 </ul>
 
 ```C
-// CREATE DATA STRUCTURE FROM SCRATCH (1st method):
-
 // Set column count
 myData.columnCount = 6;
 
 // Insert 1st row of data
-char *values[] = {
-                  "4511",
-                  "John",
-                  "Doe",
-                  "Sales",
-                  "333",
-                  "70000"
-};
+char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
 myData.insertRow(&myData, values);
 ```
 
 <ul>
  
-###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the values array.</li>
+###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
 </ul>
 
 
 ```C
-// CREATE DATA STRUCTURE FROM SCRATCH (2nd method):
-// Create header array
-char *header[] = {
-                  "Employee ID",
-                  "First Name",
-                  "Last Name",
-                  "Department",
-                  "Ext",
-                  "Salary"
-};
-
-// Declare column count
-unsigned int column_count = 6;
-
-// Create header using above parameters
-myData.createHeader(&myData, header, column_count);
-
-// Create array of values
-char *values[] = {
-                  "4511",
-                  "John",
-                  "Doe",
-                  "Sales",
-                  "333",
-                  "70000"
-};
+// Create header
+char *header[] = {"Employee ID", "First Name", "Last Name", "Department", "Ext", "Salary"};
+unsigned int header_size = 6;
+myData.createHeader(&myData, header, header_size);
 
 // Insert 1st row of data
+char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
 myData.insertRow(&myData, values);
 ```
 
 <ul>
  
-###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the values array.</li>
+###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
 </ul>
 
 <hr>
@@ -1201,9 +1123,9 @@ myData.insertRow(&myData, values);
 
 
 
-<!-- INSERT ROW DICT()-->
-<h4 align="center">insertRowDict()</h4>
-<h6 align="center">bool insertRowDict(dataLynx *self, dict values[])</h6>
+<!-- INSERT ROW 2()-->
+<h4 align="center">insertRow2()</h4>
+<h6 align="center">bool insertRow2(dataLynx *self, dict values[])</h6>
 
 ##### PARAMETERS:
 <ul>
@@ -1220,9 +1142,9 @@ myData.insertRow(&myData, values);
 ###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
   <ul>
     
-###### <li>If calling insertRowDict() to create a data structure from scratch, the function will automatically create a header from the column names provided in the dict array.</li>
+###### <li>If calling insertRow2() to create a data structure from scratch, the function will automatically create a header from the column names provided in the dict array.</li>
 ##### <li>The function will then insert the row using the values provided in the dict array.</li>
-###### <li>NOTE: This will *only* create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow()/insertRowDict(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
+###### <li>NOTE: This will *only* create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow()/insertRow2(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
   </ul>
 </ul>
 
@@ -1237,9 +1159,6 @@ myData.insertRow(&myData, values);
 ##### Example Code:
 
 ```C
-// INSERT INTO EXISTING DATA STRUCTURE - OR - CREATE DATA STRUCTURE FROM SCRATCH:
-
-// Create array of dicts (i.e. {column name, value})
 dict values[] = {
                   {"Employee ID", "4511"},
                   {"First Name", "John" },
@@ -1248,14 +1167,12 @@ dict values[] = {
                   {"Ext",        "333"  },
                   {"Salary",     "70000"}
 };
-
-// Insert
-myData.insertRowDict(&myData, values);
+myData.insertRow2(&myData, values);
 ```
 <ul>
  
-###### <li>If a data structure already exists in the dataLynx object, this will insert a new row with the values contained in the values array.</li>
-###### <li>If *no* data structure exists yet in the dataLynx object, this will create a header from the column names in the dict array, then create a new data structure (Grid V3) and insert a row with the corresponding values contained in the dict array.</li>
+###### <li>If a data structure already exists in the dataLynx object, this will insert a new row with the values contained in the array named values.</li>
+###### <li>If *no* data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
 </ul>
 
 <hr>
@@ -1265,7 +1182,7 @@ myData.insertRowDict(&myData, values);
 <!-- CREATE HEADER()-->
 <a id="create_header"></a>
 <h4 align="center">createHeader()</h4>
-<h6 align="center">bool createHeader(dataLynx *self, char *header[], uint32_t column_count)</h6>
+<h6 align="center">bool createHeader(dataLynx *self, char *header[], uint32_t header_size)</h6>
 
 ##### PARAMETERS:
 <ul>
@@ -1715,6 +1632,7 @@ myData.printHead(&myData, 5);
 
 
 ##### Example Code:
+
 ```C
 myData.printTail(&myData, 5);
 ```
@@ -1741,8 +1659,8 @@ myData.printTail(&myData, 5);
 <ul>
 
 ###### <li>This function will print the aggregate data for every column in the data set.</li>
-###### <li>For numeric columns, this function will print min, max, sum, mean, standard deviation, 25th percentile, median, 75th percentile, is null and not null.</li>
-###### <li>For non-numeric column, this function will print the value count for every unique value in the data set, as well as is null/not null counts.</li>
+##### <li>For numeric columns, this function will print min, max, sum, mean, standard deviation, 25th percentile, median, 75th percentile, is null and not null.</li>
+##### <li>For non-numeric column, this function will print the value count for every unique value in the data set, as well as is null/not null counts.</li>
 </ul>
 
 ##### RETURN:

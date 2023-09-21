@@ -345,8 +345,8 @@ bool convert_to_csv(dataLynx *self, char *filename) {
 
 }
 
-char *append_last_retrieved_fields(dataLynx *self, char **field)
-{
+char *append_last_retrieved_fields(dataLynx *self, char **field) {
+
     if (field == NULL) return false;
     if (*field == NULL) return false;
 
@@ -366,8 +366,8 @@ char *append_last_retrieved_fields(dataLynx *self, char **field)
 
 
 //      ____  IS_EXT()  ____
-bool is_ext(char *filename, char *ext)
-{
+bool is_ext(char *filename, char *ext) {
+
     /* THIS FUNCTION: Checks if filename has correct file extension of your choice */
 
     // Check that proper argument for file extension (char *ext) has been passed through
@@ -399,6 +399,50 @@ void calc_max_row_digits(dataLynx *self) {
         self->max_row_digits++;
     }
 }
+
+
+bool rearrange_dict_array(dataLynx *self, dict values[]) {
+
+    /* THIS FUNCTION:
+                - Rearranges a dict array IF columns are not in correct order according to header */
+
+    if (self->__header__ == NULL) {
+        if (!headerReader(self)) return false;
+    }
+
+    bool rearranged = false;
+
+    // Iterate through array
+    for (uint32_t column = 0; column < self->columnCount; column++) {
+
+        // Mismatch found
+
+        if (strcmp_quotes(values[column].column_name, self->__header__[column], true) != 0) {
+
+            // Search rest of columns for match
+            for (uint32_t c = column+1; c < self->columnCount; c++) {
+
+                if (strcmp_quotes(values[c].column_name, self->__header__[column], true) == 0) {
+
+                    // Swap
+                    dict tmp = values[column];
+                    values[column] = values[c];
+                    values[c] = tmp;
+
+                    rearranged = true;
+                    break;
+
+                }
+            }
+
+            // if (!rearranged) return false;
+
+        }
+    }
+
+    return rearranged;
+}
+
 
 
 //      ___ IF_ERROR() ___

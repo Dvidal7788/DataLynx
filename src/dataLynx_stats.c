@@ -25,7 +25,7 @@ bool create_stats(dataLynx *self) {
     for (uintmax_t c = 0; c < self->columnCount; c++) {
         Aggregate *tmp = &self->aggregate[c];
 
-        tmp->column_name = self->header[c];
+        tmp->column_name = self->__header__[c];
         tmp->min = tmp->max = tmp->lower_qrt = tmp->upper_qrt = tmp->median = tmp->sum = tmp->mean = tmp->std = tmp->is_null = tmp->not_null = 0;
         tmp->is_number = false;
         tmp->longest_field_strlen = 0;
@@ -38,10 +38,9 @@ bool create_stats(dataLynx *self) {
 
 
 //      ___ Stats() ___
-double getStat(dataLynx *self, char *column_name, char *operation) {
+double getStat(dataLynx *self, char *column_name, char *stat) {
 
-    if (self == NULL) return 0;
-    if (column_name == NULL) return 0;
+    if (self == NULL || column_name == NULL || stat == NULL) return 0;
 
     // 1. Retrieve and return stats
     if (self->aggregate != NULL) {
@@ -49,57 +48,50 @@ double getStat(dataLynx *self, char *column_name, char *operation) {
         intmax_t column_index = findColumnIndex(self, column_name);
         if (column_index < 0) return 0;
 
-        if (strcasecmp(operation, "min") == 0) return self->aggregate[column_index].min;
-        else if (strcasecmp(operation, "max") == 0) return self->aggregate[column_index].max;
-        else if (strcasecmp(operation, "sum") == 0) return self->aggregate[column_index].sum;
-        else if (strcasecmp(operation, "mean") == 0 || strcasecmp(operation, "avg") == 0) return self->aggregate[column_index].mean;
-        else if (strcasecmp(operation, "std") == 0 || strcasecmp(operation, "standard deviation") == 0) return self->aggregate[column_index].std;
-        else if (strcasecmp(operation, "isnull") == 0) return self->aggregate[column_index].is_null;
-        else if (strcasecmp(operation, "notnull") == 0) return self->aggregate[column_index].not_null;
+        if (strcasecmp(stat, "min") == 0) return self->aggregate[column_index].min;
+        else if (strcasecmp(stat, "max") == 0) return self->aggregate[column_index].max;
+        else if (strcasecmp(stat, "sum") == 0) return self->aggregate[column_index].sum;
+        else if (strcasecmp(stat, "mean") == 0 || strcasecmp(stat, "avg") == 0 || strcasecmp(stat, "average") == 0) return self->aggregate[column_index].mean;
+        else if (strcasecmp(stat, "std") == 0 || strcasecmp(stat, "standard deviation") == 0) return self->aggregate[column_index].std;
+        else if (strcasecmp(stat, "lower qrt") == 0 || strcasecmp(stat, "lower quartile") == 0 || strcasecmp(stat, "25th %") == 0 || strcasecmp(stat, "25th percentile") == 0) return self->aggregate[column_index].lower_qrt;
+        else if (strcasecmp(stat, "median") == 0) return self->aggregate[column_index].median;
+        else if (strcasecmp(stat, "upper qrt") == 0 || strcasecmp(stat, "upper quartile") == 0 || strcasecmp(stat, "75th %") == 0 || strcasecmp(stat, "75th percentile") == 0) return self->aggregate[column_index].upper_qrt;
+        else if (strcasecmp(stat, "isnull") == 0 || strcasecmp(stat, "is null") == 0) return self->aggregate[column_index].is_null;
+        else if (strcasecmp(stat, "notnull") == 0 || strcasecmp(stat, "not null") == 0) return self->aggregate[column_index].not_null;
     }
     // 2. Calculate stats if none to retrieve
-    else if (self->dict_grid != NULL) {
-        return aggregate_dict_grid(self, column_name, operation);
-    }
-    else if (self->grid != NULL) {
-        return aggregate_grid(self, column_name, operation);
-    }
-    else if (self->rows != NULL) {
-        return aggregate_rows(self, column_name, operation);
-    }
-    else if (self->raw != NULL) {
-        return aggregate_raw(self, column_name, operation);
-    }
+    else if (self->dict_grid != NULL) return aggregate_dict_grid(self, column_name, stat);
+    else if (self->grid != NULL) return aggregate_grid(self, column_name, stat);
+    else if (self->rows != NULL) return aggregate_rows(self, column_name, stat);
+    else if (self->raw != NULL) return aggregate_raw(self, column_name, stat);
 
 
     return 0;
 }
 
-/* This batch of functions will not have safety checks, because stats() has safety checks, so no need to have redundant code */
-double min(dataLynx *self, char *column_name) {
-    return getStat(self, column_name, "min");
-}
+/* This batch of functions will not have safety checks, because stats() has safety checks, so no need for redundancy */
+double min(dataLynx *self, char *column_name) {return getStat(self, column_name, "min");}
 
-double max(dataLynx *self, char *column_name) {
-    return getStat(self, column_name, "max");
-}
+double max(dataLynx *self, char *column_name) {return getStat(self, column_name, "max");}
 
-double sum(dataLynx *self, char *column_name) {
-    return getStat(self, column_name, "sum");
-}
+double sum(dataLynx *self, char *column_name) {return getStat(self, column_name, "sum");}
 
-double mean(dataLynx *self, char *column_name) {
-    return getStat(self, column_name, "mean");
-}
+double mean(dataLynx *self, char *column_name) {return getStat(self, column_name, "mean");}
 
-uintmax_t isNull(dataLynx *self, char *column_name) {
-    return (uintmax_t)getStat(self, column_name, "isnull");
-}
+double std(dataLynx *self, char *column_name) {return getStat(self, column_name, "std");}
 
-uintmax_t notNull(dataLynx *self, char *column_name) {
-    return (uintmax_t)getStat(self, column_name, "notnull");
-}
+double lowerQrt(dataLynx *self, char *column_name) {return getStat(self, column_name, "lower qrt");}
 
+double median(dataLynx *self, char *column_name) {return getStat(self, column_name, "median");}
+
+double upperQrt(dataLynx *self, char *column_name) {return getStat(self, column_name, "upper qrt");}
+
+uintmax_t isNull(dataLynx *self, char *column_name) {return (uintmax_t)getStat(self, column_name, "isnull");}
+
+uintmax_t notNull(dataLynx *self, char *column_name) {return (uintmax_t)getStat(self, column_name, "notnull");}
+
+
+//          FIND MEDIAN
 bool find_median(dataLynx *self) {
 
     // This function does not account for empty fields yet
@@ -110,7 +102,7 @@ bool find_median(dataLynx *self) {
 
         if (!self->aggregate[column].is_number) continue;
 
-        sortRowsByColumn(self, self->header[column], "asc");
+        sortRowsByColumn(self, self->__header__[column], "asc");
 
         if (self->rowCount == 1) {
             self->aggregate[column].lower_qrt = self->aggregate[column].median = self->aggregate[column].upper_qrt = atof(self->tmp_column[0]);
@@ -725,20 +717,20 @@ bool update_stats(dataLynx *self, uintmax_t column, char *old_field, char *new_f
     else if (new_field != NULL && new_field[0] != '\0') {
         // Update value counts
         bool increment = false;
-        increment_decrement_value_count(self, self->header[column], old_field, increment);
+        increment_decrement_value_count(self, self->__header__[column], old_field, increment);
 
         increment = true;
-        increment_decrement_value_count(self, self->header[column], new_field, increment);
+        increment_decrement_value_count(self, self->__header__[column], new_field, increment);
 
     }
     else if (new_field != NULL && new_field[0] == '\0' && old_field[0] != '\0') {
         bool increment = false;
-        increment_decrement_value_count(self, self->header[column], old_field, increment);
+        increment_decrement_value_count(self, self->__header__[column], old_field, increment);
     }
     else if (new_field == NULL) {
         // printf("INSIDE UPDATE STATS: column: %s\n", column);
         bool increment = false;
-        increment_decrement_value_count(self, self->header[column], old_field, increment);
+        increment_decrement_value_count(self, self->__header__[column], old_field, increment);
     }
 
 
@@ -802,7 +794,7 @@ void update_stats_new_row(dataLynx *self, char *values[]) {
         else {
             // value counts
             bool increment = true;
-            increment_decrement_value_count(self, self->header[column], values[column], increment);
+            increment_decrement_value_count(self, self->__header__[column], values[column], increment);
         }
 
     }
@@ -1112,11 +1104,42 @@ void remove_value_count_node(dataLynx *self, uintmax_t column_index, uint8_t alp
 
 uint16_t valueCount(dataLynx *self, char *value, char *column_name) {
 
-    if (self == NULL || column_name == NULL || value == NULL) return 0;
+    // Safety checks
+    if (self == NULL || value == NULL || column_name == NULL) return 0;
 
     // Get column integer index/determine if column name is valid
     int16_t column_index;
     if ((column_index = findColumnIndex(self, column_name)) < 0) return 0;
+
+    return value_count_internal_(self, value, column_index);
+}
+
+
+//          IS IN COLUMN()
+bool isInColumn(dataLynx *self, char *value, char *column_name) {
+    return valueCount(self, value, column_name);
+}
+
+
+//          IS IN DATA()
+bool isInData(dataLynx *self, char *value, char *column_name) {
+
+    // Safety checks
+    if (self == NULL || value == NULL || column_name == NULL) return 0;
+
+    // Iterate through columns, checking if value appears
+    for (uintmax_t column = 0; column < self->columnCount; column++) {
+
+        if (value_count_internal_(self, value, column) > 0) return true;
+    }
+
+    return false;
+
+}
+
+uint16_t value_count_internal_(dataLynx *self, char *value, int16_t column_index) {
+
+    // THIS FUNCTION: Retrieves value count of a given value
 
     // Find correct "hash" (i.e. alpha index 0-27 => A-Z + punctuation)
     uint8_t alpha_index = find_alpha_index(value);
@@ -1127,8 +1150,4 @@ uint16_t valueCount(dataLynx *self, char *value, char *column_name) {
     while (tmp != NULL && strcmp(value, tmp->value) != 0) {tmp = tmp->next;}
 
     return (tmp != NULL) ? tmp->count : 0;
-}
-
-bool isInColumn(dataLynx *self, char *value, char *column_name) {
-    return valueCount(self, value, column_name);
 }

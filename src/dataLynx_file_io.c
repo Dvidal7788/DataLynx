@@ -48,7 +48,7 @@ char **headerReader(dataLynx *self) {
 
     if (self == NULL) return  NULL;
 
-    if (self->header != NULL) return self->header;
+    if (self->__header__ != NULL) return self->__header__;
 
     if (self->file_ptr == NULL) return NULL;
 
@@ -126,7 +126,7 @@ char **headerReader(dataLynx *self) {
 
     self->header_size = ftell(self->file_ptr);
 
-    self->header = header;
+    self->__header__ = header;
     return header;
 }
 
@@ -155,7 +155,7 @@ char *fileReader(dataLynx *self) {
 
 
     // Get header (also ensures we have column count)
-    /* I could decide to only call headerReader() if self->header == NULL, but then I would need to still reset the file stream and count char by char through the file until \n anyway, so I might as well just get the header either way, which takes same time */
+    /* I could decide to only call headerReader() if self->__header__ == NULL, but then I would need to still reset the file stream and count char by char through the file until \n anyway, so I might as well just get the header either way, which takes same time */
     headerReader(self);
 
     // --- Disk read: entire file ---
@@ -316,7 +316,7 @@ char ***reader_v3(dataLynx *self) {
             // Skip breaks in the csv
             if (s[0] == '\n' && current_column == 0) {free(self->grid_v3[--row_count]); free_null(&s); break;}
 
-            if (strcmp(s, self->header[current_column]) == 0) {
+            if (strcmp(s, self->__header__[current_column]) == 0) {
                 free_null(&s);
                 if (current_column == self->columnCount-1) {row_count--; self->rowCount--; end_of_row = true; break;}
                 current_column++;
@@ -344,7 +344,7 @@ char ***reader_v3(dataLynx *self) {
 
 
                 }
-                else increment_decrement_value_count(self, self->header[current_column], s, true);
+                else increment_decrement_value_count(self, self->__header__[current_column], s, true);
 
 
             }
@@ -492,7 +492,7 @@ node **reader(dataLynx *self) {
             // Skip breaks in the csv
             if (s[0] == '\n' && current_column == 0) {row_count--; free_null(&s); break;}
 
-            if (strcmp(s, self->header[current_column]) == 0) {
+            if (strcmp(s, self->__header__[current_column]) == 0) {
                 free_null(&s);
                 if (current_column == self->columnCount-1) {row_count--; self->rowCount--; end_of_row = true; break;}
                 current_column++;
@@ -519,7 +519,7 @@ node **reader(dataLynx *self) {
                     if (!self->aggregate[current_column].is_number) self->aggregate[current_column].is_number = true;
 
                 }
-                else increment_decrement_value_count(self, self->header[current_column], s, true);
+                else increment_decrement_value_count(self, self->__header__[current_column], s, true);
 
 
             }
@@ -662,7 +662,7 @@ dict_node **dictReader(dataLynx *self) {
             // Skip breaks in the csv
             if (s[0] == '\n' && current_column == 0) {;row_count--; free_null(&s); break;}
 
-            if (strcmp(s, self->header[current_column]) == 0) {
+            if (strcmp(s, self->__header__[current_column]) == 0) {
                 free_null(&s);
                 if (current_column == self->columnCount-1) {row_count--; self->rowCount--; end_of_row = true; break;}
                 current_column++;
@@ -689,7 +689,7 @@ dict_node **dictReader(dataLynx *self) {
                     if (!self->aggregate[current_column].is_number) self->aggregate[current_column].is_number = true;
 
                 }
-                else increment_decrement_value_count(self, self->header[current_column], s, true);
+                else increment_decrement_value_count(self, self->__header__[current_column], s, true);
 
 
             }
@@ -703,7 +703,7 @@ dict_node **dictReader(dataLynx *self) {
 
             // Append node to linked list
             // if (s[0] == '\n' && current_column == 0) {row_count--; free_null(&s); break;}
-            build_dict_link_list(&s, &self->dict_grid[(row_count)-1], &last, &self->header[current_column]);
+            build_dict_link_list(&s, &self->dict_grid[(row_count)-1], &last, &self->__header__[current_column]);
 
             if (end_of_row) break;
             current_column++;
@@ -731,11 +731,49 @@ dict_node **dictReader(dataLynx *self) {
 
         //  ---------- FIELD READERS ----------
 
+
 //      ___ CSV.FIELDREADER() ___
-char *fieldReader(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column) {
+char *fieldReader(dataLynx *self, uintmax_t row, char *column_name) {
+
+    /* THIS FUNCTION: 1. Allows you to index directly into a csv file using the column name and without reading the whole file into memory.
+                      2. Returns NULL if desired_column is not in header of file
+                      3. This function will treat the 1st non-header row as row 0 (i.e. row 2 in the file = row 0, as it is the first non-header row and will be 0 indexed.)
+                      How it works: 1. Finds correct column number that corresponds with column name.
+                                    2. Then calls csv.field_reader_internal_() to find field at that index location */
+
+    // Safety Checks
+    if (self == NULL || column_name == NULL) return NULL;
+    if (self->file_ptr == NULL) return NULL;
+
+    // Need header to figure out column index
+    if (self->__header__ == NULL) self->csv.headerReader(self);
+
+    // If we found correct column, we can use fieldReader() to index directly into csv without reading into memory
+    intmax_t column_index = findColumnIndex(self, column_name);
+
+    if (column_index >= 0)
+        return field_reader_internal_(self, row, column_index);
+    else return NULL;
+}
+
+
+
+//      ___ CSV.FIELDREADER2() ___
+char *fieldReader2(dataLynx *self, uintmax_t row, uintmax_t column) {
+
+    // Safety Checks
+    if (self == NULL) return NULL;
+    if (self->file_ptr == NULL) return NULL;
+
+    return field_reader_internal_(self, row, column);
+
+}
+
+
+char *field_reader_internal_(dataLynx *self, uintmax_t row, uintmax_t column) {
 
     // Function name (for use in if_error()) (formerly csv_reader_index)
-    const char *func_name = "csv.fieldReader";
+    const char *func_name = "field_reader_internal_";
 
     /* THIS FUNCTION: Allows you to index directly into a csv file, without reading the whole file into memory.
          - You can choose whether or not to skip the header (i.e. if header is not skipped, row 0 will be the header)
@@ -745,14 +783,14 @@ char *fieldReader(dataLynx *self, uintmax_t desired_row, uintmax_t desired_colum
     fseek(self->file_ptr, 0, SEEK_SET);
 
     // Skip header or not
-    if (self->skip_header) desired_row++;
+    if (self->skip_header) row++;
 
     // Declare variables
     int8_t tmp;
     bool reached_eof = false;
 
     // Get stream to correct row
-    for (uintmax_t i = 0; i < desired_row; i++)
+    for (uintmax_t i = 0; i < row; i++)
     {
         while ((tmp = fgetc(self->file_ptr)) != '\n') if (tmp == EOF) {reached_eof = true; break;}
 
@@ -762,7 +800,7 @@ char *fieldReader(dataLynx *self, uintmax_t desired_row, uintmax_t desired_colum
     // Get stream to correct column
     bool end_of_row = false, inside_quotes = false;
 
-    for (uintmax_t j = 0; j < desired_column; j++)
+    for (uintmax_t j = 0; j < column; j++)
     {
         while ((tmp = fgetc(self->file_ptr)) != '\n') {
 
@@ -815,51 +853,43 @@ char *fieldReader(dataLynx *self, uintmax_t desired_row, uintmax_t desired_colum
     return append_last_retrieved_fields(self, &s);
 }
 
+//                          ----- WRITER FUNCTIONS -----
 
+//          ____ FIELD WRITER()___
+bool fieldWriter(dataLynx *self, uintmax_t row, char *column_name, char *new_field) {
 
-//      ___ csv.fieldReader2() ___
-char *fieldReader2(dataLynx *self, uintmax_t desired_row, char *desired_column) {
+    // Safety Checks (do not check if row is greater than row count because should work even if file has not been read into memory)
+    if (self == NULL || column_name == NULL || new_field == NULL) return false;
+    if (!self->csv_write_permission) return false;
 
-    // Function name (for use in if_error()) (formerly csv_dictreader_index())
-    // const char *func_name = "csv.fieldReader2";
+    // Find column index which correlates to the column name provided
+    intmax_t column_index = findColumnIndex(self, column_name);
 
-    /* THIS FUNCTION: 1. Allows you to index directly into a csv file using the column name and without reading the whole file into memory.
-                      2. Returns NULL if desired_column is not in header of file
-                      3. This function will treat the 1st non-header row as row 0 (i.e. row 2 in the file = row 0, as it is the first non-header row and will be 0 indexed.)
-                      How it works: 1. Finds correct column number that corresponds with column name.
-                                    2. Then calls csv.fieldReader() to find field at that index location */
-
-
-    // Reset file stream
-    fseek(self->file_ptr, 0, SEEK_SET);
-
-    if (self->header == NULL) self->csv.headerReader(self);
-
-    // If we found correct column, we can use fieldReader() to index directly into csv without reading into memory
-    intmax_t column_index = findColumnIndex(self, desired_column);
-
-    if (column_index != -1)
-        return fieldReader(self, desired_row, column_index);
-    else return NULL;
+    return (column_index >= 0) ? field_writer_internal_(self, row, column_index, new_field) : false;
 }
 
 
-//      ___ UPDATE_CSV_INDEX() ___
-bool update_csv_index(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field) {
+//          ____ FIELD WRITER2()___
+bool fieldWriter2(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field) {
 
-    if (self == NULL) return false;
+    // Safety Checks (do not check if row or column is greater than row/column count because should work even if file has not been read into memory)
+    if (self == NULL || new_field == NULL) return false;
     if (!self->csv_write_permission) return false;
 
+    return field_writer_internal_(self, row, column, new_field);
+}
+
+
+
+//      ___ FIELD WRITER INTERNAL() ___
+bool field_writer_internal_(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field) {
+
+    /* THIS FUNCTION: Updates csv file based on choice of index
+            Note: In order destructive mode to work with updateField() (i.e. updates CSV file at same time as updating data structure in memory), I must close in read mode and then reopen in write mode, as opposed to allowing user to choose how to open file. */
+
+
     // Function name (for use in if_error())
-    const char *func_name = "update_csv_index";
-
-
-    // Open file
-    /* I will not use self->file_ptr to open and close this file,
-    because if the library user has already used that ptr to open the file b4 using this function, then that file ptr will be lost.
-       - This only matters if I open file, so library user does not have to */
-    // FILE *file = fopen(self->filename, "r");
-    // if (file == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+    const char *func_name = "field_writer_internal_";
 
     // Check if file is empty
     fseek(self->file_ptr, 0L, SEEK_END);
@@ -870,9 +900,6 @@ bool update_csv_index(dataLynx *self, uintmax_t row, uintmax_t column, char *new
     }
     fseek(self->file_ptr, 0, SEEK_SET);
 
-    /* THIS FUNCTION: Updates csv file based on choice of index
-            Note: This function takes filename string instead of file pointer as input, to be able to open in read mode, then close and open in write mode.
-                    This would not be possible with a single file pointer. */
 
     // Make new_field into a dynamically allocated string (so I can pass the address of string through add_quotes() and resize if necessary)
     char *new_field_dyn = (char*)malloc(sizeof(char) * strlen(new_field)+1);
@@ -962,7 +989,7 @@ bool update_csv_index(dataLynx *self, uintmax_t row, uintmax_t column, char *new
     fclose(self->file_ptr);
 
     // Reopen file in write mode
-    self->file_ptr = fopen(self->filename, "w");
+    self->file_ptr = fopen(self->filename, "r+");
     if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
 
     // Print new data to file
@@ -973,20 +1000,189 @@ bool update_csv_index(dataLynx *self, uintmax_t row, uintmax_t column, char *new
     fclose_null(&self->file_ptr);
     free_null(&new_field_dyn);
 
+    // Reopen in read mode
+    self->file_ptr = fopen(self->filename, "r");
+    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+
     return true;
 }
 
 
-//          ____ UPDATE_CSV_INDEX2()___
-bool fieldWriter(dataLynx *self, uintmax_t row, char *column, char *new_field) {
 
-    if (self == NULL) return false;
-    if (!self->csv_write_permission) return false;
+//          ROW WRITER()
+bool rowWriter(dataLynx *self, char *values[]) {
 
-    intmax_t column_index = findColumnIndex(self, column);
+    if (self == NULL || values == NULL) return false;
+    if (self->file_ptr == NULL) return false;
 
-    return (column_index >= 0) ? update_csv_index(self, row, column_index, new_field) : false;
+    const char *func_name = "csv.rowWriter";
+
+    // Get header and column count
+    if (self->__header__ == NULL)  headerReader(self);
+
+    // Row String Length (Sum of string lengths of every value in the row)
+    size_t row_strlen = 0;
+    size_t value_strlens[self->columnCount]; /* Keeps track of each value's string length */
+    bool add_quotes_to[self->columnCount]; /* Keeps track of which values to add quotes to */
+    for (uintmax_t column = 0; column < self->columnCount; column++) {
+
+        // Add quotes to new cell if necessary
+        if (has_comma(values[column]) && !has_quotes(values[column])) {
+            add_quotes_to[column] = true;
+            row_strlen += 2;
+        }
+        else add_quotes_to[column] = false;
+
+        // Keep track of each value's string length
+        value_strlens[column] = strlen(values[column]);
+
+        // Keep track of total length
+        row_strlen += value_strlens[column];
+
+    }
+
+    // Add room for commas after every value except last
+    row_strlen += self->columnCount-1;
+
+
+    // Copy all values into one string (this avoids making a new system call (i.e. fwrite()/fprintf()) for every value)
+    char row_string[row_strlen+1];
+    size_t running_total = 0;
+    for (uintmax_t column = 0; column < self->columnCount; column++) {
+
+        if (column != self->columnCount-1) {
+
+            // With comma (i.e. not last column in row)
+            (!add_quotes_to[column]) ? sprintf(&row_string[running_total], "%s,", values[column]) : sprintf(&row_string[running_total], "\"%s\",", values[column]);
+        }
+        else {
+
+            // No comma (i.e. last column. \n will be added when writing to file)
+            (!add_quotes_to[column]) ? sprintf(&row_string[running_total], "%s", values[column]) : sprintf(&row_string[running_total], "\"%s\"", values[column]);
+        }
+
+        // Add value string lenght plus length of comma OR plus length of comma plus length of quotes
+        running_total += (!add_quotes_to[column]) ? value_strlens[column]+1 : value_strlens[column]+3;
+
+    }
+
+    row_string[row_strlen] = '\0';
+
+
+    // Close file in read mode
+    fclose(self->file_ptr);
+
+    // Open in write mode (i.e. read plus)
+    self->file_ptr = fopen(self->filename, "r+");
+    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+
+    //  Get file stream to end of file
+    fseek(self->file_ptr, 0L, SEEK_END);
+
+    // Write row to file
+    fprintf(self->file_ptr, "%s\n", row_string);
+
+
+    // Close in write mode
+    fclose(self->file_ptr);
+
+    // Reopen in read mode
+    self->file_ptr = fopen(self->filename, "r");
+    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+
+    return true;
 }
+
+
+
+
+//          ROW DICT WRITER()
+bool rowDictWriter(dataLynx *self, dict values[]) {
+
+    if (self == NULL || values == NULL) return false;
+    if (self->file_ptr == NULL) return false;
+
+    const char *func_name = "csv.rowDictWriter";
+
+    // Get header and column count
+    if (self->__header__ == NULL)  headerReader(self);
+
+    // Rearrange if neccessary
+    rearrange_dict_array(self, values);
+
+    // Row String Length (Sum of string lengths of every value in the row)
+    size_t row_strlen = 0;
+    size_t value_strlens[self->columnCount]; /* Keeps track of each value's string length */
+    bool add_quotes_to[self->columnCount]; /* Keeps track of which values to add quotes to */
+    for (uintmax_t column = 0; column < self->columnCount; column++) {
+
+        // Add quotes to new cell if necessary
+        if (has_comma(values[column].field) && !has_quotes(values[column].field)) {
+            add_quotes_to[column] = true;
+            row_strlen += 2;
+        }
+        else add_quotes_to[column] = false;
+
+        // Keep track of each value's string length
+        value_strlens[column] = strlen(values[column].field);
+
+        // Keep track of total length
+        row_strlen += value_strlens[column];
+
+    }
+
+    // Add room for commas after every value except last
+    row_strlen += self->columnCount-1;
+
+
+    // Copy all values into one string (this avoids making a new system call (i.e. fwrite()/fprintf()) for every value)
+    char row_string[row_strlen+1];
+    size_t running_total = 0;
+    for (uintmax_t column = 0; column < self->columnCount; column++) {
+
+        if (column != self->columnCount-1) {
+
+            // With comma (i.e. not last column in row)
+            (!add_quotes_to[column]) ? sprintf(&row_string[running_total], "%s,", values[column].field) : sprintf(&row_string[running_total], "\"%s\",", values[column].field);
+        }
+        else {
+
+            // No comma (i.e. last column. \n will be added when writing to file)
+            (!add_quotes_to[column]) ? sprintf(&row_string[running_total], "%s", values[column].field) : sprintf(&row_string[running_total], "\"%s\"", values[column].field);
+        }
+
+        // Add value string lenght plus length of comma OR plus length of comma plus length of quotes
+        running_total += (!add_quotes_to[column]) ? value_strlens[column]+1 : value_strlens[column]+3;
+
+    }
+
+    row_string[row_strlen] = '\0';
+
+
+    // Close file in read mode
+    fclose(self->file_ptr);
+
+    // Open in write mode (i.e. read plus)
+    self->file_ptr = fopen(self->filename, "r+");
+    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+
+    //  Get file stream to end of file
+    fseek(self->file_ptr, 0L, SEEK_END);
+
+    // Write row to file
+    fprintf(self->file_ptr, "%s\n", row_string);
+
+
+    // Close in write mode
+    fclose(self->file_ptr);
+
+    // Reopen in read mode
+    self->file_ptr = fopen(self->filename, "r");
+    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+
+    return true;
+}
+
 
 
 
@@ -1110,16 +1306,16 @@ bool writeData(dataLynx *self, char *new_filename) {
     if (new_file == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
 
     // Write Header to file
-    if (self->skip_header && self->header != NULL) {
+    if (self->skip_header && self->__header__ != NULL) {
 
         for (uintmax_t i = 0; i < self->columnCount; i++) {
 
             // Print with comma if not the last column
             if (i < self->columnCount-1) {
-                fprintf(new_file, "%s,", self->header[i]);
+                fprintf(new_file, "%s,", self->__header__[i]);
                 if (self->with_spaces) printf(" ");
             }
-            else fprintf(new_file, "%s\n", self->header[i]);
+            else fprintf(new_file, "%s\n", self->__header__[i]);
         }
 
     }

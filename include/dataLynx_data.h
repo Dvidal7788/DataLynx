@@ -20,7 +20,10 @@ enum ErrorCodes {MALLOC_FAILED=1, REALLOC_FAILED, SCANF_FAILED, FOPEN_FAILED, FR
 #define MISSING_VALUE "---" /* This is the default missing value, which gets assigned to the char * */
 
 #define FILENAME_BUFFER_SIZE 255
-#define MAX_FIELD_PRINT_LENGTH 50 /* This number INCLUDES the borders of the table (i.e. '|' and '+') */
+// #define MAX_FIELD_PRINT_LENGTH 50 /* This number INCLUDES the borders of the table (i.e. '|' and '+') */
+
+/* This will tell print_stats_internal_ to print all stats as opposed to 1 column's stats (Unless somebody has a CSV with a column named this exact random code, in which case, if they request to print only that column's stats, it will print all stats, but that's a risk I'm willing to take lol) */
+#define PRINT_ALL_STATS "-9!8?3$6*&()\"\";;:://8Vj49r4HU2@b"
 
 
 // Doubly Linked Node
@@ -92,6 +95,7 @@ typedef struct dataLynx {
     bool csv_write_permission;
     bool printRowIndex;
     uintmax_t maxPrintRows;
+    uint16_t maxFieldPrintLength;
     bool print_truncated_rows;
     bool in_place_sort;
     intmax_t row_to_drop; /* Will be set as -1 by default */
@@ -107,7 +111,7 @@ typedef struct dataLynx {
     bool print_tail;
     char if_error_buffer[50];
 
-    char **header;
+    char **__header__;
     Aggregate *aggregate;
     char **tmp_column;
 
@@ -130,6 +134,8 @@ typedef struct dataLynx {
 
     // -- Function pointers --
 
+    char *(*header)(struct dataLynx *self, uint32_t column);
+
     char *(*userInputFilename)(struct dataLynx *self, char *prompt);
     bool (*changeFilename)(struct dataLynx *self, char *filename);
 
@@ -144,10 +150,14 @@ typedef struct dataLynx {
         node **(*reader)(struct dataLynx *self);
         dict_node **(*dictReader)(struct dataLynx *self);
 
-        char *(*fieldReader)(struct dataLynx *self, uintmax_t desired_row, uintmax_t desired_colum);
-        char *(*fieldReader2)(struct dataLynx *self, uintmax_t desired_row, char *desired_column);
+        char *(*fieldReader)(struct dataLynx *self, uintmax_t desired_row, char *desired_column);
+        char *(*fieldReader2)(struct dataLynx *self, uintmax_t desired_row, uintmax_t desired_colum);
 
-        bool (*fieldWriter)(struct dataLynx *self, uintmax_t row, char *column, char *new_field);
+        bool (*fieldWriter)(struct dataLynx *self, uintmax_t row, char *column_name, char *new_field);
+        bool (*fieldWriter2)(struct dataLynx *self, uintmax_t row, uintmax_t column, char *new_field);
+
+        bool (*rowWriter)(struct dataLynx *self, char *values[]);
+        bool (*rowDictWriter)(struct dataLynx *self, dict values[]);
 
         bool (*backup)(struct dataLynx *self);
         bool (*writeData)(struct dataLynx *self, char *new_filename);
@@ -157,36 +167,42 @@ typedef struct dataLynx {
 
 
     // Get Field  (from data structure in memory)
-    char *(*getField)(struct dataLynx *self, uintmax_t desired_row, uintmax_t desired_column);
-    char *(*getField2)(struct dataLynx *self, uintmax_t desired_row, char *desired_column);
+    char *(*getField)(struct dataLynx *self, uintmax_t desired_row, char *desired_column);
+    char *(*getField2)(struct dataLynx *self, uintmax_t desired_row, uintmax_t desired_column);
 
-    bool (*printColumnCond)(struct dataLynx *self, char *column_name, char *condition_operator, char *condition_num);
+
+    bool (*updateField)(struct dataLynx *self, uintmax_t row, char *column_name, char *new_value);
+    bool (*updateField2)(struct dataLynx *self, uintmax_t row, uintmax_t column, char *new_value);
+
 
     bool (*stripAll)(struct dataLynx *self);
-    void (*formatHeader)(struct dataLynx *self);
+    bool (*formatHeader)(struct dataLynx *self);
     bool (*changeColumnName)(struct dataLynx *self, char *old_column_name, char *new_column_name);
     bool (*printHeader)(struct dataLynx *self);
     bool (*printColumn)(struct dataLynx *self, char *column_name);
     bool (*printData)(struct dataLynx *self);
     bool (*printDataTable)(struct dataLynx *self);
-    bool (*printStats)(struct dataLynx *self, char *column_name);
+    bool (*printStatsAll)(struct dataLynx *self);
+    bool (*printStatsColumn)(struct dataLynx *self, char *column_name);
     bool (*printShape)(struct dataLynx *self);
+    bool (*printColumnCond)(struct dataLynx *self, char *column_name, char *condition_operator, char *condition_num);
     void (*freeAll)(struct dataLynx *self);
     char *(*changeMissingValue)(struct dataLynx *self, char *missingValue);
 
-    bool (*replace)(struct dataLynx *self, char *to_replace, char *replace_with);
+    bool (*replaceAll)(struct dataLynx *self, char *to_replace, char *replace_with);
     bool (*replaceInColumn)(struct dataLynx *self, char *column_name, char *to_replace, char *replace_with);
     bool (*dropColumn)(struct dataLynx *self, char *column_name);
     bool (*dropRow)(struct dataLynx *self, uintmax_t row_to_dop);
 
-    bool (*createHeader)(struct dataLynx *self, char *header[], uint32_t header_size);
+    bool (*createHeader)(struct dataLynx *self, char *header[], uint32_t column_count);
     bool (*insertRow)(struct dataLynx *self, char *values[]);
-    bool (*insertRow2)(struct dataLynx *self, dict values[]);
+    bool (*insertRowDict)(struct dataLynx *self, dict values[]);
 
     bool (*sortRowsByColumn)(struct dataLynx *self, const char *column_name, const char *asc_desc);
 
     uint16_t (*valueCount)(struct dataLynx *self, char *value, char *column_name);
     bool (*isInColumn)(struct dataLynx *self, char *value, char *column_name);
+    bool (*isInData)(struct dataLynx *self, char *value);
     double (*getStat)(struct dataLynx *self, char *column_name, char *operation);
     double (*min)(struct dataLynx *self, char *column_name);
     double (*max)(struct dataLynx *self, char *column_name);
@@ -211,13 +227,12 @@ typedef struct dataLynx {
 
 //          ---- FUNCTION PROTOTYPES ----
 
-bool createHeader(dataLynx *self, char *header[], uint32_t header_size);
-bool insertRow(dataLynx *self, char *values[]);
-bool insertRow2(dataLynx *self, dict values[]);
-
-bool rearrange_dict_array(dataLynx *self, dict values[]);
-
 dataLynx dataLynxConstructor(void);
+char *header(dataLynx *self, uint32_t column);
+
+bool createHeader(dataLynx *self, char *header[], uint32_t columnCount);
+bool insertRow(dataLynx *self, char *values[]);
+bool insertRowDict(dataLynx *self, dict values[]);
 
 char *userInputFilename(dataLynx *self, char *prompt);
 bool changeFilename(dataLynx *self, char *filename);
@@ -231,7 +246,7 @@ bool stripAll(dataLynx *self);
 // bool stripColumn(dataLynx *self, char *column_name);
 // bool strip(dataLynx *self);
 bool changeColumnName(dataLynx *self, char *old_column_name, char *new_column_name);
-void formatHeader(dataLynx *self);
+bool formatHeader(dataLynx *self);
 bool printHeader(dataLynx *self);
 bool printColumn(dataLynx *self, char *column_name);
 bool printDataTable(dataLynx *self);
@@ -239,7 +254,9 @@ bool printData(dataLynx *self);
 bool print_data_internal(dataLynx *self);
 bool printHead(dataLynx *self, uintmax_t number_of_rows);
 bool printTail(dataLynx *self, uintmax_t number_of_rows);
-bool printStats(dataLynx *self, char *column_name);
+bool printStatsAll(dataLynx *self);
+bool printStatsColumn(dataLynx *self, char *column_name);
+bool print_stats_internal_(dataLynx *self, char *column_name);
 void print_stats_is_not_null_(dataLynx *self, size_t column_strlen, uint32_t column_index, bool is_null);
 bool printShape(dataLynx *self);
 char *changeMissingValue(dataLynx *self, char *missingValue);
@@ -249,10 +266,12 @@ uintmax_t find_row_count(dataLynx *self);
 
 //  UPDATE fields in memory
 
-    /* user facing */
-bool updateField(dataLynx *self, uintmax_t row, char *column, char *new_value);
+    /* User facing */
+bool updateField(dataLynx *self, uintmax_t row, char *column_name, char *new_value);
+bool updateField2(dataLynx *self, uintmax_t row, uintmax_t column, char *new_value);
 
     /* _internal_ */
+bool update_field_internal_(dataLynx *self, uintmax_t row, uintmax_t column, char *new_value);
 bool update_grid_v3_index(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field);
 bool update_grid_index(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column, char *new_field);
 bool update_dict_index(dataLynx *self, uintmax_t desired_row, char *desired_column, char *new_field);
@@ -261,7 +280,7 @@ bool update_dict_index(dataLynx *self, uintmax_t desired_row, char *desired_colu
 // REPLACE all instances of a particular value
 
     /* user facing */
-bool replace(dataLynx *self, char *to_replace, char *replace_with);
+bool replaceAll(dataLynx *self, char *to_replace, char *replace_with);
 bool replaceInColumn(dataLynx *self, char *column_name, char *to_replace, char *replace_with);
 
 bool dropColumn(dataLynx *self, char *column_name);
@@ -276,8 +295,8 @@ bool dict_grid_replace(dataLynx *self, char *to_replace, char *replace_with, int
 // GET FIELD  (from data structure
 
     /* user facing */
-char *getField(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column);
-char *getField2(dataLynx *self, uintmax_t desired_row, char *desired_column);
+char *getField(dataLynx *self, uintmax_t desired_row, char *desired_column);
+char *getField2(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column);
 
 bool dropRowsFilter(dataLynx *self, char *column_name, char *condition_operator, char *condition_value);
 bool filter(dataLynx *self, dataLynx *filteredData, char *column_name, char *condition_operator, char *condition_value);

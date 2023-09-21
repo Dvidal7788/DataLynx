@@ -8,14 +8,22 @@ bool create_stats(dataLynx *self);
 
 uint16_t valueCount(dataLynx *self, char *value, char *column_name);
 bool isInColumn(dataLynx *self, char *value, char *column_name);
+bool isInData(dataLynx *self, char *value, char *column_name);
+uint16_t value_count_internal_(dataLynx *self, char *value, int16_t column_index);
 
 double getStat(dataLynx *self, char *column_name, char *operation);
+
 double min(dataLynx *self, char *column_name);
 double max(dataLynx *self, char *column_name);
 double sum(dataLynx *self, char *column_name);
 double mean(dataLynx *self, char *column_name);
+double std(dataLynx *self, char *column_name);
+double lowerQrt(dataLynx *self, char *column_name);
+double median(dataLynx *self, char *column_name);
+double upperQrt(dataLynx *self, char *column_name);
 uintmax_t isNull(dataLynx *self, char *column_name);
 uintmax_t notNull(dataLynx *self, char *column_name);
+
 double find_new_min(dataLynx *self, uintmax_t column, double old_field_float, double new_field_float);
 double find_new_max(dataLynx *self, uintmax_t column, double old_field_float, double new_field_float);
 bool update_stats(dataLynx *self, uintmax_t column, char *old_field, char *new_field);

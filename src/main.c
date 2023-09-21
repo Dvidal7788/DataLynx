@@ -55,13 +55,13 @@ int main(void)
     //      ---- REPLACE ----
     // printf("\nREPLACE:\n");
 
-    myData.replace(&myData, "?", ""); /* Replace all instances if '?' with NULL */
+    myData.replaceAll(&myData, "?", ""); /* Replace all instances if '?' with NULL */
     // myData.replaceInColumn(&myData, "Name", "?", "TEST");
 
 
 
-    // // Sort by numberic column
-    // // myData.sortRowsByColumn(&myData, "Salary, Data & Entries", "desc");
+    // Sort by numberic column
+    myData.sortRowsByColumn(&myData, "Salary,  Data & Entries", "desc");
 
     // // Sort by non-numeric column
     // myData.sortRowsByColumn(&myData, "Name", "ASC");
@@ -72,7 +72,7 @@ int main(void)
 
     //      --- Get Field (from memory) ---
 
-    // printf("Get field: %s\n", myData.getField2(&myData, 2, "Department"));
+    // printf("Get field: %s\n", myData.getField(&myData, 2, "Department"));
 
     //          --- Filter ---
     // myData.printColumnCond(&myData, "Name", "==", "Annie");
@@ -100,7 +100,8 @@ int main(void)
     // Update Field (in memory)
 
     // Get Field (from CSV)
-    // printf("Get field from CSV: %s\n", myData.csv.fieldReader2(&myData, 2, "Department"));
+    printf("Get field from CSV: '%s'\n", myData.csv.fieldReader(&myData, 0, "Department"));
+    printf("Get field from CSV: '%s'\n", myData.csv.fieldReader2(&myData, 0, 0));
 
     // Update Field (in CSV)
     // myData.csv_write_permission = true;
@@ -113,7 +114,7 @@ int main(void)
     // myData.csv.backup(&myData);
     // myData.csv.writeData(&myData, "testfile.csv");
 
-    // printf("Get Field: %s, %s\n", getField(&myData, 0, 3), getField(&myData, 0, 4));
+    // printf("Get Field: %s, %s\n", getField2(&myData, 0, 3), getField2(&myData, 0, 4));
     // printf("\n\tUPDATE\n");
     // updateField(&myData, 6, "Emp_ID", "100");
     // printHead(&myData, 5);
@@ -121,15 +122,15 @@ int main(void)
     // printData(&myData);
     // myData.printStats(&myData);
 
-    // printf("%s %s\n", myData.csv.fieldReader(&myData, 0, 1), myData.csv.fieldReader(&myData, 0, 90));
-    // printf("%s %s\n", myData.csv.fieldReader(&myData, 1, 1), myData.csv.fieldReader(&myData, 1, 2));
+    // printf("%s %s\n", myData.csv.fieldReader2(&myData, 0, 1), myData.csv.fieldReader2(&myData, 0, 90));
+    // printf("%s %s\n", myData.csv.fieldReader2(&myData, 1, 1), myData.csv.fieldReader2(&myData, 1, 2));
     // sort_value_counts(&myData);
     // printStats(&myData, "all");
 
 
     //      ---  APPEND ROW ---
     //      --- INSERT ROW --- /* VALGRIND ERRORS!! */
-    /* When inserting, must at very least set columnCount (whether insertRow ro insertRow2) */
+    /* When inserting, must at very least set columnCount (whether insertRow ro insertRowDict) */
 
     // Create your own header
     // can either set header or columnCount if do not want to set header
@@ -152,15 +153,15 @@ int main(void)
     //      - Insert Row 2 - (rearranged columns if out of order)
     // dict values[] = {{"Name", "David"}, {"Address", "123 Main"}, {"Phone Number", "215-555"}};
     // myData.columnCount = 3;
-    // if (!myData.insertRow2(&myData, values)) return 1;
-    // myData.insertRow2(&myData, values);
+    // if (!myData.insertRowDict(&myData, values)) return 1;
+    // myData.insertRowDict(&myData, values);
 
     // dict values2[] = {{"Name", "Anna"}, {"Address", "123 Main Apt 2"}, {"Phone Number", "215-777"}};
-    dict values2[] = {{"Name", "Annie"}, {"emp_id", "2323"}, {"DEPARTmedNT", "Sales"}, {"Salary,  dATA & ENtRies", "65000"}, {"Test", "c"}, {"Edxt", "452"}};
+    dict values2[] = {{"Name", "Annie"}, {"Emp ID", "2323"}, {"Department", "Sales"}, {"Salary,  Data & Entries", "65000"}, {"Test", "c"}, {"Ext", "452"}};
 
 
-    // if (!insertRow2(&myData, values)) return 1;
-    myData.insertRow2(&myData, values2);
+    // if (!insertRowDict(&myData, values)) return 1;
+    myData.insertRowDict(&myData, values2);
 
 
     //  Insert into existing data
@@ -170,9 +171,9 @@ int main(void)
 
     // Does not have to be in correct order
     // dict values[] = {{"Name", "Mr. Pebbles"}, {"DEPARTmeNT", "\"Administration, and TONS\""}, {"Ext", "333"}, {"Salary, dATA & ENtRies", "80000"}, {"emp_id", "8888"}};
-    // insertRow2(&myData, values);
+    // insertRowDict(&myData, values);
 
-    // printf("Field: %s\n", myData.getField(&myData, 3, 0));
+    // printf("Field: %s\n", myData.getField2(&myData, 3, 0));
 
     // myData.printData(&myData);
 
@@ -221,7 +222,20 @@ int main(void)
 
     // printf("Anna in Name: %d\n", myData.isInColumn(&myData, "Anna", "Name"));
     // printf("Anna in Name: %d\n", myData.valueCount(&myData, "Anna", "Name"));
-    myData.printColumnCond(&myData, "Name", "==", "Annie");
+    // myData.printColumnCond(&myData, "Name", "==", "Annie");
+
+    myData.csv_write_permission = true;
+    myData.csv.fieldWriter(&myData, 0, "Emp ID", "HELLO");
+    myData.csv.fieldWriter2(&myData, 1, 0, "TEST");
+
+    // char *row_values[] = {"3333", "E,,lvis", "Presl,,ey", "Sales", "222", "100000"};
+    // myData.csv.rowWriter(&myData, row_values);
+
+    dict row_values[] = {{"Test", "a,"}, {"Salary,   Data & Entries", "100000"}, {"Name", "E,,lvis Presly"}, {"Department", "Sales"}, {"Ext", "222"}, {"Emp ID", "3333"}, };
+    myData.csv.rowDictWriter(&myData, row_values);
+
+    myData.printStatsAll(&myData);
+    // myData.printStatsColumn(&myData, "Name");
     //      --- End ---
     myData.freeAll(&myData);
 

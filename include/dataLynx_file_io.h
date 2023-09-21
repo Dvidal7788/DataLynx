@@ -14,13 +14,18 @@ char ***reader_v3(dataLynx *self);
 node **reader(dataLynx *self); /* Reads as one long string and parses into linked list */
 dict_node **dictReader(dataLynx  *self); /* Reads as one long string and parses into dict linked list (fields accessable with column names instead of integers)*/
 
-char *fieldReader(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column);
-char *fieldReader2(dataLynx *self, uintmax_t desired_row, char *desired_column);
+char *fieldReader(dataLynx *self, uintmax_t row, char *column_name);
+char *fieldReader2(dataLynx *self, uintmax_t row, uintmax_t column);
+char *field_reader_internal_(dataLynx *self, uintmax_t row, uintmax_t column);
 
 
 // Update fields in CSV
-bool fieldWriter(dataLynx *self, uintmax_t row, char *column, char *new_field);
-bool update_csv_index(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field);
+bool fieldWriter(dataLynx *self, uintmax_t row, char *column_name, char *new_field);
+bool fieldWriter2(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field);
+bool field_writer_internal_(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field);
+
+bool rowWriter(dataLynx *self, char *values[]);
+bool rowDictWriter(dataLynx *self, dict values[]);
 
 bool backup(dataLynx *self);
 bool writeData(dataLynx *self, char *new_filename);

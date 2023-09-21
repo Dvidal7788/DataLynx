@@ -13,6 +13,7 @@ dataLynx dataLynxConstructor(void) {
     self.csv_write_permission = false;
     self.printRowIndex = true;
     self.maxPrintRows = 25;
+    self.maxFieldPrintLength = 50;
     self.print_truncated_rows = false;
     self.in_place_sort = true;
     self.row_to_drop = -1;
@@ -27,7 +28,7 @@ dataLynx dataLynxConstructor(void) {
     self.case_sensitive_sort = false;
 
 
-    self.header = NULL;
+    self.__header__ = NULL;
     self.aggregate = NULL;
     self.tmp_column = NULL;
 
@@ -50,6 +51,8 @@ dataLynx dataLynxConstructor(void) {
     self.last_retrieved_fields = NULL;
 
     //  --- Assign function pointers ---
+    self.header = &header;
+
     self.userInputFilename = &userInputFilename;
     self.changeFilename = &changeFilename;
 
@@ -66,6 +69,10 @@ dataLynx dataLynxConstructor(void) {
     self.csv.fieldReader2 = &fieldReader2;
 
     self.csv.fieldWriter = &fieldWriter;
+    self.csv.fieldWriter2 = &fieldWriter2;
+
+    self.csv.rowWriter = &rowWriter;
+    self.csv.rowDictWriter = &rowDictWriter;
 
     self.csv.backup = &backup;
     self.csv.writeData = &writeData;
@@ -74,14 +81,16 @@ dataLynx dataLynxConstructor(void) {
 
     self.getField = &getField;
     self.getField2 = &getField2;
-    self.printColumnCond = &printColumnCond;
+
+    self.updateField = &updateField;
+    self.updateField2 = &updateField2;
+
 
     // Convert into other data structures
     self.string_into_2d_array = &string_into_2d_array;
     self.split_2darray_by = &split_2darray_by;
-    self.update_dict_index = &update_dict_index;
 
-    self.replace = &replace;
+    self.replaceAll = &replaceAll;
     self.replaceInColumn = &replaceInColumn;
 
     self.dropColumn = &dropColumn;
@@ -89,7 +98,7 @@ dataLynx dataLynxConstructor(void) {
 
     self.createHeader = &createHeader;
     self.insertRow = &insertRow;
-    self.insertRow2 = &insertRow2;
+    self.insertRowDict = &insertRowDict;
 
     self.sortRowsByColumn = &sortRowsByColumn;
 
@@ -113,8 +122,10 @@ dataLynx dataLynxConstructor(void) {
     self.printColumn = &printColumn;
     self.printData = &printData;
     self.printDataTable = &printDataTable;
-    self.printStats = &printStats;
+    self.printStatsAll = &printStatsAll;
+    self.printStatsColumn = &printStatsColumn;
     self.printShape = &printShape;
+    self.printColumnCond = &printColumnCond;
     self.changeMissingValue = &changeMissingValue;
 
 
@@ -122,8 +133,20 @@ dataLynx dataLynxConstructor(void) {
 }
 
 
+char *header(dataLynx *self, uint32_t column) {
 
-bool createHeader(dataLynx *self, char *header[], uint32_t header_size) {
+    if (self == NULL) return NULL;
+
+    if (self->__header__ == NULL) return NULL;
+
+    if (column > self->columnCount-1) return NULL;
+
+    return self->__header__[column];
+
+}
+
+
+bool createHeader(dataLynx *self, char *header[], uint32_t column_count) {
 
     /* - This function creates header from list input parameter
        - This function does NOT read from a file. */
@@ -131,17 +154,17 @@ bool createHeader(dataLynx *self, char *header[], uint32_t header_size) {
     /* NOTE: In order for this function to work, I have to trust that the library user inputs the correct header_size for the array they input as header[] */
     if (self == NULL) return false;
 
-    if (self->header != NULL) free_header(self);
+    if (self->__header__ != NULL) free_header(self);
 
-    self->columnCount = header_size;
+    self->columnCount = column_count;
 
     const char *func_name = "createHeader";
 
     // Allocate array of strings
-    self->header = (char **)malloc(sizeof(char *) * header_size);
-    if (self->header == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    self->__header__ = (char **)malloc(sizeof(char *) * column_count);
+    if (self->__header__ == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
 
-    for (uint32_t column = 0; column < header_size; column++) {
+    for (uint32_t column = 0; column < column_count; column++) {
 
         // Allocate for string
         if (header == NULL) {
@@ -149,24 +172,24 @@ bool createHeader(dataLynx *self, char *header[], uint32_t header_size) {
             // If no column names, create header of generic column names
 
             // Allocate each string
-            self->header[column] = (char*)malloc(sizeof(char)*16);
-            if (self->header[column] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+            self->__header__[column] = (char*)malloc(sizeof(char)*16);
+            if (self->__header__[column] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
 
-            sprintf(self->header[column], "Column %d", column+1);
+            sprintf(self->__header__[column], "Column %d", column+1);
 
 
         }
         else if (header[column][0] == '\0') {
 
-            self->header[column] = (char *)malloc(sizeof(char)*16);
-            if (self->header[column] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+            self->__header__[column] = (char *)malloc(sizeof(char)*16);
+            if (self->__header__[column] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
 
-            sprintf(self->header[column], "Column %d", column+1);
+            sprintf(self->__header__[column], "Column %d", column+1);
         }
         else {
-            self->header[column] = (char *)malloc( sizeof(char) * (strlen(header[column])+1) );
-            if (self->header[column] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
-            strcpy(self->header[column], header[column]);
+            self->__header__[column] = (char *)malloc( sizeof(char) * (strlen(header[column])+1) );
+            if (self->__header__[column] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+            strcpy(self->__header__[column], header[column]);
         }
 
 
@@ -191,11 +214,11 @@ bool insertRow(dataLynx *self, char *values[]) {
 
     // Create Generic Header (i.e 'Column1', 'Column2'...)
     /* Note: Library user must set columnCount. Ensuring a header exists will prevent issues when trying to dereference the header in other functions */
-    if (self->header == NULL && self->columnCount > 0) createHeader(self, NULL, self->columnCount);
+    if (self->__header__ == NULL && self->columnCount > 0) createHeader(self, NULL, self->columnCount);
 
     dict values2[self->columnCount];
 
-    // Copy values into new array in order to call insertRow2()
+    // Copy values into new array in order to call insertRowDict()
     for (uint32_t column = 0; column < self->columnCount; column++) {
 
         // Allocate for field string
@@ -206,12 +229,12 @@ bool insertRow(dataLynx *self, char *values[]) {
         strcpy(values2[column].field, values[column]);
 
         // Column name points to header
-        values2[column].column_name = self->header[column];
+        values2[column].column_name = self->__header__[column];
 
     }
 
     // Save function return instead of returng directly because we need to free values2
-    bool function_return = insertRow2(self, values2);
+    bool function_return = insertRowDict(self, values2);
 
     // Free values2
     for (uint32_t column = 0; column < self->columnCount; column++) free_null(&values2[column].field);
@@ -221,7 +244,7 @@ bool insertRow(dataLynx *self, char *values[]) {
 
 // NULL valuees in insertROw
 
-bool insertRow2(dataLynx *self, dict values[]) {
+bool insertRowDict(dataLynx *self, dict values[]) {
 
     // If inserting rows from scratch (i.e. not into existing data structure), will create grid_v3
 
@@ -234,24 +257,24 @@ bool insertRow2(dataLynx *self, dict values[]) {
     if (self->columnCount == 0) return false;
 
     // Check if columns are in correct order. Rearraange if not.
-    if (!rearrange_dict_array(self, values)) return false;
+    rearrange_dict_array(self, values);
 
-    const char *func_name = "insertRow2";
+    const char *func_name = "insertRowDict";
 
     // Create header (Library user must set columnCount)
-    if (self->header == NULL && self->columnCount > 0) {
+    if (self->__header__ == NULL && self->columnCount > 0) {
 
         // Allocate array of pointers
-        self->header = (char**)malloc(sizeof(char*) * self->columnCount);
-        if (self->header == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+        self->__header__ = (char**)malloc(sizeof(char*) * self->columnCount);
+        if (self->__header__ == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
 
         for (uint32_t column = 0; column < self->columnCount; column++) {
 
             // Allocate each string
-            self->header[column] = (char*)malloc(sizeof(char) * (strlen(values[column].column_name)+1));
-            if (self->header[column] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+            self->__header__[column] = (char*)malloc(sizeof(char) * (strlen(values[column].column_name)+1));
+            if (self->__header__[column] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
 
-            strcpy(self->header[column], values[column].column_name);
+            strcpy(self->__header__[column], values[column].column_name);
 
         }
 
@@ -340,7 +363,7 @@ bool insertRow2(dataLynx *self, dict values[]) {
             if (!build_dblink_list(&new_field, &self->grid[self->rowCount-1], &self->node_last)) return false;
         }
         else if (self->dict_grid != NULL) {
-            if (!build_dict_link_list(&new_field, &self->dict_grid[self->rowCount-1], &self->dict_last, &self->header[column])) return false;
+            if (!build_dict_link_list(&new_field, &self->dict_grid[self->rowCount-1], &self->dict_last, &self->__header__[column])) return false;
         }
 
     }
@@ -357,52 +380,6 @@ bool insertRow2(dataLynx *self, dict values[]) {
 }
 
 
-bool rearrange_dict_array(dataLynx *self, dict values[]) {
-
-    /* THIS FUNCTION:
-                - Rearranges a dict array IF columns are not in correct order according to header */
-
-    if (self->header == NULL) return false;
-
-    bool rearranged = false;
-
-    // Iterate through array
-    for (uint32_t column = 0; column < self->columnCount; column++) {
-
-        // Mismatch found
-
-        if (strcmp_quotes(values[column].column_name, self->header[column], true) != 0) {
-
-            // Search rest of columns for match
-            for (uint32_t c = column+1; c < self->columnCount; c++) {
-
-                if (strcmp_quotes(values[c].column_name, self->header[column], true) == 0) {
-
-                    // Swap
-                    char *tmp_field = values[column].field;
-                    char *tmp_column_name = values[column].column_name;
-
-                    values[column].field = values[c].field;
-                    values[column].column_name = values[c].column_name;
-
-                    values[c].field = tmp_field;
-                    values[c].column_name = tmp_column_name;
-
-                    rearranged = true;
-                    break;
-
-                }
-            }
-
-            // if (!rearranged) return false;
-
-        }
-    }
-
-    return rearranged;
-}
-
-
 
 
 
@@ -415,10 +392,10 @@ bool rearrange_dict_array(dataLynx *self, dict values[]) {
 //     if (self == NULL || values == NULL) return false;
 
 //     // I either need to require header_size as input for this function or I have to require that the caller has already created the heaaer
-//     // if (row == 0 && self->header == NULL) createHeader(self, header, header_size);
+//     // if (row == 0 && self->__header__ == NULL) createHeader(self, header, header_size);
 
 
-//     if (self->header == NULL) return false;
+//     if (self->__header__ == NULL) return false;
 
 //     const char *func_name = "createRow";
 
@@ -622,7 +599,7 @@ char *userInputFilename(dataLynx *self, char *prompt) {
 
 
 // -- REPLACE --
-bool replace(dataLynx *self, char *to_replace, char *replace_with) {
+bool replaceAll(dataLynx *self, char *to_replace, char *replace_with) {
 
     if (self == NULL || to_replace == NULL || replace_with == NULL) return false;
 
@@ -635,7 +612,7 @@ bool replace(dataLynx *self, char *to_replace, char *replace_with) {
 
 bool replaceInColumn(dataLynx *self, char *column_name, char *to_replace, char *replace_with) {
 
-    if (self == NULL) return false;
+    if (self == NULL || column_name == NULL || to_replace == NULL || replace_with == NULL) return false;
 
     intmax_t column_index = findColumnIndex(self, column_name);
 
@@ -666,6 +643,7 @@ bool grid_v3_replace(dataLynx *self, char *to_replace, char *replace_with, intma
             j = column;
             column_stop = column+1;
         }
+
 
         while (j < column_stop) {
 
@@ -809,7 +787,7 @@ bool dropColumn(dataLynx *self, char *column_name) {
 
                 if (self->grid_v3 != NULL) {new_row[new_row_column] = self->grid_v3[row][column];}
 
-                new_header[new_row_column] = self->header[column];
+                new_header[new_row_column] = self->__header__[column];
                 new_aggregate[new_row_column] = self->aggregate[column];
 
                 new_row_column++;
@@ -890,9 +868,9 @@ bool dropColumn(dataLynx *self, char *column_name) {
 
 
     // Free old header/aggregate arrays and reassign
-    free_null(&self->header[column_index]);
-    free(self->header);
-    self->header = new_header;
+    free_null(&self->__header__[column_index]);
+    free(self->__header__);
+    self->__header__ = new_header;
 
     free(self->aggregate);
     self->aggregate = new_aggregate;
@@ -1024,6 +1002,8 @@ bool dropRow(dataLynx *self, uintmax_t row_to_drop) {
 }
 
 
+
+
 //          FIND ALPHA INDEX()
 uint8_t find_alpha_index(char *value) {
 
@@ -1067,33 +1047,35 @@ uintmax_t find_row_count(dataLynx *self) {
     return self->rowCount;
 }
 
-void formatHeader(dataLynx *self) {
+bool formatHeader(dataLynx *self) {
+
+    bool formatted = false;
 
     // Each column name
     for (uintmax_t i = 0; i < self->columnCount; i++) {
 
         // Each char
-        uintmax_t length = strlen(self->header[i]);
+        uintmax_t length = strlen(self->__header__[i]);
 
         for (uintmax_t j = 0; j < length; j++) {
 
             // Capitalize first char
-            if (j == 0 && (self->header[i][0] >= 'a' && self->header[i][0] <= 'z')) self->header[i][0] -= 32; /* capitalize first letter of string */
-            else if (self->header[i][j] == '_') self->header[i][j] = ' '; /* replace _ with space */
-            else if ((j != 0 && self->header[i][j-1] == ' ') && (self->header[i][j] >= 'a' && self->header[i][j] <= 'z')) self->header[i][j] -=32; /* capitalize first letter that comes after space (i.e new word) */
-            else if ((j != 0 && self->header[i][j-1] != ' ' && self->header[i][j-1] != '"') && (self->header[i][j] >= 'A' && self->header[i][j] <= 'Z')) self->header[i][j] += 32; /* Lower case any letters that are not the first letter of a word */
-            else if (j >= 1 && self->header[i][j-1] == 'I' && self->header[i][j] == 'd') self->header[i][j] -= 32; /* capitalize ID */
+            if (j == 0 && (self->__header__[i][0] >= 'a' && self->__header__[i][0] <= 'z')) {self->__header__[i][0] -= 32; formatted = true;} /* capitalize first letter of string */
+            else if (self->__header__[i][j] == '_') {self->__header__[i][j] = ' '; formatted = true;} /* replace _ with space */
+            else if ((j != 0 && self->__header__[i][j-1] == ' ') && (self->__header__[i][j] >= 'a' && self->__header__[i][j] <= 'z')) {self->__header__[i][j] -=32; formatted = true;} /* capitalize first letter that comes after space (i.e new word) */
+            else if ((j != 0 && self->__header__[i][j-1] != ' ' && self->__header__[i][j-1] != '"') && (self->__header__[i][j] >= 'A' && self->__header__[i][j] <= 'Z')) {self->__header__[i][j] += 32; formatted = true;} /* Lower case any letters that are not the first letter of a word */
+            else if (j >= 1 && self->__header__[i][j-1] == 'I' && self->__header__[i][j] == 'd') {self->__header__[i][j] -= 32; formatted = true;} /* capitalize ID */
 
         }
     }
 
-    return;
+    return formatted;
 }
 
 bool changeColumnName(dataLynx *self, char *old_column_name, char *new_column_name) {
 
     if (self == NULL || old_column_name == NULL || new_column_name == NULL) return false;
-    if (self->header == NULL) return false;
+    if (self->__header__ == NULL) return false;
 
     char *func_name = "changeColumnName";
 
@@ -1101,13 +1083,13 @@ bool changeColumnName(dataLynx *self, char *old_column_name, char *new_column_na
 
     if (column_index < 0) return false;
 
-    free(self->header[column_index]);
+    free(self->__header__[column_index]);
 
     // Allocate buffer for new column name
-    self->header[column_index] = (char*)malloc(sizeof(char)*(strlen(new_column_name)+1));
-    if (self->header[column_index] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    self->__header__[column_index] = (char*)malloc(sizeof(char)*(strlen(new_column_name)+1));
+    if (self->__header__[column_index] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
 
-    strcpy(self->header[column_index], new_column_name);
+    strcpy(self->__header__[column_index], new_column_name);
 
 
     // Re-assign all corresponding column names in data structure to point to new string in header
@@ -1119,7 +1101,7 @@ bool changeColumnName(dataLynx *self, char *old_column_name, char *new_column_na
 
             for (uint32_t col = 0; col < column_index && tmp != NULL; col++) tmp = tmp->next;
 
-            if (tmp != NULL) tmp->column_name = self->header[column_index];
+            if (tmp != NULL) tmp->column_name = self->__header__[column_index];
         }
     }
 
@@ -1443,9 +1425,9 @@ bool filter_internal_(dataLynx *self, uintmax_t desired_column, char *condition_
     if (self->aggregate[desired_column].is_number) condition_num = atof(condition_value);
 
     if (print && self->aggregate[desired_column].is_number) {
-        printf("\n'%s' <Conditon: %s %.2f>\n", self->header[desired_column], condition_operator, condition_num);
+        printf("\n'%s' <Conditon: %s %.2f>\n", self->__header__[desired_column], condition_operator, condition_num);
     }
-    else if (print) printf("\n'%s' <Conditon: %s '%s'>\n", self->header[desired_column], condition_operator, condition_value);
+    else if (print) printf("\n'%s' <Conditon: %s '%s'>\n", self->__header__[desired_column], condition_operator, condition_value);
 
 
     // Array to keep track of which rows met filter condition
@@ -1541,9 +1523,9 @@ bool filter_internal_(dataLynx *self, uintmax_t desired_column, char *condition_
         size_t filename_length = strlen(self->filename);
 
         // Create appended portion of amended filename (i.e. filename plus conditon)
-        size_t append_strlen = strlen(" (Filtered Data)") + strlen(self->header[desired_column]) + strlen(condition_value) + strlen(condition_operator);
+        size_t append_strlen = strlen(" (Filtered Data)") + strlen(self->__header__[desired_column]) + strlen(condition_value) + strlen(condition_operator);
         char new_filename_append[append_strlen+4];
-        sprintf(new_filename_append, " (Filtered Data) %s %s %s", self->header[desired_column], condition_operator, condition_value);
+        sprintf(new_filename_append, " (Filtered Data) %s %s %s", self->__header__[desired_column], condition_operator, condition_value);
 
         size_t new_filename_length = filename_length + strlen(new_filename_append);
 
@@ -1553,7 +1535,7 @@ bool filter_internal_(dataLynx *self, uintmax_t desired_column, char *condition_
 
         sprintf(new_data->filename, "%s%s", self->filename, new_filename_append);
 
-        createHeader(new_data, self->header, self->columnCount);
+        createHeader(new_data, self->__header__, self->columnCount);
 
         // Copy filtered rows
         for (uint32_t row = 0; row < total; row++) {
@@ -1615,7 +1597,7 @@ bool filter_internal_(dataLynx *self, uintmax_t desired_column, char *condition_
 
 
 //          _____ GET_FIELD2() ____
-char *getField2(dataLynx *self, uintmax_t desired_row, char *desired_column) {
+char *getField(dataLynx *self, uintmax_t desired_row, char *desired_column) {
 
     /* THIS FUNCTION:
         - Uses integer row/string column name to index into data and find field
@@ -1632,17 +1614,17 @@ char *getField2(dataLynx *self, uintmax_t desired_row, char *desired_column) {
     }
 
     // Retrieve integer column index
-    intmax_t desired_column_index = findColumnIndex(self, desired_column);
+    intmax_t column_index = findColumnIndex(self, desired_column);
 
-    if (desired_column_index < 0) return NULL;
+    if (column_index < 0) return NULL;
 
 
 
-    return getField(self, desired_row, desired_column_index);
+    return getField2(self, desired_row, column_index);
 }
 
 //          _____ GET_FIELD() ____
-char *getField(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column) {
+char *getField2(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column) {
 
     /* THIS FUNCTION:
         - Uses integer row/column to index into data and find field */
@@ -1675,7 +1657,7 @@ char *getField(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column) 
         return get_field_grid(self, desired_row, desired_column, NULL, 0);
     }
     else if (self->dict_grid != NULL) {
-        return get_field_dict(self, desired_row, self->header[desired_column]);
+        return get_field_dict(self, desired_row, self->__header__[desired_column]);
     }
 
 
@@ -1815,72 +1797,6 @@ char *get_field_rows(dataLynx *self, uintmax_t desired_row, uintmax_t desired_co
 
 }
 
-// //      -----  2darray_csv_index()  -----
-// char *index_2darray_csv(char **main_array, uintmax_t row, uintmax_t column) {
-//     if (main_array == NULL) return NULL;
-
-//     // Function name (for use in if_error())
-//     const char *func_name = "index_2darray_csv";
-
-//     /* THIS FUNCTION: Helps you index into a 2D array as if indexes were seperated by comma (i.e. csv) instead of char by char */
-
-//     // Get to correct index in row
-//     uint64_t j = 0, cursor = 0;
-//     bool inside_quotes = false;
-//     while (cursor < column) {
-
-//         // Get to next column
-//         // while (main_array[row][j] != ',' && main_array[row][j] != '\0') {j++;}
-
-//         // Determine if inside quotes
-//         if (!inside_quotes && main_array[row][j] == '"') {inside_quotes = true; j++;}
-//         else if (inside_quotes && main_array[row][j] == '"') {inside_quotes = false; j++;}
-
-//         // Get to next column
-//         if (!inside_quotes) {while (main_array[row][j] != ',') j++;}
-//         else if (inside_quotes) {while (main_array[row][j] != '"') j++;}
-
-//         if (main_array[row][j] != '\0') {
-//             cursor++;
-//             j++;
-//         }
-//         else break;
-//     }
-
-//     if (main_array[row][j] == '\0') return NULL;
-
-//     if (main_array[row][j] == ',') j++;
-
-//     // Put index into own string
-//     char *cell_str = (char*)malloc(sizeof(char));
-//     if (cell_str == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
-
-//     // Iterate until next cell (i.e ',') is found or end of row (i.e. '\0')
-//     uint64_t str_i = 0;
-//     if (main_array[row][j] == '"') inside_quotes = true;
-//     bool break_after_realloc = false;
-//     while (main_array[row][j] != '\0') {
-
-//         // Determine whether to break
-//         if (!inside_quotes && main_array[row][j] == ',') break;
-//         else if (inside_quotes && main_array[row][j] == '"' && str_i != 0) break_after_realloc = true;
-
-//         // Add to string char by char
-//         cell_str[str_i] = main_array[row][j];
-
-//         // Realloc
-//         cell_str = realloc(cell_str, sizeof(char)*(str_i+2));
-//         if (cell_str == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
-
-//         str_i++;
-//         j++;
-
-//         if (break_after_realloc) break;
-//     }
-//     cell_str[str_i] = '\0';
-
-//     return cell_str;
-// }
 
 char *get_field_grid_v3(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column, char *condition_operator, double condition_num) {
 
@@ -1888,7 +1804,7 @@ char *get_field_grid_v3(dataLynx *self, uintmax_t desired_row, uintmax_t desired
     if (condition_operator == NULL) return self->grid_v3[desired_row][desired_column];
 
     // CONDITION: (printColumnCond())
-    printf("'%s' <Conditon: %s %f>\n", self->header[desired_column], condition_operator, condition_num);
+    printf("'%s' <Conditon: %s %f>\n", self->__header__[desired_column], condition_operator, condition_num);
 
     uint32_t total = 0;
     for (uint32_t current_row = 0; current_row < self->rowCount; current_row++) {
@@ -1950,7 +1866,7 @@ char *get_field_grid(dataLynx *self, uintmax_t desired_row, uintmax_t desired_co
     }
 
     // Condition (printColumnCond())
-    printf("'%s' <Conditon: %s %f>\n", self->header[desired_column], condition_operator, condition_num);
+    printf("'%s' <Conditon: %s %f>\n", self->__header__[desired_column], condition_operator, condition_num);
 
     uint32_t total = 0;
     for (uint32_t current_row = 0; current_row < self->rowCount; current_row++) {
@@ -2072,21 +1988,21 @@ intmax_t findColumnIndex(dataLynx *self, const char *desired_column) {
 
     if (self == NULL || desired_column == NULL) return -1;
 
-    if (self->header == NULL && self->file_ptr != NULL) headerReader(self);
+    if (self->__header__ == NULL && self->file_ptr != NULL) headerReader(self);
 
     bool found_column = false;
     uintmax_t current_column = 0;
     while (current_column < self->columnCount) {
 
         // Compare strings
-        if (strcmp(self->header[current_column], desired_column) == 0) {
+        if (strcmp(self->__header__[current_column], desired_column) == 0) {
             found_column = true;
             break;
         }
-        else if (has_quotes(self->header[current_column])) {
+        else if (has_quotes(self->__header__[current_column])) {
             // Compare strings without quotes:
 
-            if (strcmp(remove_quotes(self, self->header[current_column]), desired_column) == 0) {
+            if (strcmp(remove_quotes(self, self->__header__[current_column]), desired_column) == 0) {
                 found_column = true;
                 break;
             }
@@ -2303,7 +2219,7 @@ dict_node **grid_into_dict_grid(dataLynx *self) {
         uintmax_t j = 0;
         while (tmp != NULL) {
 
-            char *column_name = self->header[j];
+            char *column_name = self->__header__[j];
 
             if (has_quotes(column_name)) column_name = remove_quotes(self, column_name);
 
@@ -2332,21 +2248,46 @@ dict_node **grid_into_dict_grid(dataLynx *self) {
 //          UPDATEFIELD()
 bool updateField(dataLynx *self, uintmax_t row, char *column_name, char *new_value) {
 
+    // Safety Checks
     if (self == NULL || column_name == NULL || new_value == NULL) return false;
 
+    // Additional safety check - (must be separate because otherwise if self == NULL, it will still have to check these before returning, which would cause seg fault)
     if (row > self->rowCount-1) return false;
 
+    // Find column index which corresponds to the column name provided as input
     intmax_t column_index = findColumnIndex(self, column_name);
 
-     if (column_index < 0) return false;
+    if (column_index < 0) return false;
 
+    return update_field_internal_(self, row, column_index, new_value);
 
-    if (self->grid_v3 != NULL) return update_grid_v3_index(self, row, column_index, new_value);
-    else if (self->grid != NULL) return update_grid_index(self, row, column_index, new_value);
-    else if (self->dict_grid != NULL) return update_dict_index(self, row, column_name, new_value);
-
-    return false;
 }
+
+
+//          UPDATEFIELD2()
+bool updateField2(dataLynx *self, uintmax_t row, uintmax_t column, char *new_value) {
+
+    // Safety checks
+    if (self == NULL || new_value == NULL) return false;
+
+    // More safety checks - (must be separate because otherwise if self == NULL, it will still have to check these before returning, which would cause seg fault)
+    if (row > self->rowCount-1 || column > self->columnCount-1) return false;
+
+    return update_field_internal_(self, row, column, new_value);
+}
+
+
+//          UPDATE FIELD INTERNAL
+bool update_field_internal_(dataLynx *self, uintmax_t row, uintmax_t column, char *new_value) {
+
+    /* Safety checks done in user-facing functions (updateField()/updateField2()) */
+
+    if (self->grid_v3 != NULL) return update_grid_v3_index(self, row, column, new_value);
+    else if (self->grid != NULL) return update_grid_index(self, row, column, new_value);
+    else if (self->dict_grid != NULL) return update_dict_index(self, row, self->__header__[column], new_value);
+    else return false;
+}
+
 
 //      ____ UPDATE_GRID_V3_INDEX() ____
 bool update_grid_v3_index(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field) {
@@ -2380,7 +2321,7 @@ bool update_grid_v3_index(dataLynx *self, uintmax_t row, uintmax_t column, char 
     // Edit CSV file as well if allowed (default is false)
     if (self->csv_write_permission && self->destructive_mode) {
 
-        update_csv_index(self, row, column, new_field);
+        field_writer_internal_(self, row, column, new_field);
     }
 
     return true;
@@ -2431,7 +2372,7 @@ bool update_grid_index(dataLynx *self, uintmax_t desired_row, uintmax_t desired_
             // Edit CSV file as well if allowed (default is false)
             if (self->csv_write_permission && self->destructive_mode) {
 
-                update_csv_index(self, desired_row, desired_column, new_field);
+                field_writer_internal_(self, desired_row, desired_column, new_field);
             }
 
             return true;
@@ -2500,7 +2441,7 @@ bool update_dict_index(dataLynx *self, uintmax_t desired_row, char *desired_colu
 //         SORT BY COLUMN()
 bool sortRowsByColumn(dataLynx *self, const char *column_name, const char *asc_desc) {
 
-    if (self == NULL || column_name == NULL) return false;
+    if (self == NULL || column_name == NULL || asc_desc == NULL) return false;
 
     intmax_t column_index = findColumnIndex(self, column_name);
     if (column_index < 0) return false;
@@ -2508,7 +2449,7 @@ bool sortRowsByColumn(dataLynx *self, const char *column_name, const char *asc_d
 
     const char *func_name = "sortRowsByColumn";
 
-    bool ascending = (strcasecmp(asc_desc, "desc") == 0 || strcasecmp(asc_desc, "descdending") == 0) ? false : true;
+    bool ascending = (strcasecmp(asc_desc, "desc") == 0 || strcasecmp(asc_desc, "descending") == 0) ? false : true;
 
     // bool in struct will be set to false by default. These 2 bools are only to make code more readable
     bool case_sensitive = self->case_sensitive_sort;
@@ -2795,7 +2736,7 @@ bool printColumn(dataLynx *self, char *column_name) {
         printf("%s", buffer);
     }
 
-    printf("'%s' <column %d from dataset: %s>\n", self->header[column_index], column_index, self->filename);
+    printf("'%s' <column %d from dataset: %s>\n", self->__header__[column_index], column_index, self->filename);
 
     if (self->grid_v3 != NULL) {
         for (uintmax_t row = 0; row < self->rowCount; row++) {
@@ -2817,7 +2758,7 @@ bool printColumn(dataLynx *self, char *column_name) {
 bool printDataTable(dataLynx *self) {
     // TO DO scientifi notation, all data structure
     printf("\t<DATA SQL STYLE>\n\n");
-    uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than MAX_FIELD_PRINT_LENGTH */
+    uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than self->maxFieldPrintLength */
     size_t head_strlens[self->columnCount];
     uint8_t padding = 2;
 
@@ -2825,9 +2766,9 @@ bool printDataTable(dataLynx *self) {
     // Go through ever column and remember what the longest string length
     for (uint32_t column = 0; column < self->columnCount; column++) {
 
-        size_t head_strlen = strlen(self->header[column]);
+        size_t head_strlen = strlen(self->__header__[column]);
 
-        if ((head_strlen + padding >= MAX_FIELD_PRINT_LENGTH) || (self->aggregate[column].longest_field_strlen + padding >= MAX_FIELD_PRINT_LENGTH)) column_lengths[column] = MAX_FIELD_PRINT_LENGTH;
+        if ((head_strlen + padding >= self->maxFieldPrintLength) || (self->aggregate[column].longest_field_strlen + padding >= self->maxFieldPrintLength)) column_lengths[column] = self->maxFieldPrintLength;
         else if (head_strlen + padding > self->aggregate[column].longest_field_strlen + padding) column_lengths[column] = head_strlen + padding;
         else column_lengths[column] = self->aggregate[column].longest_field_strlen + padding;
 
@@ -2836,8 +2777,8 @@ bool printDataTable(dataLynx *self) {
 
     }
 
-    char spaces[MAX_FIELD_PRINT_LENGTH];
-    char truncated[MAX_FIELD_PRINT_LENGTH+1];
+    char spaces[self->maxFieldPrintLength];
+    char truncated[self->maxFieldPrintLength+1];
     int8_t num_spaces = 0;
     bool odd_even_mismatch = false;
 
@@ -2871,11 +2812,11 @@ bool printDataTable(dataLynx *self) {
 
                 if (num_spaces < 0) {
 
-                    char tmp = truncate_with_ellipses(self->header[column], truncated, MAX_FIELD_PRINT_LENGTH-1);
+                    char tmp = truncate_with_ellipses(self->__header__[column], truncated, self->maxFieldPrintLength-1);
 
                     (column == 0) ? printf("|%s|", truncated) : printf("%s|", truncated);
 
-                    self->header[column][MAX_FIELD_PRINT_LENGTH-3] = tmp;
+                    self->__header__[column][self->maxFieldPrintLength-3] = tmp;
 
                     continue;
                 }
@@ -2888,10 +2829,10 @@ bool printDataTable(dataLynx *self) {
                 create_spaces_string(spaces, num_spaces+1, false, ' ');
 
                 if (column == 0) {
-                    (odd_even_mismatch) ? printf("| %s%s%s|", spaces, self->header[column], spaces)  : printf("|%s%s%s|", spaces, self->header[column], spaces);
+                    (odd_even_mismatch) ? printf("| %s%s%s|", spaces, self->__header__[column], spaces)  : printf("|%s%s%s|", spaces, self->__header__[column], spaces);
                 }
                 else {
-                    (odd_even_mismatch) ? printf(" %s%s%s|", spaces, self->header[column], spaces)  : printf("%s%s%s|", spaces, self->header[column], spaces);
+                    (odd_even_mismatch) ? printf(" %s%s%s|", spaces, self->__header__[column], spaces)  : printf("%s%s%s|", spaces, self->__header__[column], spaces);
                 }
 
                 continue;
@@ -2946,13 +2887,13 @@ bool printDataTable(dataLynx *self) {
 
             if (num_spaces <= 0) {
 
-                // MAX_FIELD_PRINT_LENGTH - 2 to make room for at least 1 space before & after field value
-                char tmp = truncate_with_ellipses(field, truncated, MAX_FIELD_PRINT_LENGTH-2);
+                // self->maxFieldPrintLength - 2 to make room for at least 1 space before & after field value
+                char tmp = truncate_with_ellipses(field, truncated, self->maxFieldPrintLength-2);
 
                 (column == 0) ? printf("| %s |", truncated) : printf(" %s |", truncated);
 
                 // Replace char
-                field[MAX_FIELD_PRINT_LENGTH-3] = tmp;
+                field[self->maxFieldPrintLength-3] = tmp;
 
                 continue;
             }
@@ -2974,7 +2915,7 @@ bool printDataTable(dataLynx *self) {
     return true;
 }
 
-//           if (column_lengths[column] != MAX_FIELD_PRINT_LENGTH) {
+//           if (column_lengths[column] != self->maxFieldPrintLength) {
 //                     if (((size_t)column_lengths[column]-padding) & 1 && !(head_strlens[column] & 1)) odd_even_mismatch = true;
 //                     else if (!(((size_t)column_lengths[column]-padding) & 1) && head_strlens[column] & 1) odd_even_mismatch = true;
 //                 }
@@ -2988,7 +2929,7 @@ bool printDataTable(dataLynx *self) {
 // bool printDataTable(dataLynx *self) {
 
 //     printf("\t<DATA SQL STYLE>\n\n");
-//     uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than MAX_FIELD_PRINT_LENGTH */
+//     uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than self->maxFieldPrintLength */
 //     size_t head_strlens[self->columnCount];
 //     uint8_t padding = 2;
 
@@ -2996,9 +2937,9 @@ bool printDataTable(dataLynx *self) {
 //     // Go through ever column and remember what the longest string length
 //     for (uint32_t column = 0; column < self->columnCount; column++) {
 
-//         size_t head_strlen = strlen(self->header[column]);
+//         size_t head_strlen = strlen(self->__header__[column]);
 
-//         if ((head_strlen + padding > MAX_FIELD_PRINT_LENGTH) || (self->aggregate[column].longest_field_strlen + padding > MAX_FIELD_PRINT_LENGTH)) column_lengths[column] = MAX_FIELD_PRINT_LENGTH;
+//         if ((head_strlen + padding > self->maxFieldPrintLength) || (self->aggregate[column].longest_field_strlen + padding > self->maxFieldPrintLength)) column_lengths[column] = self->maxFieldPrintLength;
 //         else if (head_strlen + padding > self->aggregate[column].longest_field_strlen + padding) column_lengths[column] = head_strlen + padding;
 //         else column_lengths[column] = self->aggregate[column].longest_field_strlen + padding;
 
@@ -3006,8 +2947,8 @@ bool printDataTable(dataLynx *self) {
 //         printf("c: %d, c_length: %d, head_strlen: %ld\n", column, column_lengths[column], head_strlens[column]);
 //     }
 
-//     char spaces[MAX_FIELD_PRINT_LENGTH];
-//     char truncated[MAX_FIELD_PRINT_LENGTH+1];
+//     char spaces[self->maxFieldPrintLength];
+//     char truncated[self->maxFieldPrintLength+1];
 //     int8_t num_spaces = 0;
 
 //     // Print
@@ -3025,20 +2966,20 @@ bool printDataTable(dataLynx *self) {
 
 //                 if (num_spaces < 0) {
 
-//                     char tmp = truncate_with_ellipses(self->header[column], truncated, MAX_FIELD_PRINT_LENGTH);
+//                     char tmp = truncate_with_ellipses(self->__header__[column], truncated, self->maxFieldPrintLength);
 
 //                     (column == 0) ? printf("|%s|", truncated) : printf("%s|", truncated);
 
-//                     self->header[column][MAX_FIELD_PRINT_LENGTH-3] = tmp;
+//                     self->__header__[column][self->maxFieldPrintLength-3] = tmp;
 
 //                     continue;
 //                 }
 
 //                 create_spaces_string(spaces, num_spaces+1, false, ' ');
 
-//                 // (column == 0) ? printf("|%s%s%s|", spaces, self->header[column], spaces) : printf("%s%s%s|", spaces, self->header[column], spaces);
+//                 // (column == 0) ? printf("|%s%s%s|", spaces, self->__header__[column], spaces) : printf("%s%s%s|", spaces, self->__header__[column], spaces);
 //                 if (column == 0) printf("|");
-//                 (head_strlens[column] & 1 && head_strlens[column] != (size_t)column_lengths[column]-padding) ? printf("%s%s%s |", spaces, self->header[column], spaces) : printf("%s%s%s|", spaces, self->header[column], spaces);
+//                 (head_strlens[column] & 1 && head_strlens[column] != (size_t)column_lengths[column]-padding) ? printf("%s%s%s |", spaces, self->__header__[column], spaces) : printf("%s%s%s|", spaces, self->__header__[column], spaces);
 //                 continue;
 //             }
 //             // else if (row_decimal == 0.5 || row_decimal == -0.5) {
@@ -3062,12 +3003,12 @@ bool printDataTable(dataLynx *self) {
 
 //             if (num_spaces < 0) {
 
-//                 char tmp = truncate_with_ellipses(field, truncated, MAX_FIELD_PRINT_LENGTH);
+//                 char tmp = truncate_with_ellipses(field, truncated, self->maxFieldPrintLength);
 
 //                 (column == 0) ? printf("|%s|", truncated) : printf("%s|", truncated);
 
 //                 // Replace char
-//                 field[MAX_FIELD_PRINT_LENGTH-3] = tmp;
+//                 field[self->maxFieldPrintLength-3] = tmp;
 
 //                 continue;
 //             }
@@ -3090,7 +3031,7 @@ bool printDataTable(dataLynx *self) {
 // bool printDataTable(dataLynx *self) {
 
 //     printf("\t<DATA SQL STYLE>\n\n");
-//     uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than MAX_FIELD_PRINT_LENGTH */
+//     uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than self->maxFieldPrintLength */
 //     size_t head_strlens[self->columnCount];
 //     uint8_t padding = 2;
 
@@ -3098,9 +3039,9 @@ bool printDataTable(dataLynx *self) {
 //     // Go through ever column and remember what the longest string length
 //     for (uint32_t column = 0; column < self->columnCount; column++) {
 
-//         size_t head_strlen = strlen(self->header[column]);
+//         size_t head_strlen = strlen(self->__header__[column]);
 
-//         if ((head_strlen + padding > MAX_FIELD_PRINT_LENGTH) && (self->aggregate[column].longest_field_strlen + padding > MAX_FIELD_PRINT_LENGTH)) column_lengths[column] = MAX_FIELD_PRINT_LENGTH;
+//         if ((head_strlen + padding > self->maxFieldPrintLength) && (self->aggregate[column].longest_field_strlen + padding > self->maxFieldPrintLength)) column_lengths[column] = self->maxFieldPrintLength;
 //         else if (head_strlen + padding > self->aggregate[column].longest_field_strlen + padding) column_lengths[column] = head_strlen + padding;
 //         else column_lengths[column] = self->aggregate[column].longest_field_strlen + padding;
 
@@ -3108,11 +3049,11 @@ bool printDataTable(dataLynx *self) {
 //         printf("c: %d, column_length:%d, head_strlen:%ld", column, column_lengths[column], head_strlens[column]);
 //     }
 
-//     char spaces[MAX_FIELD_PRINT_LENGTH];
+//     char spaces[self->maxFieldPrintLength];
 //     uint8_t num_spaces = 0;
-//     char print_string[MAX_FIELD_PRINT_LENGTH];
+//     char print_string[self->maxFieldPrintLength];
 
-//     // DOES NOT WORK IF field_strlen > MAX_FIELD_PRINT_LENGTH
+//     // DOES NOT WORK IF field_strlen > self->maxFieldPrintLength
 //     // Print
 //     // for (double row = -1.5; row < (intmax_t) self->rowCount; row += 0.5) {
 //     for (intmax_t row = -3; row < (intmax_t) self->rowCount+1; row++) {
@@ -3131,7 +3072,7 @@ bool printDataTable(dataLynx *self) {
 //                 create_spaces_string(spaces, num_spaces, false, ' ');
 //                 // printf("%s", spaces);
 
-//                 (column == 0) ? printf("|%s%s%s|", spaces, self->header[column], spaces) : printf("%s%s%s|", spaces, self->header[column], spaces);
+//                 (column == 0) ? printf("|%s%s%s|", spaces, self->__header__[column], spaces) : printf("%s%s%s|", spaces, self->__header__[column], spaces);
 //                 continue;
 //             }
 //             // else if (row_decimal != 0) {
@@ -3180,7 +3121,7 @@ bool printDataTable(dataLynx *self) {
 // bool printDataTable(dataLynx *self) {
 
 //     printf("\t<DATA SQL STYLE>\n\n");
-//     uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than MAX_FIELD_PRINT_LENGTH */
+//     uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than self->maxFieldPrintLength */
 //     size_t head_strlens[self->columnCount];
 //     uint8_t padding = 5;
 
@@ -3188,9 +3129,9 @@ bool printDataTable(dataLynx *self) {
 //     // Go through ever column and remember what the longest string length
 //     for (uint32_t column = 0; column < self->columnCount; column++) {
 
-//         size_t head_strlen = strlen(self->header[column]);
+//         size_t head_strlen = strlen(self->__header__[column]);
 
-//         if ((head_strlen + padding > MAX_FIELD_PRINT_LENGTH) && (self->aggregate[column].longest_field_strlen + padding > MAX_FIELD_PRINT_LENGTH)) column_lengths[column] = MAX_FIELD_PRINT_LENGTH;
+//         if ((head_strlen + padding > self->maxFieldPrintLength) && (self->aggregate[column].longest_field_strlen + padding > self->maxFieldPrintLength)) column_lengths[column] = self->maxFieldPrintLength;
 //         else if (head_strlen > self->aggregate[column].longest_field_strlen) column_lengths[column] = head_strlen + padding;
 //         else column_lengths[column] = self->aggregate[column].longest_field_strlen + padding;
 
@@ -3198,11 +3139,11 @@ bool printDataTable(dataLynx *self) {
 
 //     }
 
-//     char spaces[MAX_FIELD_PRINT_LENGTH];
+//     char spaces[self->maxFieldPrintLength];
 //     uint8_t num_spaces = 0;
-//     char print_string[MAX_FIELD_PRINT_LENGTH];
+//     char print_string[self->maxFieldPrintLength];
 
-//     // DOES NOT WORK IF field_strlen > MAX_FIELD_PRINT_LENGTH
+//     // DOES NOT WORK IF field_strlen > self->maxFieldPrintLength
 //     // Print
 //     // for (double row = -1.5; row < (intmax_t) self->rowCount; row += 0.5) {
 //     for (intmax_t row = -3; row < (intmax_t) self->rowCount+1; row++) {
@@ -3218,11 +3159,11 @@ bool printDataTable(dataLynx *self) {
 
 //                 // if (head_strlens[column] > (size_t)column_lengths[column]-2) {
 //                 //     // printf("too big head");
-//                 //     char replaced_char = self->header[column][column_lengths[column]-1-2];
-//                 //     self->header[column][column_lengths[column]-1-2] = '\0';
-//                 //     sprintf(print_string, "%s", self->header[column]);
+//                 //     char replaced_char = self->__header__[column][column_lengths[column]-1-2];
+//                 //     self->__header__[column][column_lengths[column]-1-2] = '\0';
+//                 //     sprintf(print_string, "%s", self->__header__[column]);
 
-//                 //     self->header[column][column_lengths[column]-1-2] = replaced_char;
+//                 //     self->__header__[column][column_lengths[column]-1-2] = replaced_char;
 //                 //     printf("%s|", print_string);
 //                 //     continue;
 //                 // }
@@ -3231,7 +3172,7 @@ bool printDataTable(dataLynx *self) {
 
 //                 create_spaces_string(spaces, num_spaces, false, ' ');
 
-//                 (column == 0) ? printf("|%s%s%s|", spaces, self->header[column], spaces) : printf("%s%s%s|", spaces, self->header[column], spaces);
+//                 (column == 0) ? printf("|%s%s%s|", spaces, self->__header__[column], spaces) : printf("%s%s%s|", spaces, self->__header__[column], spaces);
 //                 continue;
 //             }
 //             // else if (row_decimal != 0) {
@@ -3281,7 +3222,7 @@ bool printData(dataLynx *self) {
 
     if (self == NULL) return false;
 
-    if (self->rowCount >= self->maxPrintRows) {
+    if (self->rowCount > self->maxPrintRows) {
         self->print_truncated_rows = true;
         printHeader(self);
         printHead(self, 10);
@@ -3299,7 +3240,7 @@ bool printData(dataLynx *self) {
 bool printHeader(dataLynx *self)
 {
 
-    if (self->header == NULL) return false;
+    if (self->__header__ == NULL) return false;
 
     /* THIS FUNCTION: Makes printing the header of the csv easier and tightens up the code of the calling function. */
     // This is not a method, so input is not named self
@@ -3316,8 +3257,8 @@ bool printHeader(dataLynx *self)
     for (uintmax_t i = 0; i < self->columnCount; i++) {
 
         // Print with comma if not the last column
-        if (i < self->columnCount-1) printf("%s,%s", self->header[i], space);
-        else printf("%s]\n", self->header[i]);
+        if (i < self->columnCount-1) printf("%s,%s", self->__header__[i], space);
+        else printf("%s]\n", self->__header__[i]);
     }
 
     return true;
@@ -3330,7 +3271,7 @@ bool print_data_internal(dataLynx *self) {
     printf("\n\t<Data from file: %s>\n", self->filename);
 
     // Header
-    if (self->skip_header && self->header != NULL && !self->print_truncated_rows) {
+    if (self->skip_header && self->__header__ != NULL && !self->print_truncated_rows) {
         printHeader(self);
     }
 
@@ -3582,50 +3523,50 @@ bool print_dict_grid2(dataLynx *self)
 }
 
 
-void stat_print_(char *stat_name, double stat, uint8_t column_strlen) {
-
-    char print_string[32];
-
-    // Fill buffer with print string - (Numeric stats are all doubles, however Is Null/Not Null is an integer, hence the inline if)
-    (strcasecmp(stat_name, "Is Null") != 0 && strcasecmp(stat_name, "Not Null") != 0) ? snprintf(print_string, 32, "%s: %.2f", stat_name, stat) : snprintf(print_string, 32, "%s: %.0f", stat_name, stat);
-
-    uint8_t stat_length = strlen(print_string);
-
-    // Express stat in scientific notation if longer than header
-    if (stat_length > (size_t)column_strlen-2) {
-        snprintf(print_string, 32, "%s: %e", stat_name, stat);
-        stat_length = strlen(print_string); /* Recalc stat_length */
-    }
-
-    // Print stat
-    printf("%s", print_string);
-
-    // Print correct number of spaces to line up next stat
-    uint8_t spaces_count = column_strlen - stat_length;
-    char spaces[spaces_count];
-    for (uint8_t s = 0; s < spaces_count; s++) {spaces[s] = (s == spaces_count-1) ? '\0' : ' ';}
-
-    printf("%s", spaces);
-    return;
-}
 
 
-        // PRINT STATS() (side by side) and Sorted Value Counts Works :)
-bool printStats(dataLynx *self, char *column_name) {
+bool printStatsAll(dataLynx *self) {
 
     if (self == NULL) return false;
 
-    if (self->aggregate == NULL || column_name == NULL) return false;
+    if (self->aggregate == NULL) return false;
 
-    char *func_name = "printStats";
+    return print_stats_internal_(self, PRINT_ALL_STATS);
+
+}
+
+
+bool printStatsColumn(dataLynx *self, char *column_name) {
+
+    if (self == NULL || column_name == NULL) return false;
+
+    if (self->aggregate == NULL) return false;
+
+    return print_stats_internal_(self, column_name);
+
+}
+
+
+        // PRINT STATS INTERNAL() (side by side) and Sorted Value Counts Works :)
+bool print_stats_internal_(dataLynx *self, char *column_name) {
+
+    // if (self == NULL) return false;
+
+    // if (self->aggregate == NULL || column_name == NULL) return false;
+
+    char *func_name = "print_stats_internal_";
 
     // Determine whether to display all columns or just one (i.e. this does not work IF csv has a column named "All")
     int16_t c = 0, start = 0, stop = self->columnCount;
-    if (strcasecmp(column_name, "all") != 0) {
+    bool print_one_column = false;
+    if (strcmp(column_name, PRINT_ALL_STATS) != 0) {
 
         // Adjust start and stop to only print desired column
         if ((c = findColumnIndex(self, column_name)) >= 0) stop = c + 1;
-        else c = 0; /* if an invalid column name is given, we will print all stats */
+        // else c = 0; /* if an invalid column name is given, we will print all stats */
+        else return false;
+
+        print_one_column = true;
 
         start = c;
 
@@ -3637,7 +3578,7 @@ bool printStats(dataLynx *self, char *column_name) {
 
     printf("\n\t\t<Data from file: %s>\n", self->filename);
 
-    printf("\n\t\t- Numeric Stats - \n");
+    if (!print_one_column || (print_one_column && self->aggregate[c].is_number) ) printf("\n\t\t- Numeric Stats - \n");
 
     const int8_t STAT_COUNT = 10; /* This is the number of numeric stats we are printing per column
                                     (i.e. Min, Max, Sum, Mean, 25th %, Median, 75th %, Std,
@@ -3654,7 +3595,7 @@ bool printStats(dataLynx *self, char *column_name) {
         // Iterate through columns to find numeric columns
         while (c < stop) {
 
-            uint8_t column_strlen = strlen(self->header[c]) + 23; /* stat_print_() needs this to give proper spacing (to make the column stats line up nicely)*/
+            uint8_t column_strlen = strlen(self->__header__[c]) + 23; /* stat_print_() needs this to give proper spacing (to make the column stats line up nicely)*/
 
             // Found numeric column
             if (self->aggregate[c].is_number) {
@@ -3663,7 +3604,7 @@ bool printStats(dataLynx *self, char *column_name) {
 
                 // Print stats
                 if (stat == -1) {
-                    !has_quotes(self->header[c]) ? printf("'%s' <Aggregate Data>%3c", self->header[c], space) : printf("%s <Aggregate Data>%3c", self->header[c], space);
+                    !has_quotes(self->__header__[c]) ? printf("'%s' <Aggregate Data>%3c", self->__header__[c], space) : printf("%s <Aggregate Data>%3c", self->__header__[c], space);
                 }
                 else if (stat == 0) {
                     stat_print_("Min", self->aggregate[c].min, column_strlen);
@@ -3717,7 +3658,8 @@ bool printStats(dataLynx *self, char *column_name) {
 
     }
 
-    if (!numeric_stats_in_data) printf("\n* No numeric stats for this dataset *\n\n\n");
+    if (!numeric_stats_in_data && !print_one_column) printf("\n* No numeric stats for this dataset *\n\n\n");
+    else if (!numeric_stats_in_data && print_one_column) printf("\n* No numeric stats for this column *\n\n\n");
 
 
     //              --- COPY VALUE COUNTS INTO SEPARATE ARRAYS TO SORT ---
@@ -3800,18 +3742,10 @@ bool printStats(dataLynx *self, char *column_name) {
 
     }
 
-
     //          --- PRINT VALUE COUNTS ---
+    if (non_numeric_column_count == 0) return true;
     printf("\t\t- Value Counts -\n\t   (i.e. non-numeric stats)\n");
 
-    // // Simple print
-    // for (int c = 0; c < non_numeric_column_count; c++) {
-    //     printf("Column: %s, unique values: %d\n", self->header[non_numeric_columns[c]], unique_values[c]);
-    //     for (int v = 0; v < unique_values[c]; v++) {
-    //         printf("Value: %s, Count: %ld\n", sorted[c][v].value, sorted[c][v].count);
-    //     }
-    //     printf("\n");
-    // }
     bool with_divider = true;
 
     for (int32_t v = -2; v < most_unique_values+4; v++) {
@@ -3821,11 +3755,11 @@ bool printStats(dataLynx *self, char *column_name) {
             uint32_t column_index = non_numeric_columns[c];
 
             // Column string length sets the length for that column
-            size_t column_strlen = strlen(self->header[column_index]) + 31;
+            size_t column_strlen = strlen(self->__header__[column_index]) + 31;
 
             // Print column name
             if (v == -2) {
-                has_quotes(self->header[c]) ? printf("%s <Aggregate Data>%10c| ", self->header[column_index], space) : printf("'%s' <Aggregate Data>%10c| ", self->header[column_index], space);
+                has_quotes(self->__header__[c]) ? printf("%s <Aggregate Data>%10c| ", self->__header__[column_index], space) : printf("'%s' <Aggregate Data>%10c| ", self->__header__[column_index], space);
                 continue;
             }
             else if (v == -1 || v == most_unique_values) {
@@ -3914,6 +3848,36 @@ bool printStats(dataLynx *self, char *column_name) {
     return true;
 }
 
+
+//      stat_print_ (Called from print_stats_internal_)
+void stat_print_(char *stat_name, double stat, uint8_t column_strlen) {
+
+    char print_string[32];
+
+    // Fill buffer with print string - (Numeric stats are all doubles, however Is Null/Not Null is an integer, hence the inline if)
+    (strcasecmp(stat_name, "Is Null") != 0 && strcasecmp(stat_name, "Not Null") != 0) ? snprintf(print_string, 32, "%s: %.2f", stat_name, stat) : snprintf(print_string, 32, "%s: %.0f", stat_name, stat);
+
+    uint8_t stat_length = strlen(print_string);
+
+    // Express stat in scientific notation if longer than header
+    if (stat_length > (size_t)column_strlen-2) {
+        snprintf(print_string, 32, "%s: %e", stat_name, stat);
+        stat_length = strlen(print_string); /* Recalc stat_length */
+    }
+
+    // Print stat
+    printf("%s", print_string);
+
+    // Print correct number of spaces to line up next stat
+    uint8_t spaces_count = column_strlen - stat_length;
+    char spaces[spaces_count];
+    for (uint8_t s = 0; s < spaces_count; s++) {spaces[s] = (s == spaces_count-1) ? '\0' : ' ';}
+
+    printf("%s", spaces);
+    return;
+}
+
+
 void print_stats_is_not_null_(dataLynx *self, size_t column_strlen, uint32_t column_index, bool is_null) {
 
     char print_string[32];
@@ -3966,7 +3930,7 @@ void print_stats_is_not_null_(dataLynx *self, size_t column_strlen, uint32_t col
 //         c = start;
 //         while (c < stop) {
 
-//             uint8_t column_strlen = strlen(self->header[c]) + 23;
+//             uint8_t column_strlen = strlen(self->__header__[c]) + 23;
 
 //             // Numeric Stats
 //             if (self->aggregate[c].is_number) {
@@ -3975,7 +3939,7 @@ void print_stats_is_not_null_(dataLynx *self, size_t column_strlen, uint32_t col
 
 //                 // Print stats
 //                 if (stat == -1) {
-//                     !has_quotes(self->header[c]) ? printf("'%s' <Aggregate Data>%3c", self->header[c], space) : printf("%s <Aggregate Data>%3c", self->header[c], space);
+//                     !has_quotes(self->__header__[c]) ? printf("'%s' <Aggregate Data>%3c", self->__header__[c], space) : printf("%s <Aggregate Data>%3c", self->__header__[c], space);
 //                 }
 //                 else if (stat == 0) {
 //                     stat_print_("Min", self->aggregate[c].min, column_strlen);
@@ -4038,7 +4002,7 @@ void print_stats_is_not_null_(dataLynx *self, size_t column_strlen, uint32_t col
 //         uint32_t column = non_numeric_columns[c];
 
 //         // Print column name
-//         has_quotes(self->header[column]) ? printf("%s <Aggregate Data>\n", self->header[column]) : printf("'%s' <Aggregate Data>\n", self->header[column]);
+//         has_quotes(self->__header__[column]) ? printf("%s <Aggregate Data>\n", self->__header__[column]) : printf("'%s' <Aggregate Data>\n", self->__header__[column]);
 
 //         // Allocate array for sorted value counts
 //         uint32_t unique_values = 0;
@@ -4088,7 +4052,7 @@ void print_stats_is_not_null_(dataLynx *self, size_t column_strlen, uint32_t col
 //             }
 //         }
 
-//         // uint8_t column_strlen = strlen(self->header[c]) + 23;
+//         // uint8_t column_strlen = strlen(self->__header__[c]) + 23;
 //         // char space = ' ';
 
 //         // PRINT value counts for current column
@@ -4106,8 +4070,8 @@ void print_stats_is_not_null_(dataLynx *self, size_t column_strlen, uint32_t col
 //         }
 
 
-//         printf("Is Null: %ld\n", (uintmax_t)self->getStat(self, self->header[c], "isnull"));
-//         printf("Not Null: %ld\n\n", (uintmax_t)self->getStat(self, self->header[c], "notnull"));
+//         printf("Is Null: %ld\n", (uintmax_t)self->getStat(self, self->__header__[c], "isnull"));
+//         printf("Not Null: %ld\n\n", (uintmax_t)self->getStat(self, self->__header__[c], "notnull"));
 
 //         free(sorted);
 //     }
@@ -4169,11 +4133,11 @@ void freeAll(dataLynx *self) {
 
 bool free_header(dataLynx *self) {
 
-    if (self->header == NULL) return false;
+    if (self->__header__ == NULL) return false;
 
-    for (uintmax_t column = 0; column < self->columnCount; column++) free_null(&self->header[column]);
-    free(self->header); /* This is a char **, so can not use free_null(), bc I would need char ***. If I pass through to free_null(), it will accept it, however because its the wrong kind of char *, so it only frees the first string, not the array of strings */
-    self->header = NULL;
+    for (uintmax_t column = 0; column < self->columnCount; column++) free_null(&self->__header__[column]);
+    free(self->__header__); /* This is a char **, so can not use free_null(), bc I would need char ***. If I pass through to free_null(), it will accept it, however because its the wrong kind of char *, so it only frees the first string, not the array of strings */
+    self->__header__ = NULL;
 
     return true;
 

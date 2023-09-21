@@ -25,6 +25,9 @@ bool convert_to_csv(dataLynx *self, char *filename);
 char *append_last_retrieved_fields(dataLynx *self, char **field);
 
 void calc_max_row_digits(dataLynx *self);
+
+bool rearrange_dict_array(dataLynx *self, dict values[]);
+
 uint8_t if_error(uint8_t error_code, const char *function_name);
 
 #endif /* DATALYNX_UTIL_H */

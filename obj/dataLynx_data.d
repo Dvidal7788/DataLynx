@@ -1,5 +1,5 @@
-obj/main.o: src/main.c /usr/include/stdc-predef.h include/dataLynx.h \
- include/dataLynx_data.h /usr/include/stdio.h \
+obj/dataLynx_data.o: src/dataLynx_data.c /usr/include/stdc-predef.h \
+ include/dataLynx.h include/dataLynx_data.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
