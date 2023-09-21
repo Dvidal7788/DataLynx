@@ -63,7 +63,7 @@ The DataLynx 'Object'
   ###### <li>This is a string. It is *one* long string containg the entire dataset, hence 'raw data'.</li>
   <li>
 
-  ```C
+```C
 myData.csv.fileReader(&myData);
 ```
   </li>
@@ -80,7 +80,7 @@ myData.csv.fileReader(&myData);
   ###### <li>This is a 2D array (i.e. an array of strings). Each string in the array correlates to 1 row. Each row is stored as one long string.</li>
   <li>
 
-  ```C
+```C
 myData.csv.fileRowReader(&myData);
 ```
   </li>
@@ -105,7 +105,7 @@ myData.csv.fileRowReader(&myData);
 
   <li>
 
-  ```C
+```C
 myData.csv.reader_v3(&myData);
 ```
   </li>
@@ -122,7 +122,7 @@ myData.csv.reader_v3(&myData);
   ###### <li>This is an array of linked lists. Each linked list in the array correlates to 1 row. Each node in the linked list correlates to one field in the data.</li>
   <li>
 
-  ```C
+```C
 myData.csv.reader(&myData);
 ```
   </li>
@@ -140,7 +140,7 @@ myData.csv.reader(&myData);
   ###### <li>Each node in the linked lists contains not only a string of the value associated with that field, but also a string of the column name that that particular field is in, hence '*dict*-style linked lists'.</li>
   <li>
 
-  ```C
+```C
 myData.csv.dictReader(&myData);
 ```
   </li>
@@ -1715,7 +1715,6 @@ myData.printHead(&myData, 5);
 
 
 ##### Example Code:
-
 ```C
 myData.printTail(&myData, 5);
 ```
