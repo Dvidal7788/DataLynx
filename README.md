@@ -175,8 +175,6 @@ myData.csv.dictReader(&myData);
   ###### <li>The diagram above shows the basic layout of the Dict Grid data structure (i.e. array of dict-style linked lists).</li>
   </ul>
 
-  ---
-
 </ul>
 
 
