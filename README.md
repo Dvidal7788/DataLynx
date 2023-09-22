@@ -571,6 +571,7 @@ myData.fieldReader2(&myData, 0, 1);
 </ul>
 <hr>
 
+
 <!-- CSV.FIELDWRITER-->
 <h4 align="center">csv.fieldWriter()</h4>
 <h6 align="center">bool fieldWriter(dataLynx *self, uintmax_t row, char *column, char *new_field)</h6>
@@ -587,7 +588,8 @@ myData.fieldReader2(&myData, 0, 1);
 ##### To Use:
 <ul>
 
-###### <li></li>
+###### <li>This function updates/changes and exists field in an opened CSV file (see [openFile()](https://github.com/Dvidal7788/dataLynx/tree/master#csvopenfile)) who's filename and file pointer are stored in your dataLynx object./li>
+###### <li>NOTE: This function does NOT update the corresponding field in the data structure in *memory* (see [updateFiled()](https://github.com/Dvidal7788/dataLynx/tree/master#updateFiled) if this is what you are looking to do). You can do both at the same time by giving yourself CSV writer permission and running updateField() in destructive mode.</li>
 </ul>
 
 ##### RETURN:
@@ -601,6 +603,10 @@ myData.fieldReader2(&myData, 0, 1);
 ##### Example Code:
 
 ```C
+// Give CSV write permission
+myData.csv_write_permission = true;
+
+// Update field in CSV file
 myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 ```
 <ul>
@@ -610,6 +616,115 @@ myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 <hr>
 
 
+
+<!-- CSV.ROWWRITER-->
+<h4 align="center">csv.rowWriter()</h4>
+<h6 align="center">bool rowWriter(dataLynx *self, char *values[])</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>Array of strings (one string for each value contained in the new row)</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function writes a new row to a CSV file. *You must first explicitly give yourself CSV write permission.* See example code below.</li>
+###### <li>Supply the parameters and the function will write the new row to the opened CSV file (see [openFile()](https://github.com/Dvidal7788/dataLynx/tree/master#csvopenfile)) who's filename and file pointer are stored in your dataLynx object.</li>
+###### <li>The values in the value array must be in the correct column order.</li>
+###### <li>NOTE: This function does NOT insert a new row into the data structure in *memory* (see [insertRow()](https://github.com/Dvidal7788/dataLynx/tree/master#insertRow) if this is what you are looking to do).</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+// Give CSV write permission
+myData.csv_write_permission = true;
+
+// Create array of the values to be contained in the new row
+char *values[] = {
+                  "4511",
+                  "John",
+                  "Smith",
+                  "Sales",
+                  "333",
+                  "70000"
+};
+
+// Write new row to CSV file
+myData.csv.rowWriter(&myData, values);
+```
+<ul>
+ 
+###### <li>This will write a new row to the opened CSV file. The row will be appended to the end of the file.</li>
+</ul>
+<hr>
+
+
+
+<!-- CSV.ROW DICT WRITER-->
+<h4 align="center">csv.rowDictWriter()</h4>
+<h6 align="center">bool rowDictWriter(dataLynx *self, dict values[])</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>Array of dicts (each dict containing a string of a value and a string of the column name corresponding to that value.)</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function writes a new row to a CSV file. *You must first explicitly give yourself CSV write permission.* See example code below.</li>
+###### <li>Supply the parameters and the function will write the new row to the opened CSV file (see [openFile()](https://github.com/Dvidal7788/dataLynx/tree/master#csvopenfile)) who's filename and file pointer are stored in your dataLynx object.</li>
+###### <li>The values do NOT need to be in the correct column order! This is the purpose of using csv.rowDictWriter() over csv.rowWriter(). This function will write the row to the CSV file, using the column names in the dict array as a guide, so the column values will always be in the correct order!</li>
+###### <li>NOTE: This function does NOT insert a new row into the data structure in *memory* (see [insertRow()](https://github.com/Dvidal7788/dataLynx/tree/master#insertRow) if this is what you are looking to do).</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+// Give CSV write permission
+myData.csv_write_permission = true;
+
+// Create array of dicts (i.e. {column name, value}) with the values to be contained in the new row
+dict values[] = {
+                  {"Employee ID", "4511"},
+                  {"First Name", "John" },
+                  {"Last Name",  "Smith"  },
+                  {"Department", "Sales"},
+                  {"Ext",        "333"  },
+                  {"Salary",     "70000"}
+};
+
+// Write new row to CSV file
+myData.csv.rowDictWriter(&myData, values);
+```
+<ul>
+ 
+###### <li>This will write a new row to the opened CSV file. The row will be appended to the end of the file.</li>
+###### <li>These values will be put in the correct order regardless of their order in the dict array!</li>
+</ul>
+<hr>
 
 
 
@@ -1095,7 +1210,14 @@ myData.dropColumn(&myData, "Gross Profit");
 ##### Example Code:
 
 ```C
-char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+char *values[] = {
+                  "4511",
+                  "John",
+                  "Smith",
+                  "Sales",
+                  "333",
+                  "70000"
+};
 myData.insertRow(&myData, values);
 ```
 <ul>
@@ -1108,7 +1230,14 @@ myData.insertRow(&myData, values);
 myData.columnCount = 6;
 
 // Insert 1st row of data
-char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+char *values[] = {
+                  "4511",
+                  "John",
+                  "Smith",
+                  "Sales",
+                  "333",
+                  "70000"
+};
 myData.insertRow(&myData, values);
 ```
 
@@ -1119,13 +1248,27 @@ myData.insertRow(&myData, values);
 
 
 ```C
-// Create header
-char *header[] = {"Employee ID", "First Name", "Last Name", "Department", "Ext", "Salary"};
+// Create header array
+char *header[] = {
+                  "Employee ID",
+                  "First Name",
+                  "Last Name",
+                  "Department",
+                  "Ext",
+                  "Salary"
+};
 unsigned int header_size = 6;
 myData.createHeader(&myData, header, header_size);
 
-// Insert 1st row of data
-char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+// Create values array / Insert 1st row of data
+char *values[] = {
+                  "4511",
+                  "John",
+                  "Smith",
+                  "Sales",
+                  "333",
+                  "70000"
+};
 myData.insertRow(&myData, values);
 ```
 
@@ -1178,7 +1321,7 @@ myData.insertRow(&myData, values);
 dict values[] = {
                   {"Employee ID", "4511"},
                   {"First Name", "John" },
-                  {"Last Name",  "Doe"  },
+                  {"Last Name",  "Smith"  },
                   {"Department", "Sales"},
                   {"Ext",        "333"  },
                   {"Salary",     "70000"}
@@ -1227,10 +1370,10 @@ myData.insertRow2(&myData, values);
 ```C
 // Set up parameters
 char *header[] = {"Employee ID", "First Name", "Last Name", "Department", "Ext", "Salary"};
-unsigned int header_size = 6;
+unsigned int column_count = 6;
 
 // Create header
-myData.createHeader(&myData, header, header_size);
+myData.createHeader(&myData, header, column_count);
 ```
 
 <ul>
