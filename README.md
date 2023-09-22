@@ -804,13 +804,6 @@ myData.replaceInColumn(&myData, 'First Name', 'Tom', 'Thomas');
 ###### <li>Will replace *all* instances of 'Tom' in the data with 'Thomas'.</li>
 </ul>
 
-```C
-myData.replaceAll(&myData, '?', '');
-```
-<ul>
-  
-###### <li>Will replace all instances of '?' (*only* in the column who's name matches with column_name) with an empty string. (This will make the Is NULL/Not NULL counts accurate, as '?' is not seen as a NULL value. More on this in later sections.) You may also pass NULL in place of an empty string to acheive the same result.</li>
-</ul>
 <hr>
 
 
