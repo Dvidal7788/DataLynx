@@ -168,7 +168,7 @@ myData.csv.dictReader(&myData);
   </ul>
   </ul>
   
-  ![Dict Grid](https://github.com/Dvidal7788/dataLynx/assets/91298183/adeb77df-28cf-40b7-b12f-dfd7abc1b4bf)
+  ![Dict Grid](https://github.com/Dvidal7788/dataLynx/assets/91298183/bae10ce7-886d-4757-92ab-eac5c9a954de)
 
   <ul align="center">
   
