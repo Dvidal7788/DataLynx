@@ -154,7 +154,7 @@ myData.csv.reader(&myData);
   <ul>
 
   ###### <li>This is an array of dict-style linked lists. Each linked list in the array correlates to 1 row. Each node in the linked list correlates to one field in the data.</li>
-  ###### <li>Each node in the linked lists contains not only a string of the value associated with that field, but also a string of the column name that that particular field is in, hence '*dict*-style linked lists'.</li>
+  ###### <li>Each node in each linked list contains not only a string of the value associated with that field, but also a string of the *column name* that that particular field is in, hence '*dict*-style linked lists'.</li>
   <li>
 
   ```C
