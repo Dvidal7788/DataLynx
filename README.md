@@ -167,6 +167,15 @@ myData.csv.dictReader(&myData);
   
   </ul>
   </ul>
+  
+  ![Dict Grid](https://github.com/Dvidal7788/dataLynx/assets/91298183/adeb77df-28cf-40b7-b12f-dfd7abc1b4bf)
+
+  <ul align="center">
+  
+  ###### <li>The diagram above shows the basic layout of the Dict Grid data structure (i.e. array of dict-style linked lists).</li>
+  </ul>
+
+  ---
 
 </ul>
 
