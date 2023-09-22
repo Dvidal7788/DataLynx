@@ -688,7 +688,7 @@ myData.csv.rowWriter(&myData, values);
 
 ###### <li>This function writes a new row to a CSV file. *You must first explicitly give yourself CSV write permission.* See example code below.</li>
 ###### <li>Supply the parameters and the function will write the new row to the opened CSV file (see [openFile()](https://github.com/Dvidal7788/dataLynx/tree/master#csvopenfile)) who's filename and file pointer are stored in your dataLynx object.</li>
-###### <li>The values do NOT need to be in the correct column order! This is the purpose of using csv.rowDictWriter() over csv.rowWriter(). This function will write the row to the CSV file, using the column names in the dict array as a guide, so the column values will always be in the correct order!</li>
+###### <li>The values do NOT need to be in the correct column order! This is the purpose of using csv.rowDictWriter() over csv.rowWriter(). This function will write the row to the CSV file, using the column names in the dict array as a guide, so the values will always be in the correct order!</li>
 ###### <li>NOTE: This function does NOT insert a new row into the data structure in *memory* (see [insertRow()](https://github.com/Dvidal7788/dataLynx/tree/master#insertRow) if this is what you are looking to do).</li>
 </ul>
 
