@@ -118,6 +118,10 @@ myData.csv.reader_v3(&myData);
   </ul>
   
   ![Grid V3](https://github.com/Dvidal7788/dataLynx/assets/91298183/2992e56e-3226-4b48-9d62-c3ddc994b6e1)
+  <ul>
+  
+  ###### <li>The diagram above shows the basic layout of the Grid V3 data structure (i.e. 3D array).</li>
+  </ul>
 
   ##### <li>Grid</li>
   <ul>
