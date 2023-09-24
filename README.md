@@ -1,4 +1,7 @@
-Markdown
+<div align="center">
+    <img src="css.svg" width="400" height="400" alt="css-in-readme">
+</div>
+
 ​​# Data Wrangling, Cleaning & Analytics Library in C
 
 Overview:
