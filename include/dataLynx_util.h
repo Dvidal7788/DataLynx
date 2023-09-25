@@ -28,6 +28,8 @@ void calc_max_row_digits(dataLynx *self);
 
 bool rearrange_dict_array(dataLynx *self, dict values[]);
 
+size_t get_file_size_(dataLynx *self);
+
 uint8_t if_error(uint8_t error_code, const char *function_name);
 
 #endif /* DATALYNX_UTIL_H */

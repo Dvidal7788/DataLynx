@@ -1,4 +1,4 @@
-# Data Wrangling, Cleaning & Analytics Library in C
+​​# Data Wrangling, Cleaning & Analytics Library in C
 
 Overview:
 --------
@@ -116,15 +116,7 @@ myData.csv.reader_v3(&myData);
   
   </ul>
   </ul>
-  
-  ![Grid V3](https://github.com/Dvidal7788/dataLynx/assets/91298183/0ddcc7b9-5472-42bf-b971-256885ac47b5)
 
-  <ul align="center">
-  
-  ###### <li>The diagram above shows the basic layout of the Grid V3 data structure (i.e. 3D array).</li>
-  </ul>
-
-  ----
   ##### <li>Grid</li>
   <ul>
 
@@ -141,20 +133,12 @@ myData.csv.reader(&myData);
   
   </ul>
   </ul>
-
-  ![Grid](https://github.com/Dvidal7788/dataLynx/assets/91298183/d3997b3a-5a5b-4b0b-bad7-bfba4c99d41b)
-
-  <ul align="center">
   
-  ###### <li>The diagram above shows the basic layout of the Grid data structure (i.e. array of linked lists).</li>
-  </ul>
-
-  ---
   ##### <li>Dict Grid</li>
   <ul>
 
   ###### <li>This is an array of dict-style linked lists. Each linked list in the array correlates to 1 row. Each node in the linked list correlates to one field in the data.</li>
-  ###### <li>Each node in each linked list contains not only a string of the value associated with that field, but also a string of the *column name* that that particular field is in, hence '*dict*-style linked lists'.</li>
+  ###### <li>Each node in the linked lists contains not only a string of the value associated with that field, but also a string of the column name that that particular field is in, hence '*dict*-style linked lists'.</li>
   <li>
 
   ```C
@@ -166,13 +150,6 @@ myData.csv.dictReader(&myData);
   ###### <li>The example code above will read an opened CSV file into memory as dict-grid data (i.e. an array of dict-style linked lists).</li>
   
   </ul>
-  </ul>
-  
-  ![Dict Grid](https://github.com/Dvidal7788/dataLynx/assets/91298183/bae10ce7-886d-4757-92ab-eac5c9a954de)
-
-  <ul align="center">
-  
-  ###### <li>The diagram above shows the basic layout of the Dict Grid data structure (i.e. array of dict-style linked lists).</li>
   </ul>
 
 </ul>
@@ -571,7 +548,6 @@ myData.fieldReader2(&myData, 0, 1);
 </ul>
 <hr>
 
-
 <!-- CSV.FIELDWRITER-->
 <h4 align="center">csv.fieldWriter()</h4>
 <h6 align="center">bool fieldWriter(dataLynx *self, uintmax_t row, char *column, char *new_field)</h6>
@@ -588,8 +564,7 @@ myData.fieldReader2(&myData, 0, 1);
 ##### To Use:
 <ul>
 
-###### <li>This function updates/changes and exists field in an opened CSV file (see [openFile()](https://github.com/Dvidal7788/dataLynx/tree/master#csvopenfile)) who's filename and file pointer are stored in your dataLynx object./li>
-###### <li>NOTE: This function does NOT update the corresponding field in the data structure in *memory* (see [updateFiled()](https://github.com/Dvidal7788/dataLynx/tree/master#updateFiled) if this is what you are looking to do). You can do both at the same time by giving yourself CSV writer permission and running updateField() in destructive mode.</li>
+###### <li></li>
 </ul>
 
 ##### RETURN:
@@ -603,10 +578,6 @@ myData.fieldReader2(&myData, 0, 1);
 ##### Example Code:
 
 ```C
-// Give CSV write permission
-myData.csv_write_permission = true;
-
-// Update field in CSV file
 myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 ```
 <ul>
@@ -616,115 +587,6 @@ myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 <hr>
 
 
-
-<!-- CSV.ROWWRITER-->
-<h4 align="center">csv.rowWriter()</h4>
-<h6 align="center">bool rowWriter(dataLynx *self, char *values[])</h6>
-
-##### PARAMETERS:
-<ul>
-    
-###### <li>Pointer to (i.e. address of) dataLynx object</li>
-###### <li>Array of strings (one string for each value contained in the new row)</li>
-</ul>
-
-##### To Use:
-<ul>
-
-###### <li>This function writes a new row to a CSV file. *You must first explicitly give yourself CSV write permission.* See example code below.</li>
-###### <li>Supply the parameters and the function will write the new row to the opened CSV file (see [openFile()](https://github.com/Dvidal7788/dataLynx/tree/master#csvopenfile)) who's filename and file pointer are stored in your dataLynx object.</li>
-###### <li>The values in the value array must be in the correct column order.</li>
-###### <li>NOTE: This function does NOT insert a new row into the data structure in *memory* (see [insertRow()](https://github.com/Dvidal7788/dataLynx/tree/master#insertRow) if this is what you are looking to do).</li>
-</ul>
-
-##### RETURN:
-<ul>
-    
-###### <li>On success, returns true.</li>
-###### <li>On failure, returns false.</li>
-</ul>
-
-
-##### Example Code:
-
-```C
-// Give CSV write permission
-myData.csv_write_permission = true;
-
-// Create array of the values to be contained in the new row
-char *values[] = {
-                  "4511",
-                  "John",
-                  "Smith",
-                  "Sales",
-                  "333",
-                  "70000"
-};
-
-// Write new row to CSV file
-myData.csv.rowWriter(&myData, values);
-```
-<ul>
- 
-###### <li>This will write a new row to the opened CSV file. The row will be appended to the end of the file.</li>
-</ul>
-<hr>
-
-
-
-<!-- CSV.ROW DICT WRITER-->
-<h4 align="center">csv.rowDictWriter()</h4>
-<h6 align="center">bool rowDictWriter(dataLynx *self, dict values[])</h6>
-
-##### PARAMETERS:
-<ul>
-    
-###### <li>Pointer to (i.e. address of) dataLynx object</li>
-###### <li>Array of dicts (each dict containing a string of a value and a string of the column name corresponding to that value.)</li>
-</ul>
-
-##### To Use:
-<ul>
-
-###### <li>This function writes a new row to a CSV file. *You must first explicitly give yourself CSV write permission.* See example code below.</li>
-###### <li>Supply the parameters and the function will write the new row to the opened CSV file (see [openFile()](https://github.com/Dvidal7788/dataLynx/tree/master#csvopenfile)) who's filename and file pointer are stored in your dataLynx object.</li>
-###### <li>The values do NOT need to be in the correct column order! This is the purpose of using csv.rowDictWriter() over csv.rowWriter(). This function will write the row to the CSV file, using the column names in the dict array as a guide, so the values will always be in the correct order!</li>
-###### <li>NOTE: This function does NOT insert a new row into the data structure in *memory* (see [insertRow()](https://github.com/Dvidal7788/dataLynx/tree/master#insertRow) if this is what you are looking to do).</li>
-</ul>
-
-##### RETURN:
-<ul>
-    
-###### <li>On success, returns true.</li>
-###### <li>On failure, returns false.</li>
-</ul>
-
-
-##### Example Code:
-
-```C
-// Give CSV write permission
-myData.csv_write_permission = true;
-
-// Create array of dicts (i.e. {column name, value}) with the values to be contained in the new row
-dict values[] = {
-                  {"Employee ID", "4511"},
-                  {"First Name", "John" },
-                  {"Last Name",  "Smith"  },
-                  {"Department", "Sales"},
-                  {"Ext",        "333"  },
-                  {"Salary",     "70000"}
-};
-
-// Write new row to CSV file
-myData.csv.rowDictWriter(&myData, values);
-```
-<ul>
- 
-###### <li>This will write a new row to the opened CSV file. The row will be appended to the end of the file.</li>
-###### <li>These values will be put in the correct order regardless of their order in the dict array!</li>
-</ul>
-<hr>
 
 
 
@@ -942,6 +804,13 @@ myData.replaceInColumn(&myData, 'First Name', 'Tom', 'Thomas');
 ###### <li>Will replace *all* instances of 'Tom' in the data with 'Thomas'.</li>
 </ul>
 
+```C
+myData.replaceAll(&myData, '?', '');
+```
+<ul>
+  
+###### <li>Will replace all instances of '?' (*only* in the column who's name matches with column_name) with an empty string. (This will make the Is NULL/Not NULL counts accurate, as '?' is not seen as a NULL value. More on this in later sections.) You may also pass NULL in place of an empty string to acheive the same result.</li>
+</ul>
 <hr>
 
 
@@ -1210,14 +1079,7 @@ myData.dropColumn(&myData, "Gross Profit");
 ##### Example Code:
 
 ```C
-char *values[] = {
-                  "4511",
-                  "John",
-                  "Smith",
-                  "Sales",
-                  "333",
-                  "70000"
-};
+char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
 myData.insertRow(&myData, values);
 ```
 <ul>
@@ -1230,14 +1092,7 @@ myData.insertRow(&myData, values);
 myData.columnCount = 6;
 
 // Insert 1st row of data
-char *values[] = {
-                  "4511",
-                  "John",
-                  "Smith",
-                  "Sales",
-                  "333",
-                  "70000"
-};
+char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
 myData.insertRow(&myData, values);
 ```
 
@@ -1248,27 +1103,13 @@ myData.insertRow(&myData, values);
 
 
 ```C
-// Create header array
-char *header[] = {
-                  "Employee ID",
-                  "First Name",
-                  "Last Name",
-                  "Department",
-                  "Ext",
-                  "Salary"
-};
+// Create header
+char *header[] = {"Employee ID", "First Name", "Last Name", "Department", "Ext", "Salary"};
 unsigned int header_size = 6;
 myData.createHeader(&myData, header, header_size);
 
-// Create values array / Insert 1st row of data
-char *values[] = {
-                  "4511",
-                  "John",
-                  "Smith",
-                  "Sales",
-                  "333",
-                  "70000"
-};
+// Insert 1st row of data
+char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
 myData.insertRow(&myData, values);
 ```
 
@@ -1321,7 +1162,7 @@ myData.insertRow(&myData, values);
 dict values[] = {
                   {"Employee ID", "4511"},
                   {"First Name", "John" },
-                  {"Last Name",  "Smith"  },
+                  {"Last Name",  "Doe"  },
                   {"Department", "Sales"},
                   {"Ext",        "333"  },
                   {"Salary",     "70000"}
@@ -1370,10 +1211,10 @@ myData.insertRow2(&myData, values);
 ```C
 // Set up parameters
 char *header[] = {"Employee ID", "First Name", "Last Name", "Department", "Ext", "Salary"};
-unsigned int column_count = 6;
+unsigned int header_size = 6;
 
 // Create header
-myData.createHeader(&myData, header, column_count);
+myData.createHeader(&myData, header, header_size);
 ```
 
 <ul>

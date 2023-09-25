@@ -860,7 +860,7 @@ bool fieldWriter(dataLynx *self, uintmax_t row, char *column_name, char *new_fie
 
     // Safety Checks (do not check if row is greater than row count because should work even if file has not been read into memory)
     if (self == NULL || column_name == NULL || new_field == NULL) return false;
-    if (!self->csv_write_permission) return false;
+    if (self->file_ptr == NULL || !self->csv_write_permission) return false;
 
     // Find column index which correlates to the column name provided
     intmax_t column_index = findColumnIndex(self, column_name);
@@ -874,7 +874,7 @@ bool fieldWriter2(dataLynx *self, uintmax_t row, uintmax_t column, char *new_fie
 
     // Safety Checks (do not check if row or column is greater than row/column count because should work even if file has not been read into memory)
     if (self == NULL || new_field == NULL) return false;
-    if (!self->csv_write_permission) return false;
+    if (self->file_ptr == NULL || !self->csv_write_permission) return false;
 
     return field_writer_internal_(self, row, column, new_field);
 }
@@ -988,7 +988,7 @@ bool field_writer_internal_(dataLynx *self, uintmax_t row, uintmax_t column, cha
     // Close file in read mode
     fclose(self->file_ptr);
 
-    // Reopen file in write mode
+    // Reopen file in r+ mode in order to write (i.e. write mode will erase file contents)
     self->file_ptr = fopen(self->filename, "r+");
     if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
 
@@ -1004,6 +1004,9 @@ bool field_writer_internal_(dataLynx *self, uintmax_t row, uintmax_t column, cha
     self->file_ptr = fopen(self->filename, "r");
     if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
 
+    // Make sure file size is up to date
+    get_file_size_(self);
+
     return true;
 }
 
@@ -1013,12 +1016,47 @@ bool field_writer_internal_(dataLynx *self, uintmax_t row, uintmax_t column, cha
 bool rowWriter(dataLynx *self, char *values[]) {
 
     if (self == NULL || values == NULL) return false;
-    if (self->file_ptr == NULL) return false;
-
-    const char *func_name = "csv.rowWriter";
+    if (self->file_ptr == NULL || !self->csv_write_permission) return false;
 
     // Get header and column count
-    if (self->__header__ == NULL)  headerReader(self);
+    if (self->__header__ == NULL) headerReader(self);
+
+    return row_writer_internal_(self, values);
+
+}
+
+
+
+
+//          ROW DICT WRITER()
+bool rowDictWriter(dataLynx *self, dict values[]) {
+
+    /*  - The key functional difference between this function and rowWriter is that this function will rearrange the values if they are not in correct column order.
+        - The dict array makes this possible (correlating each value to it's corresponding column name), as oppsed to a traditional array of strings.
+        - NOTE: If any changes have been made to the header in memory (whether in destructive mode or not), the new column names must be used in the dict array */
+
+    // Safety checks
+    if (self == NULL || values == NULL) return false;
+    if (self->file_ptr == NULL || !self->csv_write_permission) return false;
+
+    // Get header and column count
+    if (self->__header__ == NULL) headerReader(self);
+
+    // Rearrange values if neccessary (to be in correct column order)
+    rearrange_dict_array(self, values);
+
+    // Extract fields (now in correct order) to array of strings
+    char *values2[self->columnCount];
+    for (uint32_t column = 0; column < self->columnCount; column++) values2[column] = values[column].field;
+
+    return row_writer_internal_(self, values2);
+
+}
+
+
+bool row_writer_internal_(dataLynx *self, char *values[]) {
+
+    const char *func_name = "row_writer_internal_";
 
     // Row String Length (Sum of string lengths of every value in the row)
     size_t row_strlen = 0;
@@ -1072,117 +1110,25 @@ bool rowWriter(dataLynx *self, char *values[]) {
     // Close file in read mode
     fclose(self->file_ptr);
 
-    // Open in write mode (i.e. read plus)
-    self->file_ptr = fopen(self->filename, "r+");
+    // Open in append mode
+    self->file_ptr = fopen(self->filename, "a");
     if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
 
-    //  Get file stream to end of file
-    fseek(self->file_ptr, 0L, SEEK_END);
-
-    // Write row to file
+    // Append row to file
     fprintf(self->file_ptr, "%s\n", row_string);
 
-
-    // Close in write mode
+    // Close in append mode
     fclose(self->file_ptr);
 
     // Reopen in read mode
     self->file_ptr = fopen(self->filename, "r");
     if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
 
-    return true;
-}
-
-
-
-
-//          ROW DICT WRITER()
-bool rowDictWriter(dataLynx *self, dict values[]) {
-
-    if (self == NULL || values == NULL) return false;
-    if (self->file_ptr == NULL) return false;
-
-    const char *func_name = "csv.rowDictWriter";
-
-    // Get header and column count
-    if (self->__header__ == NULL)  headerReader(self);
-
-    // Rearrange if neccessary
-    rearrange_dict_array(self, values);
-
-    // Row String Length (Sum of string lengths of every value in the row)
-    size_t row_strlen = 0;
-    size_t value_strlens[self->columnCount]; /* Keeps track of each value's string length */
-    bool add_quotes_to[self->columnCount]; /* Keeps track of which values to add quotes to */
-    for (uintmax_t column = 0; column < self->columnCount; column++) {
-
-        // Add quotes to new cell if necessary
-        if (has_comma(values[column].field) && !has_quotes(values[column].field)) {
-            add_quotes_to[column] = true;
-            row_strlen += 2;
-        }
-        else add_quotes_to[column] = false;
-
-        // Keep track of each value's string length
-        value_strlens[column] = strlen(values[column].field);
-
-        // Keep track of total length
-        row_strlen += value_strlens[column];
-
-    }
-
-    // Add room for commas after every value except last
-    row_strlen += self->columnCount-1;
-
-
-    // Copy all values into one string (this avoids making a new system call (i.e. fwrite()/fprintf()) for every value)
-    char row_string[row_strlen+1];
-    size_t running_total = 0;
-    for (uintmax_t column = 0; column < self->columnCount; column++) {
-
-        if (column != self->columnCount-1) {
-
-            // With comma (i.e. not last column in row)
-            (!add_quotes_to[column]) ? sprintf(&row_string[running_total], "%s,", values[column].field) : sprintf(&row_string[running_total], "\"%s\",", values[column].field);
-        }
-        else {
-
-            // No comma (i.e. last column. \n will be added when writing to file)
-            (!add_quotes_to[column]) ? sprintf(&row_string[running_total], "%s", values[column].field) : sprintf(&row_string[running_total], "\"%s\"", values[column].field);
-        }
-
-        // Add value string lenght plus length of comma OR plus length of comma plus length of quotes
-        running_total += (!add_quotes_to[column]) ? value_strlens[column]+1 : value_strlens[column]+3;
-
-    }
-
-    row_string[row_strlen] = '\0';
-
-
-    // Close file in read mode
-    fclose(self->file_ptr);
-
-    // Open in write mode (i.e. read plus)
-    self->file_ptr = fopen(self->filename, "r+");
-    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
-
-    //  Get file stream to end of file
-    fseek(self->file_ptr, 0L, SEEK_END);
-
-    // Write row to file
-    fprintf(self->file_ptr, "%s\n", row_string);
-
-
-    // Close in write mode
-    fclose(self->file_ptr);
-
-    // Reopen in read mode
-    self->file_ptr = fopen(self->filename, "r");
-    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+    // Get new file size
+    get_file_size_(self);
 
     return true;
 }
-
 
 
 
@@ -1425,3 +1371,54 @@ bool writeData(dataLynx *self, char *new_filename) {
 }
 
 
+
+//      WRITE CSV HEADER
+bool write_csv_header_(dataLynx *self) {
+
+    /* THIS FUNCTION:
+        - Updates the CSV file on record with the header in memory */
+
+    const char *func_name = "write_csv_header_";
+
+    // Create buffer to read data into memory (do not use data currently in data structure. This offers full flexibilty, so the user can have their program in destructive mode for certain parts and not others.)
+    size_t buffer_size = self->file_size - self->header_size;
+    char buffer[buffer_size + 1];
+
+    // Rewind file stream
+    fseek(self->file_ptr, 0L, SEEK_SET);
+
+    // Get past header
+    char tmp;
+    while ((tmp = getc(self->file_ptr)) != '\n') {if (tmp == EOF) break;}
+
+    // Read data from CSV into memory
+    fread(buffer, buffer_size, 1, self->file_ptr);
+    buffer[buffer_size] = '\0';
+
+    // Close in read mode
+    fclose(self->file_ptr);
+
+    // Reopen in write mode
+    self->file_ptr = fopen(self->filename, "w");
+    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+
+    // Write new header to CSV file
+    for (unsigned int i = 0; i < self->columnCount; i++)
+        (i != self->columnCount-1) ? fprintf(self->file_ptr, "%s,", self->__header__[i]) : fprintf(self->file_ptr, "%s\n", self->__header__[i]);
+
+    // Write data to CSV file
+    fprintf(self->file_ptr, "%s", buffer);
+
+    // Close in write mode
+    fclose(self->file_ptr);
+
+    // Reopen in read mode (default state)
+    self->file_ptr = fopen(self->filename, "r");
+    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+
+    // Make sure file size is up to date
+    get_file_size_(self);
+
+    return true;
+
+}

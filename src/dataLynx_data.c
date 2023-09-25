@@ -368,12 +368,15 @@ bool insertRowDict(dataLynx *self, dict values[]) {
 
     }
 
-
+    // Update object data
     self->number_of_rows_to_print = self->rowCount;
     calc_max_row_digits(self);
-
     update_stats_new_row(self, values2);
 
+    // Simultaneously write this row to the CSV file if permissions allows
+    if (self->csv_write_permission && self->destructive_mode) rowWriter(self, values2);
+
+    // Free
     for (uint32_t column = 0; column < self->columnCount; column++) free_null(&values2[column]);
 
     return true;
@@ -1050,7 +1053,7 @@ uintmax_t find_row_count(dataLynx *self) {
 bool formatHeader(dataLynx *self) {
 
     bool formatted = false;
-
+    char **header = self->__header__; /* This is simply to make if statements slightly more readable */
     // Each column name
     for (uintmax_t i = 0; i < self->columnCount; i++) {
 
@@ -1060,18 +1063,30 @@ bool formatHeader(dataLynx *self) {
         for (uintmax_t j = 0; j < length; j++) {
 
             // Capitalize first char
-            if (j == 0 && (self->__header__[i][0] >= 'a' && self->__header__[i][0] <= 'z')) {self->__header__[i][0] -= 32; formatted = true;} /* capitalize first letter of string */
-            else if (self->__header__[i][j] == '_') {self->__header__[i][j] = ' '; formatted = true;} /* replace _ with space */
-            else if ((j != 0 && self->__header__[i][j-1] == ' ') && (self->__header__[i][j] >= 'a' && self->__header__[i][j] <= 'z')) {self->__header__[i][j] -=32; formatted = true;} /* capitalize first letter that comes after space (i.e new word) */
-            else if ((j != 0 && self->__header__[i][j-1] != ' ' && self->__header__[i][j-1] != '"') && (self->__header__[i][j] >= 'A' && self->__header__[i][j] <= 'Z')) {self->__header__[i][j] += 32; formatted = true;} /* Lower case any letters that are not the first letter of a word */
-            else if (j >= 1 && self->__header__[i][j-1] == 'I' && self->__header__[i][j] == 'd') {self->__header__[i][j] -= 32; formatted = true;} /* capitalize ID */
+            if (j == 0 && (header[i][0] >= 'a' && header[i][0] <= 'z')) {header[i][0] -= 32; formatted = true;} /* capitalize first letter of string */
+            else if (header[i][j] == '_') {header[i][j] = ' '; formatted = true;} /* replace _ with space */
+            else if ((j != 0 && header[i][j-1] == ' ') && (header[i][j] >= 'a' && header[i][j] <= 'z')) {header[i][j] -=32; formatted = true;} /* capitalize first letter that comes after space (i.e new word) */
+            else if ((j != 0 && header[i][j-1] != ' ' && header[i][j-1] != '"') && (header[i][j] >= 'A' && header[i][j] <= 'Z')) {
+                /* Lower case any letters that are not the first letter of a word */
+
+                // Do not lowercase 'D' in ID
+                if (header[i][j] == 'D' && (header[i][j+1] == '_' || header[i][j+1] == ' ' || header[i][j+1] == '\0')) continue;
+
+                header[i][j] += 32; formatted = true;
+            }
+            else if (j >= 1 && header[i][j-1] == 'I' && header[i][j] == 'd') {header[i][j] -= 32; formatted = true;} /* capitalize ID */
 
         }
     }
 
+    // Simultaneously update CSV file if permissions allow
+    if (self->csv_write_permission && self->destructive_mode) write_csv_header_(self);
+
     return formatted;
 }
 
+
+//      CHANGE COLUMN NAME
 bool changeColumnName(dataLynx *self, char *old_column_name, char *new_column_name) {
 
     if (self == NULL || old_column_name == NULL || new_column_name == NULL) return false;
@@ -1104,6 +1119,9 @@ bool changeColumnName(dataLynx *self, char *old_column_name, char *new_column_na
             if (tmp != NULL) tmp->column_name = self->__header__[column_index];
         }
     }
+
+    // Simultaneously update CSV file if permissions allow
+    if (self->csv_write_permission && self->destructive_mode) write_csv_header_(self);
 
     return true;
 

@@ -410,19 +410,19 @@ bool rearrange_dict_array(dataLynx *self, dict values[]) {
         if (!headerReader(self)) return false;
     }
 
+    bool case_sensitive = true;
     bool rearranged = false;
 
     // Iterate through array
     for (uint32_t column = 0; column < self->columnCount; column++) {
 
         // Mismatch found
-
-        if (strcmp_quotes(values[column].column_name, self->__header__[column], true) != 0) {
+        if (strcmp_quotes(values[column].column_name, self->__header__[column], case_sensitive) != 0) {
 
             // Search rest of columns for match
             for (uint32_t c = column+1; c < self->columnCount; c++) {
 
-                if (strcmp_quotes(values[c].column_name, self->__header__[column], true) == 0) {
+                if (strcmp_quotes(values[c].column_name, self->__header__[column], case_sensitive) == 0) {
 
                     // Swap
                     dict tmp = values[column];
@@ -435,14 +435,39 @@ bool rearrange_dict_array(dataLynx *self, dict values[]) {
                 }
             }
 
-            // if (!rearranged) return false;
-
         }
     }
 
     return rearranged;
 }
 
+
+//      ___ GET FILE SIZE() ___
+size_t get_file_size_(dataLynx *self) {
+
+    // Get file stream to beginning (to get header size)
+    fseek(self->file_ptr, 0L, SEEK_SET);
+
+    // Get header size
+    char tmp = 'a'; /* Must be initialized */
+    size_t header_size = 0;
+
+    // Iterate until end of first line
+    while (tmp != '\n' && tmp != EOF) {
+        tmp = getc(self->file_ptr);
+        header_size++;
+    }
+
+    self->header_size = header_size;
+
+    // Get file stream to end of file
+    fseek(self->file_ptr, 0L, SEEK_END);
+
+    // Get file stream position (i.e. file size) - store file size in dataLynx object
+    self->file_size = ftell(self->file_ptr);
+
+    return self->file_size;
+}
 
 
 //      ___ IF_ERROR() ___

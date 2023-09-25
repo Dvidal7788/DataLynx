@@ -26,9 +26,12 @@ bool field_writer_internal_(dataLynx *self, uintmax_t row, uintmax_t column, cha
 
 bool rowWriter(dataLynx *self, char *values[]);
 bool rowDictWriter(dataLynx *self, dict values[]);
+bool row_writer_internal_(dataLynx *self, char *values[]);
 
 bool backup(dataLynx *self);
 bool writeData(dataLynx *self, char *new_filename);
+
+bool write_csv_header_(dataLynx *self);
 
 
 #endif /* DATALYNX_FILE_IO_H */

@@ -224,7 +224,6 @@ typedef struct dataLynx {
 } dataLynx;
 
 
-
 //          ---- FUNCTION PROTOTYPES ----
 
 dataLynx dataLynxConstructor(void);
