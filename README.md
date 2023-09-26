@@ -116,6 +116,7 @@ myData.csv.reader_v3(&myData);
   
   </ul>
   </ul>
+  <a id="grid_v3_diagram"></a>
   
   ![Grid V3](https://github.com/Dvidal7788/dataLynx/assets/91298183/45cb902f-5622-42e8-b14d-dc994a112c23)
 
@@ -141,6 +142,7 @@ myData.csv.reader(&myData);
   
   </ul>
   </ul>
+  <a id="grid_diagram"></a>
 
   ![Grid](https://github.com/Dvidal7788/dataLynx/assets/91298183/b6b349f8-5ac1-4543-8c09-2597b5c6055e)
 
@@ -167,6 +169,7 @@ myData.csv.dictReader(&myData);
   
   </ul>
   </ul>
+  <a id="dict_grid_diagram"></a>
   
   ![Dict Grid](https://github.com/Dvidal7788/dataLynx/assets/91298183/bae10ce7-886d-4757-92ab-eac5c9a954de)
 
@@ -405,7 +408,7 @@ myData.csv.fileRowReader(&myData)
 
 ###### <li>This function reads the file that has already been opened using csv.openFile() into memory.</li>
 ###### <li>The header, as always, will be stored as an array of strings (i.e. one string per column name).</li>
-###### <li>*The data will be stored in memory as a 3D array (i.e. an array of arrays, in which each secondary array is an array of strings). In other words, this is an array, which stores arrays (one for each row), each of which stores strings (one per field). See diagram below.*.</li>
+###### <li>*The data will be stored in memory as a 3D array (i.e. an array of arrays, in which each secondary array is an array of strings). In other words, this is an array, which stores arrays (one for each row), each of which stores strings (one per field). [See diagram](#grid_v3_diagram).*.</li>
 
 </ul>
 
@@ -413,7 +416,7 @@ myData.csv.fileRowReader(&myData)
 <ul>
 
 ###### <li>On success, returns a pointer to a 3D array.</li>
-###### <li>Note: You do not need to assign this return value to anything. It is automatically assigned within the function to a pointer within your dataLynx object. The data structure only gets returned for  convenience.</li>
+###### <li>Note: You do not need to assign this return value to anything. It is automatically assigned within the function to a pointer within your dataLynx object. The data structure is only returned for convenience.</li>
 ###### <li>On failure, returns NULL.</li>
 </ul>
 
@@ -441,7 +444,7 @@ myData.csv.reader_v3(&myData);
 
 ###### <li>This function reads the file that has already been opened using csv.openFile() into memory.</li>
 ###### <li>The header, as always, will be stored as an array of strings (i.e. one string per column name).</li>
-###### <li>*The data will be stored in memory as an array of linked lists. Each linked list represents a row. Each node in the linked list represents a value (i.e. field). See diagram below.*.</li>
+###### <li>*The data will be stored in memory as an array of linked lists. Each linked list represents a row. Each node in the linked list represents a value (i.e. field). [See diagram](#grid_diagram).*.</li>
 </ul>
 
 ##### RETURN:
@@ -476,7 +479,7 @@ myData.csv.reader(&myData);
 
 ###### <li>This function reads the file that has already been opened using csv.openFile() into memory.</li>
 ###### <li>The header, as always, will be stored as an array of strings (i.e. one string per column name).</li>
-###### <li>*The data will be stored in memory as an array of dict-style linked lists. Each linked list represents a row. Each node in the linked list represents a value (i.e. field). In addition to storing a value, each node also stores the column name that corresponds with that particular value (e.g. {'Employee ID', '4511'}), in which 'Employee ID' is the column name and '4511' is the corresponding value for that row (i.e. linked list) that this particular node is in. See diagram below.*.</li>
+###### <li>*The data will be stored in memory as an array of dict-style linked lists. Each linked list represents a row. Each node in the linked list represents a value (i.e. field). In addition to storing a value, each node also stores the column name that corresponds with that particular value (e.g. {'Employee ID', '4511'}), in which 'Employee ID' is the column name and '4511' is the corresponding value for that row (i.e. linked list) that this particular node is in. [See diagram](#dict_grid_diagram).*.</li>
 </ul>
 
 ##### RETURN:
@@ -589,7 +592,7 @@ myData.fieldReader2(&myData, 0, 1);
 <ul>
 
 ###### <li>This function updates/changes and exists field in an opened CSV file (see [openFile()](https://github.com/Dvidal7788/dataLynx/tree/master#csvopenfile)) who's filename and file pointer are stored in your dataLynx object./li>
-###### <li>NOTE: This function does NOT update the corresponding field in the data structure in *memory* (see [updateFiled()](https://github.com/Dvidal7788/dataLynx/tree/master#updateFiled) if this is what you are looking to do). You can do both at the same time by giving yourself CSV writer permission and running updateField() in destructive mode.</li>
+###### <li>NOTE: This function does NOT update the corresponding field in the data structure in *memory* (see [updateField()](https://github.com/Dvidal7788/dataLynx/tree/master#updateFiled) if this is what you are looking to do). You can do both at the same time by giving yourself CSV writer permission and running updateField() in destructive mode.</li>
 </ul>
 
 ##### RETURN:
@@ -618,6 +621,7 @@ myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 
 
 <!-- CSV.ROWWRITER-->
+<a id="rowWriter"></a>
 <h4 align="center">csv.rowWriter()</h4>
 <h6 align="center">bool rowWriter(dataLynx *self, char *values[])</h6>
 
@@ -672,7 +676,8 @@ myData.csv.rowWriter(&myData, values);
 
 
 
-<!-- CSV.ROW DICT WRITER-->
+<!-- CSV.ROW DICT WRITER -->
+<a id="rowDictWriter"></a>
 <h4 align="center">csv.rowDictWriter()</h4>
 <h6 align="center">bool rowDictWriter(dataLynx *self, dict values[])</h6>
 
@@ -823,8 +828,10 @@ myData.changeColumnName(&myData, "Dept", "Department");
 ##### To Use:
 <ul>
 
-###### <li>Supply the parameters and (as long as the row/column name provided is valid), the function will update the field at that location to the new value provided.</li>
+###### <li>Supply the parameters, and the function will update the field at the specified row/column location in the in-memory dataset with the provided new value (provided that the row/column name is valid).</li>
 ###### <li>If you wish to update the desired field to be blank/empty field/NULL, simply input an empty string (e.g. "") as the new_value parameter. NULL strings will be rejected.</li>
+###### <li>NOTE: Whether updating a field in a numeric OR non-numeric column, the input parameter for the new value will be a string for simplicity's sake.</li>
+###### <li>DESTRUCTIVE MODE: You can run this function in destructive mode, which will simultaneously update the corresponding field in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. These are both set the false by default.</li>
 </ul>
 
 ##### RETURN:
@@ -832,27 +839,30 @@ myData.changeColumnName(&myData, "Dept", "Department");
     
 ###### <li>On success, return true.</li>
 ###### <li>On faiure, return false (e.g. invalid dataLynx object address, out of range row index, invalid column name or invalid pointer (i.e. string) to the new value).</li>
-###### <li>NOTE: Whether updating a field in a numeric OR non-numeric column, the input parameter for the new value will be a string for simplicity's sake.</li>
 </ul>
 
 
 ##### Example Code:
 
 ```C
-myData.updateField(&myData, 3, "Revenue", "$34,000");
+myData.updateField(&myData, 3, "Revenue", "34000");
 ```
 <ul>
  
-###### <li>This will update (i.e. change) the value currently in row 3/column name "Revenue" to be 34,000.</li>
-###### <li>NOTE: commas and dollar signs *are* accepted with numeric inputs.</li>
+###### <li>This will update (i.e. change) the value currently in row 3/column name "Revenue" to be 34,000 in the dataset in memory.</li>
 </ul>
 
 ```C
+// Give CSV write permission / set object to destructive mode
+myData.csv_write_permission = true;
+myData.csv_write_permission = false;
+
+// Run updateField in destructive mode
 myData.updateField(&myData, 4, "Department", "Sales");
 ```
 <ul>
  
-###### <li>This will update (i.e. change) the value currently in row 4/column name "Department" to be "Sales".</li>
+###### <li>This will update (i.e. change) the value currently in row 4/column name "Department" to be "Sales" in the dataset in memory, *as well as* the CSV file.</li>
 </ul>
 <hr>
 
@@ -1280,8 +1290,9 @@ myData.dropColumn(&myData, "Gross Profit");
 ##### To Use:
 <ul>
 
-###### <li>Supply the parameters and the function will insert the row of data provided from the array of strings (i.e. values) into the data set (i.e. the row will be appended to the end of the data set).</li>
+###### <li>Supply the parameters and the function will insert the row of data provided from the array of strings (i.e. values) into the in-memory dataset (i.e. the row will be appended to the end of the dataset).</li>
 ###### <li>If the row is successfully inserted, the row count (i.e. self.rowCount) will be incremented by 1.</li>
+###### <li>DESTRUCTIVE MODE: You can run this function in destructive mode, which will simultaneously insert (append) the row in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. These are both set the false by default.(If you wish to *only* insert the row into the CSV file, you may use [csv.rowWriter()](#rowWriter)).</li>
 ###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
   <ul>
     
@@ -1393,6 +1404,7 @@ myData.insertRow(&myData, values);
 ###### <li>Supply the parameters and the function will insert the row of data provided from the array of dicts into the data set (i.e. the row will be appended to the end of the data set).</li>
 ###### <li>NOTE: The dicts in the dict array do NOT need to be in correct column order. As long as the column names are correct, the function will automatically rearrange the valuesto the correct order!</li>
 ###### <li>If the row is successfully inserted, the row count (i.e. self.rowCount) will be incremented by 1.</li>
+###### <li>DESTRUCTIVE MODE: You can run this function in destructive mode, which will simultaneously insert (append) the row in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. These are both set the false by default. (If you wish to *only* insert the row into the CSV file, you may use [csv.rowDictWriter()](#rowDictWriter)).</li>
 ###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
   <ul>
     
