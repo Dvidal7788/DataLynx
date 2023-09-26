@@ -269,6 +269,10 @@ FUNCTIONS
 ```C
 dataLynx myData = dataLynxConstructor();
 ```
+<ul>
+ 
+###### <li>The above code will create a dataLynx object and intitialize the internal attributes the their default state.</li>
+</ul>
 <hr>
 
 
@@ -1292,7 +1296,7 @@ myData.dropColumn(&myData, "Gross Profit");
 
 ###### <li>Supply the parameters and the function will insert the row of data provided from the array of strings (i.e. values) into the in-memory dataset (i.e. the row will be appended to the end of the dataset).</li>
 ###### <li>If the row is successfully inserted, the row count (i.e. self.rowCount) will be incremented by 1.</li>
-###### <li>DESTRUCTIVE MODE: You can run this function in destructive mode, which will simultaneously insert (append) the row in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. These are both set the false by default.(If you wish to *only* insert the row into the CSV file, you may use [csv.rowWriter()](#rowWriter)).</li>
+###### <li>DESTRUCTIVE MODE: You can run this function in destructive mode, which will simultaneously insert (append) the row in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. These are both set to false by default. (If you wish to *only* insert the row into the CSV file, you may use [csv.rowWriter()](#rowWriter)).</li>
 ###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
   <ul>
     
@@ -1404,7 +1408,7 @@ myData.insertRow(&myData, values);
 ###### <li>Supply the parameters and the function will insert the row of data provided from the array of dicts into the data set (i.e. the row will be appended to the end of the data set).</li>
 ###### <li>NOTE: The dicts in the dict array do NOT need to be in correct column order. As long as the column names are correct, the function will automatically rearrange the valuesto the correct order!</li>
 ###### <li>If the row is successfully inserted, the row count (i.e. self.rowCount) will be incremented by 1.</li>
-###### <li>DESTRUCTIVE MODE: You can run this function in destructive mode, which will simultaneously insert (append) the row in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. These are both set the false by default. (If you wish to *only* insert the row into the CSV file, you may use [csv.rowDictWriter()](#rowDictWriter)).</li>
+###### <li>DESTRUCTIVE MODE: You can run this function in destructive mode, which will simultaneously insert (append) the row in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. These are both set to false by default. (If you wish to *only* insert the row into the CSV file, you may use [csv.rowDictWriter()](#rowDictWriter)).</li>
 ###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
   <ul>
     
@@ -1929,8 +1933,8 @@ myData.printTail(&myData, 5);
 <ul>
 
 ###### <li>This function will print the aggregate data for every column in the data set.</li>
-##### <li>For numeric columns, this function will print min, max, sum, mean, standard deviation, 25th percentile, median, 75th percentile, is null and not null.</li>
-##### <li>For non-numeric column, this function will print the value count for every unique value in the data set, as well as is null/not null counts.</li>
+###### <li>For numeric columns, this function will print min, max, sum, mean, standard deviation, 25th percentile, median, 75th percentile, is null and not null.</li>
+###### <li>For non-numeric column, this function will print the value count for every unique value in the data set, as well as is null/not null counts.</li>
 </ul>
 
 ##### RETURN:
