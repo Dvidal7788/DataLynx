@@ -78,7 +78,6 @@ myData.csv.fileReader(&myData);
 <ul>
 
   ###### <li>This is a 2D array (i.e. an array of strings). Each string in the array correlates to 1 row. Each row is stored as one long string.</li>
-  ###### <li></li>
   <li>
 
   ```C
@@ -210,7 +209,7 @@ Statistics / Value Counts (Aggregate Data)
 ##### For non-numeric columns:
 <ul>
   
-###### <li>Value Counts for each unique value in a given column (i.e. how many times that specific value appears a column).</li>
+###### <li>Value Counts for each unique value in a given column (i.e. how many times that specific value appears in a column).</li>
 ###### <li>Is Null (number of empty field in a given column)</li>
 ###### <li>Not Null (number of non-empty field in a given column)</li>
 </ul>
@@ -1745,7 +1744,8 @@ myData.printDataTable(&myData);
 ##### RETURN:
 <ul>
     
-###### <li></li>
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
 </ul>
 
 
