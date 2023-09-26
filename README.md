@@ -510,7 +510,7 @@ myData.csv.dictReader(&myData);
 <ul>
     
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
-###### <li>Integer row index location of field you wish to access.</li>
+###### <li>Integer row index of field you wish to access.</li>
 ###### <li>String of column name of field you wish to access.</li>
 </ul>
 
@@ -549,8 +549,8 @@ myData.fieldReader(&myData, 0, "First Name");
 <ul>
     
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
-###### <li>Integer row index location of field you wish to access.</li>
-###### <li>Integer column index location of field you wish to access.</li>
+###### <li>Integer row index of field you wish to access.</li>
+###### <li>Integer column index of field you wish to access.</li>
 </ul>
 
 ##### To Use:
@@ -587,7 +587,7 @@ myData.fieldReader2(&myData, 0, 1);
 <ul>
     
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
-###### <li>Integer row index location of field you wish to update/write to.</li>
+###### <li>Integer row index of field you wish to update/write to.</li>
 ###### <li>String of column name of field you wish to update/write to.</li>
 ###### <li>String of new value you wish to update field to.</li>
 </ul>
@@ -619,6 +619,50 @@ myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 <ul>
  
 ###### <li>This will update the value at row 3/column "Last Name" to "Smith". (The previous value in this field will be erased.)</li>
+</ul>
+<hr>
+
+
+<!-- CSV.FIELDWRITER2-->
+<h4 align="center">csv.fieldWriter2()</h4>
+<h6 align="center">bool fieldWriter2(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>Integer row index of field you wish to update/write to.</li>
+###### <li>Integer column index of field you wish to update/write to.</li>
+###### <li>String of new value you wish to update field to.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function updates/changes and exists field in an opened CSV file (see [openFile()](https://github.com/Dvidal7788/dataLynx/tree/master#csvopenfile)) who's filename and file pointer are stored in your dataLynx object./li>
+###### <li>NOTE: This function does NOT update the corresponding field in the data structure in *memory* (see [updateField()](https://github.com/Dvidal7788/dataLynx/tree/master#updateFiled) if this is what you are looking to do). You can do both at the same time by giving yourself CSV writer permission and running updateField() in destructive mode.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+// Give CSV write permission
+myData.csv_write_permission = true;
+
+// Update field in CSV file
+myData.csv.fieldWriter2(&myData, 3, 2, "Smith");
+```
+<ul>
+ 
+###### <li>This will update the value at row 3/column 2 to "Smith". (The previous value in this field will be erased.)</li>
 </ul>
 <hr>
 
@@ -763,6 +807,7 @@ Functions for Data Wrangling / Data Cleaning:
 ###### <li>Will format all column names in the header to be Title Case (i.e first letter of each word capitalized) and will replace '_' (underscore) with ' ' (space).</li>
 ###### <li>Ex: 'first_name' will be changed to 'First Name'.</li>
 ###### <li>Ex: 'employee_id' will be changed to 'Employee ID'. NOTE: It was NOT changed to 'Employee Id' in this example, because this function identifies the word 'id' and will capitalize 'D' as well.</li>
+###### <li>DESTRUCTIVE MODE: This function can be run in destructive mode, which will simultaneously change the column name in the header in memory, as well as the header in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. (These are both set to false by default.)</li>
 </ul>
 
 ##### RETURN:
@@ -797,7 +842,7 @@ myData.formatHeader(&myData);
 <ul>
 
 ###### <li>Simply supply the function with the name of the column you wish to change (i.e. old_column_name) and the name you wish to change it to.</li>
-###### <li>DESTRUCTIVE MODE: You can run this function in destructive mode, which will simultaneously change the column name in the header in memory, as well as the header in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. These are both set to false by default.</li>
+###### <li>DESTRUCTIVE MODE: This function can be run in destructive mode, which will simultaneously change the column name in the header in memory, as well as the header in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. (These are both set to false by default.)</li>
 </ul>
 
 ##### RETURN:
@@ -817,7 +862,7 @@ myData.changeColumnName(&myData, "Dept", "Department");
 
 
 
-<!-- UPDATE FIELD-->
+<!-- UPDATE FIELD -->
 <h4 align="center">updateField()</h4>
 <h6 align="center">bool updateField(dataLynx *self, uintmax_t row, char *column, char *new_value)</h6>
 
@@ -836,7 +881,7 @@ myData.changeColumnName(&myData, "Dept", "Department");
 ###### <li>Supply the parameters, and the function will update the field at the specified row/column location in the in-memory dataset with the provided new value (provided that the row/column name is valid).</li>
 ###### <li>If you wish to update the desired field to be blank/empty field/NULL, simply input an empty string (e.g. "") as the new_value parameter. NULL strings will be rejected.</li>
 ###### <li>NOTE: Whether updating a field in a numeric OR non-numeric column, the input parameter for the new value will be a string for simplicity's sake.</li>
-###### <li>DESTRUCTIVE MODE: You can run this function in destructive mode, which will simultaneously update the corresponding field in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. These are both set to false by default.</li>
+###### <li>DESTRUCTIVE MODE: This function can be run in destructive mode, which will simultaneously update the corresponding field in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. (These are both set to false by default.)</li>
 </ul>
 
 ##### RETURN:
@@ -871,6 +916,61 @@ myData.updateField(&myData, 4, "Department", "Sales");
 </ul>
 <hr>
 
+
+
+<!-- UPDATE FIELD2 -->
+<h4 align="center">updateField2()</h4>
+<h6 align="center">bool updateField2(dataLynx *self, uintmax_t row, uintmax_t column, char *new_value)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer row index of field you wish to update.</li>
+###### <li>Integer column index of field you wish to update.</li>
+###### <li>String of the new value you wish to update the desired field to.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters, and the function will update the field at the specified row/column location in the in-memory dataset with the provided new value (provided that the row/column name is valid).</li>
+###### <li>If you wish to update the desired field to be blank/empty field/NULL, simply input an empty string (e.g. "") as the new_value parameter. NULL strings will be rejected.</li>
+###### <li>NOTE: Whether updating a field in a numeric OR non-numeric column, the input parameter for the new value will be a string for simplicity's sake.</li>
+###### <li>DESTRUCTIVE MODE: This function can be run in destructive mode, which will simultaneously update the corresponding field in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. (These are both set to false by default.)</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, return true.</li>
+###### <li>On faiure, return false (e.g. invalid dataLynx object address, out of range row index, invalid column name or invalid pointer (i.e. string) to the new value).</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.updateField2(&myData, 3, 4, "34000");
+```
+<ul>
+ 
+###### <li>This will update (i.e. change) the value currently in row 3/column 4 to be 34,000 in the dataset in memory.</li>
+</ul>
+
+```C
+// Give CSV write permission / set object to destructive mode
+myData.csv_write_permission = true;
+myData.csv_write_permission = false;
+
+// Run updateField2 in destructive mode
+myData.updateField2(&myData, 4, 3, "Sales");
+```
+<ul>
+ 
+###### <li>This will update (i.e. change) the value currently in row 4/column 3 to be "Sales" in the dataset in memory, *as well as* the CSV file.</li>
+</ul>
+<hr>
 
 
 
@@ -1297,7 +1397,7 @@ myData.dropColumn(&myData, "Gross Profit");
 
 ###### <li>Supply the parameters and the function will insert the row of data provided from the array of strings (i.e. values) into the in-memory dataset (i.e. the row will be appended to the end of the dataset).</li>
 ###### <li>If the row is successfully inserted, the row count (i.e. self.rowCount) will be incremented by 1.</li>
-###### <li>DESTRUCTIVE MODE: You can run this function in destructive mode, which will simultaneously insert (append) the row in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. These are both set to false by default. (If you wish to *only* insert the row into the CSV file, you may use [csv.rowWriter()](#rowWriter)).</li>
+###### <li>DESTRUCTIVE MODE: This function can be run in destructive mode, which will simultaneously insert (append) the row in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. (These are both set to false by default.) (If you wish to *only* insert the row into the CSV file, you may use [csv.rowWriter()](#rowWriter)).</li>
 ###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
   <ul>
     
@@ -1409,7 +1509,7 @@ myData.insertRow(&myData, values);
 ###### <li>Supply the parameters and the function will insert the row of data provided from the array of dicts into the data set (i.e. the row will be appended to the end of the data set).</li>
 ###### <li>NOTE: The dicts in the dict array do NOT need to be in correct column order. As long as the column names are correct, the function will automatically rearrange the valuesto the correct order!</li>
 ###### <li>If the row is successfully inserted, the row count (i.e. self.rowCount) will be incremented by 1.</li>
-###### <li>DESTRUCTIVE MODE: You can run this function in destructive mode, which will simultaneously insert (append) the row in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. These are both set to false by default. (If you wish to *only* insert the row into the CSV file, you may use [csv.rowDictWriter()](#rowDictWriter)).</li>
+###### <li>DESTRUCTIVE MODE: This function can be run in destructive mode, which will simultaneously insert (append) the row in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. (These are both set to false by default.) (If you wish to *only* insert the row into the CSV file, you may use [csv.rowDictWriter()](#rowDictWriter)).</li>
 ###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
   <ul>
     
@@ -1508,7 +1608,7 @@ myData.createHeader(&myData, header, column_count);
 <ul>
 
 ###### <li>Pointer to (i.e. address of) original dataLynx object.</li>
-###### <li>Integer row index location of field you wish to access.</li>
+###### <li>Integer row index of field you wish to access.</li>
 ###### <li>String of column name of field you wish to access.</li>
 
 </ul>
@@ -1558,8 +1658,8 @@ printf("%s", myData.getField(&myData, 3, "Employee ID"));
 <ul>
 
 ###### <li>Pointer to (i.e. address of) original dataLynx object.</li>
-###### <li>Integer row index location of field you wish to access.</li>
-###### <li>Integer of column index location of field you wish to access.</li>
+###### <li>Integer row index of field you wish to access.</li>
+###### <li>Integer of column index of field you wish to access.</li>
 
 </ul>
 
