@@ -384,6 +384,7 @@ char ***reader_v3(dataLynx *self) {
 
     // Calculate means, now that we have sums. Calc stds once we have means. Find medians now that we have all the data.
     for (uintmax_t i = 0; i < self->columnCount; i++) self->aggregate[i].mean = self->aggregate[i].sum / self->aggregate[i].not_null;
+    printf("col 2 is num: %d\n", self->aggregate[2].is_number);
     calc_std(self);
     find_median(self);
 
