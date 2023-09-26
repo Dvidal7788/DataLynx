@@ -412,7 +412,7 @@ myData.csv.fileRowReader(&myData)
 
 ###### <li>This function reads the file that has already been opened using csv.openFile() into memory.</li>
 ###### <li>The header, as always, will be stored as an array of strings (i.e. one string per column name).</li>
-###### <li>*The data will be stored in memory as a 3D array (i.e. an array of arrays, in which each secondary array is an array of strings). In other words, this is an array, which stores arrays (one for each row), each of which stores strings (one per field). [See diagram](#grid_v3_diagram).*.</li>
+###### <li>*The data will be stored in memory as a 3D array (i.e. an array of arrays, in which each secondary array is an array of strings). In other words, this is an array, which stores arrays (one for each row), each of which stores strings (one per field). [See diagram](#grid_v3_diagram).*</li>
 
 </ul>
 
@@ -448,7 +448,7 @@ myData.csv.reader_v3(&myData);
 
 ###### <li>This function reads the file that has already been opened using csv.openFile() into memory.</li>
 ###### <li>The header, as always, will be stored as an array of strings (i.e. one string per column name).</li>
-###### <li>*The data will be stored in memory as an array of linked lists. Each linked list represents a row. Each node in the linked list represents a value (i.e. field). [See diagram](#grid_diagram).*.</li>
+###### <li>*The data will be stored in memory as an array of linked lists. Each linked list represents a row. Each node in the linked list represents a value (i.e. field). [See diagram](#grid_diagram).*</li>
 </ul>
 
 ##### RETURN:
@@ -483,7 +483,7 @@ myData.csv.reader(&myData);
 
 ###### <li>This function reads the file that has already been opened using csv.openFile() into memory.</li>
 ###### <li>The header, as always, will be stored as an array of strings (i.e. one string per column name).</li>
-###### <li>*The data will be stored in memory as an array of dict-style linked lists. Each linked list represents a row. Each node in the linked list represents a value (i.e. field). In addition to storing a value, each node also stores the column name that corresponds with that particular value (e.g. {'Employee ID', '4511'}), in which 'Employee ID' is the column name and '4511' is the corresponding value for that row (i.e. linked list) that this particular node is in. [See diagram](#dict_grid_diagram).*.</li>
+###### <li>*The data will be stored in memory as an array of dict-style linked lists. Each linked list represents a row. Each node in the linked list represents a value (i.e. field). In addition to storing a value, each node also stores the column name that corresponds with that particular value (e.g. {'Employee ID', '4511'}), in which 'Employee ID' is the column name and '4511' is the corresponding value for that row (i.e. linked list) that this particular node is in. [See diagram](#dict_grid_diagram).*</li>
 </ul>
 
 ##### RETURN:
