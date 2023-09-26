@@ -34,8 +34,8 @@ int main(void)
     // myData.csv.dictReader(&myData);        /* Dict    */
 
     // Print
-    // myData.printData(&myData);
-    // myData.printStats(&myData, "all");
+    myData.printData(&myData);
+    myData.printStatsAll(&myData);
 
     // print one column / one column's stats
     // myData.printColumn(&myData, "Name");
