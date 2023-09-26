@@ -44,12 +44,12 @@ int main(void)
     // // Get one specific stat
     // printf("Sum: %.2f\n\n", myData.getStat(&myData, "Ext", "sum"));
     // printf("Sum: %.2f\n\n", myData.sum(&myData, "Ext"));
-    myData.csv_write_permission = true;
-    myData.destructive_mode = true;
+    // myData.csv_write_permission = true;
+    // myData.destructive_mode = true;
 
     //          -- FIX HEADER --
-    myData.formatHeader(&myData); /* Format to title case (i.e. first letter of every work capitalized) */
-    myData.changeColumnName(&myData, "Dept", "Department");
+    // myData.formatHeader(&myData); /* Format to title case (i.e. first letter of every work capitalized) */
+    // myData.changeColumnName(&myData, "Dept", "Department");
 
 
 
@@ -133,8 +133,8 @@ int main(void)
     //      --- INSERT ROW --- /* VALGRIND ERRORS!! */
     /* When inserting, must at very least set columnCount (whether insertRow ro insertRowDict) */
 
-    myData.csv_write_permission = true;
-    myData.destructive_mode = true;
+    // myData.csv_write_permission = true;
+    // myData.destructive_mode = true;
 
     // Create your own header
     // can either set header or columnCount if do not want to set header
@@ -236,8 +236,8 @@ int main(void)
     // char *row_values[] = {"3333", "E,,lvis", "Presl,,ey", "Sales", "222", "100000"};
     // myData.csv.rowWriter(&myData, row_values);
     // myData.csv_write_permission = true;
-    dict row_values[] = {{"Test", "a,"}, {"\"Salary,  Data & Entries\"", "100000"}, {"Name", "E,,lvis Presly"}, {"Department", "Sales"}, {"Ext", "222"}, {"Emp ID", "3333"}};
-    myData.csv.rowDictWriter(&myData, row_values);
+    // dict row_values[] = {{"Test", "a,"}, {"\"Salary,  Data & Entries\"", "100000"}, {"Name", "E,,lvis Presly"}, {"Department", "Sales"}, {"Ext", "222"}, {"Emp ID", "3333"}};
+    // myData.csv.rowDictWriter(&myData, row_values);
 
     // myData.printStatsAll(&myData);
     // myData.printStatsColumn(&myData, "Name");
