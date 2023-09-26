@@ -117,7 +117,7 @@ myData.csv.reader_v3(&myData);
   </ul>
   </ul>
   
-  ![Grid V3](https://github.com/Dvidal7788/dataLynx/assets/91298183/0ddcc7b9-5472-42bf-b971-256885ac47b5)
+  ![Grid V3](https://github.com/Dvidal7788/dataLynx/assets/91298183/45cb902f-5622-42e8-b14d-dc994a112c23)
 
   <ul align="center">
   
@@ -142,7 +142,7 @@ myData.csv.reader(&myData);
   </ul>
   </ul>
 
-  ![Grid](https://github.com/Dvidal7788/dataLynx/assets/91298183/d3997b3a-5a5b-4b0b-bad7-bfba4c99d41b)
+  ![Grid](https://github.com/Dvidal7788/dataLynx/assets/91298183/f3262de2-4894-41ea-ac4b-0701d010c292)
 
   <ul align="center">
   
