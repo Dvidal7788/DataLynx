@@ -440,7 +440,7 @@ double aggregate_dict_grid(dataLynx *self, char *column_name, char *operation) {
 
 
 void calc_std(dataLynx *self) {
-
+    printf("col 2 is num: %d\n", self->aggregate[2].is_number);
     for (uint32_t column = 0; column < self->columnCount; column++) {
 
         if (!self->aggregate[column].is_number) continue;
@@ -452,7 +452,7 @@ void calc_std(dataLynx *self) {
             double difference = 0;
 
             if (self->grid_v3 != NULL) {
-                printf("row: %d\ncol: %d\n: chr:%c, num: %d\n\n", row, column, self->grid_v3[row][column][0], self->aggregate[column].is_number);
+                // printf("row: %d\ncol: %d\n: chr:%c, num: %d\n\n", row, column, self->grid_v3[row][column][0], self->aggregate[column].is_number);
                 if (self->grid_v3[row][column][0] != '\0')
                     difference = atof(self->grid_v3[row][column]) - self->aggregate[column].mean;
             }

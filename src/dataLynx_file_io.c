@@ -242,6 +242,7 @@ char ***reader_v3(dataLynx *self) {
     bool end_of_data = false;
     uintmax_t char_count = 0;
     create_stats(self);
+    printf("col 2 is num: %d\n", self->aggregate[2].is_number);
 
     // ITERATE THROUGH REST OF CSV
     while (!end_of_data) {
