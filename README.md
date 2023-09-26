@@ -142,7 +142,7 @@ myData.csv.reader(&myData);
   </ul>
   </ul>
 
-  ![Grid](https://github.com/Dvidal7788/dataLynx/assets/91298183/f3262de2-4894-41ea-ac4b-0701d010c292)
+  ![Grid](https://github.com/Dvidal7788/dataLynx/assets/91298183/b6b349f8-5ac1-4543-8c09-2597b5c6055e)
 
   <ul align="center">
   
