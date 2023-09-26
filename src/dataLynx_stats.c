@@ -451,7 +451,11 @@ void calc_std(dataLynx *self) {
 
             double difference = 0;
 
-            if (self->grid_v3 != NULL && self->grid_v3[row][column][0] != '\0') difference = atof(self->grid_v3[row][column]) - self->aggregate[column].mean;
+            if (self->grid_v3 != NULL) {
+                printf("")
+                if (self->grid_v3[row][column][0] != '\0')
+                    difference = atof(self->grid_v3[row][column]) - self->aggregate[column].mean;
+            }
             else if (self->grid != NULL) {
                 node *tmp = self->grid[row];
 
