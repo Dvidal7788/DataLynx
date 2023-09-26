@@ -452,6 +452,7 @@ void calc_std(dataLynx *self) {
             double difference = 0;
 
             if (self->grid_v3 != NULL) {
+                if (!is_number(self->grid_v3[row][column])) continue;
                 // printf("row: %d\ncol: %d\n: chr:%c, num: %d\n\n", row, column, self->grid_v3[row][column][0], self->aggregate[column].is_number);
                 if (self->grid_v3[row][column][0] != '\0')
                     difference = atof(self->grid_v3[row][column]) - self->aggregate[column].mean;
