@@ -27,6 +27,7 @@ Table of Contents
   <ul>
   
   ###### <li>[Functions for Reading/Writing from/to a CSV file](#csv)</li> 
+  ###### <li>[Functions for Data Wrangling/Cleaning](#data_wrangling)</li>
   ###### <li>[Functions for Statistical / Aggregate Data](#stats)</li>
   ###### <li>[Functions for Printing](#print)</li>
   </ul>
@@ -735,6 +736,7 @@ myData.csv.rowDictWriter(&myData, values);
 Functions for Data Wrangling / Data Cleaning:
 --------
 </div>
+<a id="data_wrangling"></a>
 
 <!-- FORMAT HEADER-->
 <h4 align="center">formatHeader()</h4>
@@ -857,7 +859,7 @@ myData.updateField(&myData, 4, "Department", "Sales");
 
 
 
-<!-- REPLACE -->
+<!-- REPLACE ALL -->
 <h4 align="center">replaceAll()</h4>
 <h6 align="center">bool replaceAll(dataLynx *self, char *to_replace, char *replace_with);</h6>
 
@@ -941,6 +943,96 @@ myData.replaceInColumn(&myData, 'First Name', 'Tom', 'Thomas');
 ###### <li>Will replace *all* instances of 'Tom' in the data with 'Thomas'.</li>
 </ul>
 
+<hr>
+
+
+<!-- STRIP FIELD -->
+<h4 align="center">stripField()</h4>
+<h6 align="center">bool stripField(dataLynx *self, uintmax_t row, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer row index of field you wish to strip.</li>
+###### <li>Column name of field you wish to strip.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and this function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from both the left and right side of the field.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become "Strategic Initiatives & Programs". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripField(&myData, 4, "First Name");
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the left or right side of the field at row 4/column "First Name".</li>
+</ul>
+<hr>
+
+
+
+
+<!-- STRIP ALL -->
+<h4 align="center">stripAll()</h4>
+<h6 align="center">bool stripAll(dataLynx *self)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from both the left and right side of ALL fields in the data set.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become "Strategic Initiatives & Programs". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripAll(&myData);
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the left or right side of all fields in the data set.</li>
+</ul>
 <hr>
 
 
@@ -1209,6 +1301,7 @@ myData.dropColumn(&myData, "Gross Profit");
 ##### Example Code:
 
 ```C
+// -----  A DATA SET IS ALREADY PRESENT in dataLynx object -----
 char *values[] = {
                   "4511",
                   "John",
@@ -1225,7 +1318,8 @@ myData.insertRow(&myData, values);
 </ul>
 
 ```C
-// Set column count
+// -----  CREATE DATA STRUCTURE FROM SCRATCH (i.e. NO DATA EXISTS in dataLynx object yet) (1st method) -----
+// Set column count (i.e. number of values in the row) so that insertRow can create a generic header
 myData.columnCount = 6;
 
 // Insert 1st row of data
@@ -1242,11 +1336,12 @@ myData.insertRow(&myData, values);
 
 <ul>
  
-###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
+###### <li>If *no* data structure exists yet in the dataLynx object, this will create a generic header (e.g. "Column 1", "Column 2", etc..) and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
 </ul>
 
 
 ```C
+// -----  CREATE DATA STRUCTURE FROM SCRATCH (i.e. NO DATA EXISTS in dataLynx object yet) (2nd method) -----
 // Create header array
 char *header[] = {
                   "Employee ID",
@@ -1256,8 +1351,8 @@ char *header[] = {
                   "Ext",
                   "Salary"
 };
-unsigned int header_size = 6;
-myData.createHeader(&myData, header, header_size);
+unsigned int column_count = 6;
+myData.createHeader(&myData, header, column_count);
 
 // Create values array / Insert 1st row of data
 char *values[] = {
@@ -1273,7 +1368,7 @@ myData.insertRow(&myData, values);
 
 <ul>
  
-###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
+###### <li>If no data structure exists yet in the dataLynx object, this will create a header based on the array passed as a parameter to createHeader(), as well as create a new data structure (Grid V3), and insert a row with the values contained in the values array.</li>
 </ul>
 
 <hr>
@@ -1281,9 +1376,9 @@ myData.insertRow(&myData, values);
 
 
 
-<!-- INSERT ROW 2()-->
-<h4 align="center">insertRow2()</h4>
-<h6 align="center">bool insertRow2(dataLynx *self, dict values[])</h6>
+<!-- INSERT ROW DICT()-->
+<h4 align="center">insertRowDict()</h4>
+<h6 align="center">bool insertRowDict(dataLynx *self, dict values[])</h6>
 
 ##### PARAMETERS:
 <ul>
@@ -1296,13 +1391,14 @@ myData.insertRow(&myData, values);
 <ul>
 
 ###### <li>Supply the parameters and the function will insert the row of data provided from the array of dicts into the data set (i.e. the row will be appended to the end of the data set).</li>
+###### <li>NOTE: The dicts in the dict array do NOT need to be in correct column order. As long as the column names are correct, the function will automatically rearrange the valuesto the correct order!</li>
 ###### <li>If the row is successfully inserted, the row count (i.e. self.rowCount) will be incremented by 1.</li>
 ###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
   <ul>
     
-###### <li>If calling insertRow2() to create a data structure from scratch, the function will automatically create a header from the column names provided in the dict array.</li>
+###### <li>If calling insertRowDict() to create a data structure from scratch, the function will automatically create a header from the column names provided in the dict array.</li>
 ##### <li>The function will then insert the row using the values provided in the dict array.</li>
-###### <li>NOTE: This will *only* create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow()/insertRow2(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
+###### <li>NOTE: This will *only* create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow()/insertRowDict(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
   </ul>
 </ul>
 
@@ -1317,20 +1413,23 @@ myData.insertRow(&myData, values);
 ##### Example Code:
 
 ```C
+// Create array of dicts (i.e. {column_name, value})
 dict values[] = {
-                  {"Employee ID", "4511"},
-                  {"First Name", "John" },
-                  {"Last Name",  "Smith"  },
-                  {"Department", "Sales"},
-                  {"Ext",        "333"  },
-                  {"Salary",     "70000"}
+                  {"Employee ID", "4511" },
+                  {"First Name",  "John" },
+                  {"Last Name",   "Smith"},
+                  {"Department",  "Sales"},
+                  {"Ext",         "333"  },
+                  {"Salary",      "70000"}
 };
-myData.insertRow2(&myData, values);
+
+// Insert row
+myData.insertRowDict(&myData, values);
 ```
 <ul>
  
-###### <li>If a data structure already exists in the dataLynx object, this will insert a new row with the values contained in the array named values.</li>
-###### <li>If *no* data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
+###### <li>If a data structure already exists in the dataLynx object, the above code will insert a new row with the values contained in the values array.</li>
+###### <li>If *no* data structure exists yet in the dataLynx object, the above code will create a header from the first string (i.e. column name) in each dict within the dict array. It will then create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
 </ul>
 
 <hr>
