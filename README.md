@@ -797,6 +797,7 @@ myData.formatHeader(&myData);
 <ul>
 
 ###### <li>Simply supply the function with the name of the column you wish to change (i.e. old_column_name) and the name you wish to change it to.</li>
+###### <li>DESTRUCTIVE MODE: You can run this function in destructive mode, which will simultaneously change the column name in the header in memory, as well as the header in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. These are both set to false by default.</li>
 </ul>
 
 ##### RETURN:
@@ -835,7 +836,7 @@ myData.changeColumnName(&myData, "Dept", "Department");
 ###### <li>Supply the parameters, and the function will update the field at the specified row/column location in the in-memory dataset with the provided new value (provided that the row/column name is valid).</li>
 ###### <li>If you wish to update the desired field to be blank/empty field/NULL, simply input an empty string (e.g. "") as the new_value parameter. NULL strings will be rejected.</li>
 ###### <li>NOTE: Whether updating a field in a numeric OR non-numeric column, the input parameter for the new value will be a string for simplicity's sake.</li>
-###### <li>DESTRUCTIVE MODE: You can run this function in destructive mode, which will simultaneously update the corresponding field in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. These are both set the false by default.</li>
+###### <li>DESTRUCTIVE MODE: You can run this function in destructive mode, which will simultaneously update the corresponding field in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. These are both set to false by default.</li>
 </ul>
 
 ##### RETURN:
