@@ -1,4 +1,11 @@
-# Data Wrangling, Cleaning & Analytics Library in C
+<div align="center">
+  
+# Data Lynx
+### Data Wrangling, Cleaning & Analytics Library in C
+<kbd>
+<img src="https://github.com/Dvidal7788/dataLynx/assets/91298183/7b6a07be-0669-4d03-ad7e-e98b9840e6c1" alt="DataLynx" width="200"/>
+</kbd>
+</div>
 
 Overview:
 --------
