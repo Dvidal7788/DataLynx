@@ -54,11 +54,14 @@ The DataLynx 'Object'
 ###### The dataLynx 'object' is of course actually a struct with function pointers, pointers to data structures and parameters that the user can set to alter the behavior of the 'object'. For full flexibility, there are multiple data structures to choose from. This is a big part of what I mean when I say "I want to bridge the gap between Python and C". I wanted to offer the ease of use of higher-level languages and libraries like Python's built in CSV library, and Pandas, but still offer a C programmer the control that they are used to in being able to choose the underlying structures that make up that higher-level structures found in Python (lists, dictionaries etc). Below is a list and description of the data structures available.
 <div align="center">
   
-##### DATA STRUCTURES:
+### DATA STRUCTURES:
 ###### (Regardless of which data structure you choose, the header will be always be stored as a 2D array (i.e. an array of strings) separately from the rest of the data.)
 </div>
 
+<div align="center">
+  
 ##### SIMPLE DATA STRUCTURES:
+</div>
 <ul>
   
   >###### NOTE: *The simple data structures (e.g. 'raw' & 'rows') are intended only to be used as a simpler, less memory-intensive data structures for certain instances. These data strucures do NOT offer the full capability of data processing that other data structures offer (i.e. Grid V3, Grid & Dict Grid)*. They are only offered for convenience and full flexibility.
@@ -102,8 +105,10 @@ myData.csv.fileRowReader(&myData);
 
 </ul>
 
-
+<div align="center">
+  
 ##### FULL FUNCTIONALITY DATA STRUCTURES:
+</div>
 <ul>
   
   ##### <li>Grid V3</li>
@@ -1123,8 +1128,8 @@ myData.stripField(&myData, 4, "First Name");
 <ul>
     
 ###### <li>Pointer to (i.e. address of) dataLynx object.</li>
-###### <li>Integer row index of field you wish to strip.</li>
-###### <li>Column name of field you wish to strip.</li>
+###### <li>Integer row index of field you wish to strip the left side of.</li>
+###### <li>Column name of field you wish to strip the left side of.</li>
 </ul>
 
 ##### To Use:
@@ -1169,8 +1174,8 @@ myData.stripFieldL(&myData, 4, "First Name");
 <ul>
     
 ###### <li>Pointer to (i.e. address of) dataLynx object.</li>
-###### <li>Integer row index of field you wish to strip.</li>
-###### <li>Column name of field you wish to strip.</li>
+###### <li>Integer row index of field you wish to strip the right side of.</li>
+###### <li>Column name of field you wish to strip the right side of.</li>
 </ul>
 
 ##### To Use:
@@ -1260,8 +1265,8 @@ myData.stripFieldIdx(&myData, 4, 1);
 <ul>
     
 ###### <li>Pointer to (i.e. address of) dataLynx object.</li>
-###### <li>Integer row index of field you wish to strip.</li>
-###### <li>Integer column index of field you wish to strip.</li>
+###### <li>Integer row index of field you wish to strip the left side of.</li>
+###### <li>Integer column index of field you wish to strip the left side of.</li>
 </ul>
 
 ##### To Use:
@@ -1306,8 +1311,8 @@ myData.stripFieldIdxL(&myData, 4, 1);
 <ul>
     
 ###### <li>Pointer to (i.e. address of) dataLynx object.</li>
-###### <li>Integer row index of field you wish to strip.</li>
-###### <li>Integer column index of field you wish to strip.</li>
+###### <li>Integer row index of field you wish to strip the right side of.</li>
+###### <li>Integer column index of field you wish to strip the right side of.</li>
 </ul>
 
 ##### To Use:
