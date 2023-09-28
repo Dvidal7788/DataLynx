@@ -2433,6 +2433,51 @@ myData.getStat(&myData, "Revenue", "std");
 
 
 
+<!-- VALUE COUNT -->
+<h4 align="center">valueCount()</h4>
+<h6 align="center">uint16_t valueCount(DataLynx *self, char *value, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of value you wish to get the value count of.</li>
+###### <li>String of the name of the column in which the value appears.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and the function will return the number of times the specified value appears in the specified column.</li>
+###### <li>NOTE: Value counts are currently only available for non-numeric columns. Other statistical data is provided for numeric columns. (See [Statistics / Value Counts (Aggregate Data](#stat_list) for more info.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns the corresponding value count(i.e. the number of times the specified value appears in the specified column).</li>
+###### <li>On failure (i.e. invalid value or invalid column name, either that does not exist at all or is a numeric column), returns 0.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.valueCount(&myData, "Refrigerator", "Product");
+```
+
+<ul>
+ 
+###### <li>The above code will return the number of times the value "Refrigerator" appears in the column titled "Product"</li>
+###### <li>NOTE: This will only search for the exact value "Refrigerator" in the "Product" column. If there is a value of "Refrigerator Door" in the "Product" column, this is counted as its own unique value (i.e. will not be counted in the value count for "Refrigerator").</li>
+</ul>
+<hr>
+
+
+
+
+
+
 <!-- FUNCTIONS FOR PRINTING-->
 <a id="print"></a>
 <div align="center">
