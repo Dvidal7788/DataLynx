@@ -1,4 +1,4 @@
-PROGRAM = dataLynx
+PROGRAM = DataLynx
 CC = gcc
 BIN = bin
 DIST = lib$(PROGRAM)_$(DATE)

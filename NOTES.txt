@@ -1,3 +1,0 @@
-Column 2 changing from !is_number to is_number because of messed up row
-    - causes seg fault in calc_std
-    - NEED TO HANDLE COLUMNS WITH MIXED DATA TYPES BETTER

@@ -1,5 +1,5 @@
-obj/dataLynx_util.o: src/dataLynx_util.c /usr/include/stdc-predef.h \
- include/dataLynx.h include/dataLynx_data.h /usr/include/stdio.h \
+obj/DataLynx_util.o: src/DataLynx_util.c /usr/include/stdc-predef.h \
+ include/DataLynx.h include/DataLynx_data.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
@@ -64,11 +64,11 @@ obj/dataLynx_util.o: src/dataLynx_util.c /usr/include/stdc-predef.h \
  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
- include/dataLynx_file_io.h include/dataLynx_stats.h \
- include/dataLynx_util.h
+ include/DataLynx_file_io.h include/DataLynx_stats.h \
+ include/DataLynx_util.h
 /usr/include/stdc-predef.h:
-include/dataLynx.h:
-include/dataLynx_data.h:
+include/DataLynx.h:
+include/DataLynx_data.h:
 /usr/include/stdio.h:
 /usr/include/x86_64-linux-gnu/bits/libc-header-start.h:
 /usr/include/features.h:
@@ -143,6 +143,6 @@ include/dataLynx_data.h:
 /usr/include/x86_64-linux-gnu/bits/fp-fast.h:
 /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h:
 /usr/include/x86_64-linux-gnu/bits/mathcalls.h:
-include/dataLynx_file_io.h:
-include/dataLynx_stats.h:
-include/dataLynx_util.h:
+include/DataLynx_file_io.h:
+include/DataLynx_stats.h:
+include/DataLynx_util.h:

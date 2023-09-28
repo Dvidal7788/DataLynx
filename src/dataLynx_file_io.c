@@ -1,10 +1,10 @@
-#include <dataLynx_file_io.h>
-#include <dataLynx_stats.h>
-#include <dataLynx_util.h>
+#include <DataLynx_file_io.h>
+#include <DataLynx_stats.h>
+#include <DataLynx_util.h>
 
 
 //      OPEN FILE()
-bool openFile(dataLynx *self, char *filename) {
+bool openFile(DataLynx *self, char *filename) {
 
     /* This function will use the input parameter filename if one is given. Otherwise it will use self->filename. If both filename and self->filname are NULL, it will return false */
 
@@ -44,7 +44,7 @@ bool openFile(dataLynx *self, char *filename) {
 
 
 // ---------- CSV.HEADERREADER() ----------
-char **headerReader(dataLynx *self) {
+char **headerReader(DataLynx *self) {
 
     if (self == NULL) return  NULL;
 
@@ -132,7 +132,7 @@ char **headerReader(dataLynx *self) {
 
 
 //      ___ READ FILE ___ (V1 - ONE LONG STRING)
-char *fileReader(dataLynx *self) {
+char *fileReader(DataLynx *self) {
 
     /* THIS FUNCTION: Reads a text based file (i.e. .csv, .txt etc) into one long string */
 
@@ -191,7 +191,7 @@ char *fileReader(dataLynx *self) {
 
 
 //      ___ fileRowReader ___ (V2 - 2D JAGGED ARRAY)
-char **fileRowReader(dataLynx *self) {
+char **fileRowReader(DataLynx *self) {
 
     /* THIS FUNCTION: READS FILE INTO DYNAMICALLY ALLOCATED JAGGED 2D ARRAY (Each row in file corresponds to string in array of strings) */
 
@@ -213,7 +213,7 @@ char **fileRowReader(dataLynx *self) {
 
 
 //       _________ cs.reader_v3() __________
-char ***reader_v3(dataLynx *self) {
+char ***reader_v3(DataLynx *self) {
 
     if (self == NULL) return NULL;
 
@@ -242,7 +242,6 @@ char ***reader_v3(dataLynx *self) {
     bool end_of_data = false;
     uintmax_t char_count = 0;
     create_stats(self);
-    printf("col 2 is num: %d\n", self->aggregate[2].is_number);
 
     // ITERATE THROUGH REST OF CSV
     while (!end_of_data) {
@@ -384,7 +383,6 @@ char ***reader_v3(dataLynx *self) {
 
     // Calculate means, now that we have sums. Calc stds once we have means. Find medians now that we have all the data.
     for (uintmax_t i = 0; i < self->columnCount; i++) self->aggregate[i].mean = self->aggregate[i].sum / self->aggregate[i].not_null;
-    printf("col 2 is num: %d\n", self->aggregate[2].is_number);
     calc_std(self);
     find_median(self);
 
@@ -395,7 +393,7 @@ char ***reader_v3(dataLynx *self) {
 
 
 //      _________ csv.reader() __________
-node **reader(dataLynx *self) {
+node **reader(DataLynx *self) {
 
     if (self == NULL) return NULL;
 
@@ -563,7 +561,7 @@ node **reader(dataLynx *self) {
 }
 
 //      _____ CSV DICT READER _____
-dict_node **dictReader(dataLynx *self) {
+dict_node **dictReader(DataLynx *self) {
 
     if (self == NULL) return NULL;
 
@@ -735,7 +733,7 @@ dict_node **dictReader(dataLynx *self) {
 
 
 //      ___ CSV.FIELDREADER() ___
-char *fieldReader(dataLynx *self, uintmax_t row, char *column_name) {
+char *fieldReader(DataLynx *self, uintmax_t row, char *column_name) {
 
     /* THIS FUNCTION: 1. Allows you to index directly into a csv file using the column name and without reading the whole file into memory.
                       2. Returns NULL if desired_column is not in header of file
@@ -760,8 +758,8 @@ char *fieldReader(dataLynx *self, uintmax_t row, char *column_name) {
 
 
 
-//      ___ CSV.FIELDREADER2() ___
-char *fieldReader2(dataLynx *self, uintmax_t row, uintmax_t column) {
+//      ___ CSV.fieldReaderIdx() ___
+char *fieldReaderIdx(DataLynx *self, uintmax_t row, uintmax_t column) {
 
     // Safety Checks
     if (self == NULL) return NULL;
@@ -772,7 +770,7 @@ char *fieldReader2(dataLynx *self, uintmax_t row, uintmax_t column) {
 }
 
 
-char *field_reader_internal_(dataLynx *self, uintmax_t row, uintmax_t column) {
+char *field_reader_internal_(DataLynx *self, uintmax_t row, uintmax_t column) {
 
     // Function name (for use in if_error()) (formerly csv_reader_index)
     const char *func_name = "field_reader_internal_";
@@ -858,7 +856,7 @@ char *field_reader_internal_(dataLynx *self, uintmax_t row, uintmax_t column) {
 //                          ----- WRITER FUNCTIONS -----
 
 //          ____ FIELD WRITER()___
-bool fieldWriter(dataLynx *self, uintmax_t row, char *column_name, char *new_field) {
+bool fieldWriter(DataLynx *self, uintmax_t row, char *column_name, char *new_field) {
 
     // Safety Checks (do not check if row is greater than row count because should work even if file has not been read into memory)
     if (self == NULL || column_name == NULL || new_field == NULL) return false;
@@ -872,7 +870,7 @@ bool fieldWriter(dataLynx *self, uintmax_t row, char *column_name, char *new_fie
 
 
 //          ____ FIELD WRITER2()___
-bool fieldWriter2(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field) {
+bool fieldWriterIdx(DataLynx *self, uintmax_t row, uintmax_t column, char *new_field) {
 
     // Safety Checks (do not check if row or column is greater than row/column count because should work even if file has not been read into memory)
     if (self == NULL || new_field == NULL) return false;
@@ -884,7 +882,7 @@ bool fieldWriter2(dataLynx *self, uintmax_t row, uintmax_t column, char *new_fie
 
 
 //      ___ FIELD WRITER INTERNAL() ___
-bool field_writer_internal_(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field) {
+bool field_writer_internal_(DataLynx *self, uintmax_t row, uintmax_t column, char *new_field) {
 
     /* THIS FUNCTION: Updates csv file based on choice of index
             Note: In order destructive mode to work with updateField() (i.e. updates CSV file at same time as updating data structure in memory), I must close in read mode and then reopen in write mode, as opposed to allowing user to choose how to open file. */
@@ -1015,7 +1013,7 @@ bool field_writer_internal_(dataLynx *self, uintmax_t row, uintmax_t column, cha
 
 
 //          ROW WRITER()
-bool rowWriter(dataLynx *self, char *values[]) {
+bool rowWriter(DataLynx *self, char *values[]) {
 
     if (self == NULL || values == NULL) return false;
     if (self->file_ptr == NULL || !self->csv_write_permission) return false;
@@ -1031,7 +1029,7 @@ bool rowWriter(dataLynx *self, char *values[]) {
 
 
 //          ROW DICT WRITER()
-bool rowDictWriter(dataLynx *self, dict values[]) {
+bool rowDictWriter(DataLynx *self, dict values[]) {
 
     /*  - The key functional difference between this function and rowWriter is that this function will rearrange the values if they are not in correct column order.
         - The dict array makes this possible (correlating each value to it's corresponding column name), as oppsed to a traditional array of strings.
@@ -1056,7 +1054,7 @@ bool rowDictWriter(dataLynx *self, dict values[]) {
 }
 
 
-bool row_writer_internal_(dataLynx *self, char *values[]) {
+bool row_writer_internal_(DataLynx *self, char *values[]) {
 
     const char *func_name = "row_writer_internal_";
 
@@ -1065,6 +1063,13 @@ bool row_writer_internal_(dataLynx *self, char *values[]) {
     size_t value_strlens[self->columnCount]; /* Keeps track of each value's string length */
     bool add_quotes_to[self->columnCount]; /* Keeps track of which values to add quotes to */
     for (uintmax_t column = 0; column < self->columnCount; column++) {
+
+        // Protect against NULL strings
+        if (values[column] == NULL) {
+            add_quotes_to[column] = false;
+            value_strlens[column] = 0;
+            continue;
+        }
 
         // Add quotes to new cell if necessary
         if (has_comma(values[column]) && !has_quotes(values[column])) {
@@ -1088,20 +1093,24 @@ bool row_writer_internal_(dataLynx *self, char *values[]) {
     // Copy all values into one string (this avoids making a new system call (i.e. fwrite()/fprintf()) for every value)
     char row_string[row_strlen+1];
     size_t running_total = 0;
+    char empty_string[1] = {'\0'};
+
     for (uintmax_t column = 0; column < self->columnCount; column++) {
+
+        char *field = (values[column] != NULL) ? values[column] : empty_string;
 
         if (column != self->columnCount-1) {
 
             // With comma (i.e. not last column in row)
-            (!add_quotes_to[column]) ? sprintf(&row_string[running_total], "%s,", values[column]) : sprintf(&row_string[running_total], "\"%s\",", values[column]);
+            (!add_quotes_to[column]) ? sprintf(&row_string[running_total], "%s,", field) : sprintf(&row_string[running_total], "\"%s\",", field);
         }
         else {
 
             // No comma (i.e. last column. \n will be added when writing to file)
-            (!add_quotes_to[column]) ? sprintf(&row_string[running_total], "%s", values[column]) : sprintf(&row_string[running_total], "\"%s\"", values[column]);
+            (!add_quotes_to[column]) ? sprintf(&row_string[running_total], "%s", field) : sprintf(&row_string[running_total], "\"%s\"", field);
         }
 
-        // Add value string lenght plus length of comma OR plus length of comma plus length of quotes
+        // Add value string length plus length of comma OR plus length of comma plus length of quotes
         running_total += (!add_quotes_to[column]) ? value_strlens[column]+1 : value_strlens[column]+3;
 
     }
@@ -1134,8 +1143,39 @@ bool row_writer_internal_(dataLynx *self, char *values[]) {
 
 
 
+bool renameFile(DataLynx *self, char *new_filename) {
+    /* THIS FUNCTION:
+        - Renames the file connected to the DataLynx obect in use.
+        - This function must be used instead of the C standard library function rename(),
+            because this will also replace the filename stored in memory inside of the DataLynx object */
+
+    // Safety checks
+    if (self == NULL || new_filename == NULL) return false;
+    if (self->file_ptr == NULL) return false;
+
+    const char *func_name = "csv.renameFile";
+
+    /* I will free and then malloc, as opposed to simply using realloc, because this protects against the off chance that the previous filename in memory is NULL. I could have an if/else statement with both malloc and realloc options depending on if the filename is NULL, but this is cleaner */
+    // Rename File / Free previous filename in memory
+    if (self->filename != NULL) {
+        // Rename file
+        rename(self->filename, new_filename);
+        free(self->filename);
+    }
+
+    size_t length = strlen(new_filename);
+
+    // Allocate for new filename
+    self->filename = (char *)malloc(sizeof(char) * (length+1));
+    if (self->filename == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+
+    strcpy(self->filename, new_filename);
+
+    return true;
+}
+
 //      _____ csv.backup() _____
-bool backup(dataLynx *self) {
+bool backup(DataLynx *self) {
 
     if (self == NULL) return false;
     if (self->filename == NULL) return false;
@@ -1236,7 +1276,7 @@ bool backup(dataLynx *self) {
 
 
 //          --- CSV.WRITEDATA()  ---
-bool writeData(dataLynx *self, char *new_filename) {
+bool writeData(DataLynx *self, char *new_filename) {
 
     if (self == NULL) return false;
 
@@ -1375,7 +1415,7 @@ bool writeData(dataLynx *self, char *new_filename) {
 
 
 //      WRITE CSV HEADER
-bool write_csv_header_(dataLynx *self) {
+bool write_csv_header_(DataLynx *self) {
 
     /* THIS FUNCTION:
         - Updates the CSV file on record with the header in memory */

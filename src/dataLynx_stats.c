@@ -1,13 +1,13 @@
-#include <dataLynx_stats.h>
-#include <dataLynx_data.h>
-#include <dataLynx_util.h>
+#include <DataLynx_stats.h>
+#include <DataLynx_data.h>
+#include <DataLynx_util.h>
 #include <math.h>
 
 
 //                          ------- STATS -------
 
 //          __ CREATE_STATS() ____
-bool create_stats(dataLynx *self) {
+bool create_stats(DataLynx *self) {
 
     if (self->aggregate != NULL) {
         free_value_counts(self);
@@ -38,7 +38,7 @@ bool create_stats(dataLynx *self) {
 
 
 //      ___ Stats() ___
-double getStat(dataLynx *self, char *column_name, char *stat) {
+double getStat(DataLynx *self, char *column_name, char *stat) {
 
     if (self == NULL || column_name == NULL || stat == NULL) return 0;
 
@@ -70,29 +70,29 @@ double getStat(dataLynx *self, char *column_name, char *stat) {
 }
 
 /* This batch of functions will not have safety checks, because stats() has safety checks, so no need for redundancy */
-double min(dataLynx *self, char *column_name) {return getStat(self, column_name, "min");}
+double min(DataLynx *self, char *column_name) {return getStat(self, column_name, "min");}
 
-double max(dataLynx *self, char *column_name) {return getStat(self, column_name, "max");}
+double max(DataLynx *self, char *column_name) {return getStat(self, column_name, "max");}
 
-double sum(dataLynx *self, char *column_name) {return getStat(self, column_name, "sum");}
+double sum(DataLynx *self, char *column_name) {return getStat(self, column_name, "sum");}
 
-double mean(dataLynx *self, char *column_name) {return getStat(self, column_name, "mean");}
+double mean(DataLynx *self, char *column_name) {return getStat(self, column_name, "mean");}
 
-double std(dataLynx *self, char *column_name) {return getStat(self, column_name, "std");}
+double std(DataLynx *self, char *column_name) {return getStat(self, column_name, "std");}
 
-double lowerQrt(dataLynx *self, char *column_name) {return getStat(self, column_name, "lower qrt");}
+double lowerQrt(DataLynx *self, char *column_name) {return getStat(self, column_name, "lower qrt");}
 
-double median(dataLynx *self, char *column_name) {return getStat(self, column_name, "median");}
+double median(DataLynx *self, char *column_name) {return getStat(self, column_name, "median");}
 
-double upperQrt(dataLynx *self, char *column_name) {return getStat(self, column_name, "upper qrt");}
+double upperQrt(DataLynx *self, char *column_name) {return getStat(self, column_name, "upper qrt");}
 
-uintmax_t isNull(dataLynx *self, char *column_name) {return (uintmax_t)getStat(self, column_name, "isnull");}
+uintmax_t isNull(DataLynx *self, char *column_name) {return (uintmax_t)getStat(self, column_name, "isnull");}
 
-uintmax_t notNull(dataLynx *self, char *column_name) {return (uintmax_t)getStat(self, column_name, "notnull");}
+uintmax_t notNull(DataLynx *self, char *column_name) {return (uintmax_t)getStat(self, column_name, "notnull");}
 
 
 //          FIND MEDIAN
-bool find_median(dataLynx *self) {
+bool find_median(DataLynx *self) {
 
     // This function does not account for empty fields yet
     self->in_place_sort = false;
@@ -102,7 +102,7 @@ bool find_median(dataLynx *self) {
 
         if (!self->aggregate[column].is_number) continue;
 
-        sortRowsByColumn(self, self->__header__[column], "asc");
+        sortRowsByColumn(self, self->__header__[column], "asc"); /* This must go first, otherwise seg fault when accessing tmp_column if rowCount is 1*/
 
         if (self->rowCount == 1) {
             self->aggregate[column].lower_qrt = self->aggregate[column].median = self->aggregate[column].upper_qrt = atof(self->tmp_column[0]);
@@ -165,7 +165,7 @@ bool find_median(dataLynx *self) {
 // CALC STATS ONE AT A TIME:
 
 //      ____AGGREGATE_RAW() _____
-double aggregate_raw(dataLynx *self, char *column_name, char *operation) {
+double aggregate_raw(DataLynx *self, char *column_name, char *operation) {
 
     if (self == NULL) return 0;
     if (self->raw == NULL) return 0;
@@ -257,7 +257,7 @@ double aggregate_raw(dataLynx *self, char *column_name, char *operation) {
 
 
 //      ____AGGREGATE_ROWS() _____
-double aggregate_rows(dataLynx *self, char *column_name, char *operation) {
+double aggregate_rows(DataLynx *self, char *column_name, char *operation) {
 
     if (self == NULL) return 0;
     if (self->rows == NULL) return 0;
@@ -344,7 +344,7 @@ double aggregate_rows(dataLynx *self, char *column_name, char *operation) {
 
 
 //      ____AGGREGATE_GRID() _____
-double aggregate_grid(dataLynx *self, char *column_name, char *operation) {
+double aggregate_grid(DataLynx *self, char *column_name, char *operation) {
 
     if (self == NULL) return 0;
     if (self->grid == NULL) return 0;
@@ -392,7 +392,7 @@ double aggregate_grid(dataLynx *self, char *column_name, char *operation) {
 
 
 //      ____AGGREGATE_DICT_GRID() _____
-double aggregate_dict_grid(dataLynx *self, char *column_name, char *operation) {
+double aggregate_dict_grid(DataLynx *self, char *column_name, char *operation) {
 
     if (self == NULL) return 0;
     if (self->dict_grid == NULL) return 0;
@@ -439,8 +439,8 @@ double aggregate_dict_grid(dataLynx *self, char *column_name, char *operation) {
 }
 
 
-void calc_std(dataLynx *self) {
-    printf("col 2 is num: %d\n", self->aggregate[2].is_number);
+void calc_std(DataLynx *self) {
+
     for (uint32_t column = 0; column < self->columnCount; column++) {
 
         if (!self->aggregate[column].is_number) continue;
@@ -451,12 +451,7 @@ void calc_std(dataLynx *self) {
 
             double difference = 0;
 
-            if (self->grid_v3 != NULL) {
-                if (!is_number(self->grid_v3[row][column])) continue;
-                // printf("row: %d\ncol: %d\n: chr:%c, num: %d\n\n", row, column, self->grid_v3[row][column][0], self->aggregate[column].is_number);
-                if (self->grid_v3[row][column][0] != '\0')
-                    difference = atof(self->grid_v3[row][column]) - self->aggregate[column].mean;
-            }
+            if (self->grid_v3 != NULL && self->grid_v3[row][column][0] != '\0') difference = atof(self->grid_v3[row][column]) - self->aggregate[column].mean;
             else if (self->grid != NULL) {
                 node *tmp = self->grid[row];
 
@@ -489,7 +484,7 @@ void calc_std(dataLynx *self) {
 
 
 
-// bool calc_median(dataLynx *self) {
+// bool calc_median(DataLynx *self) {
 //     typedef struct Median {
 //         uintmax_t greater;
 //         uintmax_t less;
@@ -549,7 +544,7 @@ void calc_std(dataLynx *self) {
 // }
 
 // // Bubble sort algorithm
-// void bubble_sort(dataLynx *self, int n) {
+// void bubble_sort(DataLynx *self, int n) {
 
 //     for (int i = 0; i < self->rowCount; i++) {
 //         for (int j = 0; j < self->rowCount - i - 1; j++) {
@@ -563,7 +558,7 @@ void calc_std(dataLynx *self) {
 // }
 
 //          FIND NEW MIN()
-double find_new_min(dataLynx *self, uintmax_t column, double old_field_float, double new_field_float) {
+double find_new_min(DataLynx *self, uintmax_t column, double old_field_float, double new_field_float) {
 
     bool pivot_assigned = false; /* Only used if caled from dropRow()*/
 
@@ -616,7 +611,7 @@ double find_new_min(dataLynx *self, uintmax_t column, double old_field_float, do
 }
 
 //          FIND NEW MAX()
-double find_new_max(dataLynx *self, uintmax_t column, double old_field_float, double new_field_float) {
+double find_new_max(DataLynx *self, uintmax_t column, double old_field_float, double new_field_float) {
 
     bool pivot_assigned = false; /* Only used if caled from dropRow()*/
 
@@ -669,7 +664,7 @@ double find_new_max(dataLynx *self, uintmax_t column, double old_field_float, do
 }
 
 //      UPDATE STATS()
-bool update_stats(dataLynx *self, uintmax_t column, char *old_field, char *new_field) {
+bool update_stats(DataLynx *self, uintmax_t column, char *old_field, char *new_field) {
 
     /* THIS FUNCTION: updates stats when CHANGING/UPDATING an EXISTING VALUE to a NEW VALUE. Not to be confused with update_stats_new_row() which updates stats when a whole new row of data is inserted.
         - Must check if 1st char is '\0' because we do not need to add empty strings to value counts. Thats what .is_null is for.*/
@@ -762,7 +757,7 @@ bool update_stats(dataLynx *self, uintmax_t column, char *old_field, char *new_f
 
 
 
-void update_stats_new_row(dataLynx *self, char *values[]) {
+void update_stats_new_row(DataLynx *self, char *values[]) {
 
     for (uint32_t column = 0; column < self->columnCount; column++) {
 
@@ -809,7 +804,7 @@ void update_stats_new_row(dataLynx *self, char *values[]) {
 
 
 //      CREATE VALUE COUNTS()
-bool create_value_counts(dataLynx *self, uintmax_t column_index) {
+bool create_value_counts(DataLynx *self, uintmax_t column_index) {
 
     char *func_name = "create_value_counts";
 
@@ -831,7 +826,7 @@ bool create_value_counts(dataLynx *self, uintmax_t column_index) {
 
 
 // //      SORT VALUE COUNTS()
-// void sort_value_counts(dataLynx *self) {
+// void sort_value_counts(DataLynx *self) {
 
 
 //     for (uintmax_t i = 0; i < self->columnCount; i++) {
@@ -910,7 +905,7 @@ bool create_value_counts(dataLynx *self, uintmax_t column_index) {
 //     return;
 // }
 
-void sort_value_counts(dataLynx *self) {
+void sort_value_counts(DataLynx *self) {
 
     for (uintmax_t column; column < self->columnCount; column++) {
 
@@ -970,7 +965,7 @@ void sort_value_counts(dataLynx *self) {
 }
 
 //      APPEND VALUE COUNTS()
-bool prepend_value_count(dataLynx *self, uintmax_t column_index, char *value, uint8_t alpha_index) {
+bool prepend_value_count(DataLynx *self, uintmax_t column_index, char *value, uint8_t alpha_index) {
 
     if (self == NULL) return false;
     if (value == NULL) return false;
@@ -999,7 +994,7 @@ bool prepend_value_count(dataLynx *self, uintmax_t column_index, char *value, ui
 
 
 //      ADD VALUE COUNT()
-bool increment_decrement_value_count(dataLynx *self, char *column_name, char *value, bool increment) {
+bool increment_decrement_value_count(DataLynx *self, char *column_name, char *value, bool increment) {
 
     if (self == NULL) return false;
     if (column_name == NULL) return false;
@@ -1084,7 +1079,7 @@ bool increment_decrement_value_count(dataLynx *self, char *column_name, char *va
 
 
 //          REMOVE VALUE COUNT NODE()
-void remove_value_count_node(dataLynx *self, uintmax_t column_index, uint8_t alpha_index, uintmax_t node_index) {
+void remove_value_count_node(DataLynx *self, uintmax_t column_index, uint8_t alpha_index, uintmax_t node_index) {
 
     /* MAKE SURE THIS WORKS IF node_index == 0*/
 
@@ -1107,7 +1102,7 @@ void remove_value_count_node(dataLynx *self, uintmax_t column_index, uint8_t alp
 }
 
 
-uint16_t valueCount(dataLynx *self, char *value, char *column_name) {
+uint16_t valueCount(DataLynx *self, char *value, char *column_name) {
 
     // Safety checks
     if (self == NULL || value == NULL || column_name == NULL) return 0;
@@ -1121,13 +1116,13 @@ uint16_t valueCount(dataLynx *self, char *value, char *column_name) {
 
 
 //          IS IN COLUMN()
-bool isInColumn(dataLynx *self, char *value, char *column_name) {
+bool isInColumn(DataLynx *self, char *value, char *column_name) {
     return valueCount(self, value, column_name);
 }
 
 
 //          IS IN DATA()
-bool isInData(dataLynx *self, char *value, char *column_name) {
+bool isInData(DataLynx *self, char *value, char *column_name) {
 
     // Safety checks
     if (self == NULL || value == NULL || column_name == NULL) return 0;
@@ -1142,7 +1137,7 @@ bool isInData(dataLynx *self, char *value, char *column_name) {
 
 }
 
-uint16_t value_count_internal_(dataLynx *self, char *value, int16_t column_index) {
+uint16_t value_count_internal_(DataLynx *self, char *value, int16_t column_index) {
 
     // THIS FUNCTION: Retrieves value count of a given value
 

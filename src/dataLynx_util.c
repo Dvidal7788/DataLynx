@@ -1,4 +1,4 @@
-#include <dataLynx.h>
+#include <DataLynx.h>
 
 //          ----- UTILITY FUCTIONS -----
 
@@ -153,7 +153,7 @@ bool add_quotes(char **s)
 
 
 //      REMOVE QUOTES()
-char *remove_quotes(dataLynx *self, char *s) {
+char *remove_quotes(DataLynx *self, char *s) {
 
     /* This function is NON destructive (unlike add_quotes) */
 
@@ -273,7 +273,7 @@ uint64_t get_uint(char *prompt)
     return x;
 }
 
-bool convert_to_csv(dataLynx *self, char *filename) {
+bool convert_to_csv(DataLynx *self, char *filename) {
     /*DOES NOT WORK YET*/
     if (is_ext(filename, ".csv")) return true;
 
@@ -345,7 +345,7 @@ bool convert_to_csv(dataLynx *self, char *filename) {
 
 }
 
-char *append_last_retrieved_fields(dataLynx *self, char **field) {
+char *append_last_retrieved_fields(DataLynx *self, char **field) {
 
     if (field == NULL) return false;
     if (*field == NULL) return false;
@@ -388,7 +388,7 @@ bool is_ext(char *filename, char *ext) {
 }
 
 
-void calc_max_row_digits(dataLynx *self) {
+void calc_max_row_digits(DataLynx *self) {
 
     uintmax_t temp = self->rowCount;
 
@@ -401,7 +401,7 @@ void calc_max_row_digits(dataLynx *self) {
 }
 
 
-bool rearrange_dict_array(dataLynx *self, dict values[]) {
+bool rearrange_dict_array(DataLynx *self, dict values[]) {
 
     /* THIS FUNCTION:
                 - Rearranges a dict array IF columns are not in correct order according to header */
@@ -443,7 +443,7 @@ bool rearrange_dict_array(dataLynx *self, dict values[]) {
 
 
 //      ___ GET FILE SIZE() ___
-size_t get_file_size_(dataLynx *self) {
+size_t get_file_size_(DataLynx *self) {
 
     // Get file stream to beginning (to get header size)
     fseek(self->file_ptr, 0L, SEEK_SET);
@@ -463,11 +463,12 @@ size_t get_file_size_(dataLynx *self) {
     // Get file stream to end of file
     fseek(self->file_ptr, 0L, SEEK_END);
 
-    // Get file stream position (i.e. file size) - store file size in dataLynx object
+    // Get file stream position (i.e. file size) - store file size in DataLynx object
     self->file_size = ftell(self->file_ptr);
 
     return self->file_size;
 }
+
 
 
 //      ___ IF_ERROR() ___
@@ -480,10 +481,10 @@ uint8_t if_error(uint8_t error_code, const char *function_name)
                       5. Appends error code, error message and timestamp to error log, prints message to terminal. */
 
     // Declare array of strings of failed function
-    const char *FAILED_FUNCTIONS[5] = {"malloc()", "scanf()", "realloc()", "fopen()", "fread()"};
+    const char *FAILED_FUNCTIONS[5] = {"malloc()", "realloc()", "fopen()", "fread()", "scanf()"};
 
     // Decalre array of string of function names, inside of which above functions might fail (for now, simply a list of all functions in this library)
-    const char *LIST_OF_CSV_FUNCTIONS[NUM_OF_FUNCTIONS] = {"build_dblink_list", "build_dict_link_list", "read_file_v1", "string_into_2d_array", "update_csv_index",
+    const char *LIBRARY_FUNCTIONS[NUM_OF_FUNCTIONS] = {"build_dblink_list", "build_dict_link_list", "read_file_v1", "string_into_2d_array", "update_csv_index",
                                             "read_file_v2", "csv_reader_index", "add_quotes", "index_2darray_csv", "split_2darray_by", "headerReader", "csv_dictreader_index",
                                             "dictReader", "get_field_dict", "update_dict_and_csv", "inf_buffer", "get_uint", "is_ext", "print_lnk_list",
                                             "print_dict_list", "free_list", "free_dict_list", "free_null", "fclose_null", "if_error"};
@@ -491,7 +492,7 @@ uint8_t if_error(uint8_t error_code, const char *function_name)
     // Find corresponding number for function that failed
     uint8_t libcsv_function_code = 0;
     for (uint8_t i = 0; i < NUM_OF_FUNCTIONS; i++) {
-        if (strcasecmp(LIST_OF_CSV_FUNCTIONS[i], function_name) == 0) {
+        if (strcasecmp(LIBRARY_FUNCTIONS[i], function_name) == 0) {
             libcsv_function_code = i;
             break;
         }

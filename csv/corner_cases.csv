@@ -1,4 +1,4 @@
-Emp_ID,Name,,Ext,"Salary, Data & Entries"
+Emp ID,Name,,Ext,"Salary, Data & Entries"
 4511,,Director,123,105000
 4533,Christie,Client Implementation,456,70000
 4567,Al,Sales,788,75000
@@ -23,7 +23,7 @@ Emp_ID,Name,,Ext,"Salary, Data & Entries"
 
 
 
-// With and without 2nd header
+
 Emp_ID,Name,,Ext,"Salary, Data & Entries"
 4511,,Director,123,105000
 4533,Christie,Client Implementation,456,70000

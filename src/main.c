@@ -1,13 +1,13 @@
-#include <dataLynx.h>
+#include <DataLynx.h>
 
 
-// EXAMPLE CODE FOR dataLynx Library
+// EXAMPLE CODE FOR DataLynx Library
 int main(void)
 {
     // ----- Set Up ------
 
     // Create main 'object'
-    dataLynx myData = dataLynxConstructor();
+    DataLynx myData = DataLynxConstructor();
 
     // User input filename until a valid file is given
     while (true) {
@@ -34,8 +34,8 @@ int main(void)
     // myData.csv.dictReader(&myData);        /* Dict    */
 
     // Print
-    myData.printData(&myData);
-    myData.printStatsAll(&myData);
+    // myData.printData(&myData);
+    // myData.printStats(&myData, "all");
 
     // print one column / one column's stats
     // myData.printColumn(&myData, "Name");
@@ -44,12 +44,12 @@ int main(void)
     // // Get one specific stat
     // printf("Sum: %.2f\n\n", myData.getStat(&myData, "Ext", "sum"));
     // printf("Sum: %.2f\n\n", myData.sum(&myData, "Ext"));
-    // myData.csv_write_permission = true;
-    // myData.destructive_mode = true;
+    myData.csv_write_permission = true;
+    myData.destructive_mode = true;
 
     //          -- FIX HEADER --
-    // myData.formatHeader(&myData); /* Format to title case (i.e. first letter of every work capitalized) */
-    // myData.changeColumnName(&myData, "Dept", "Department");
+    myData.formatHeader(&myData); /* Format to title case (i.e. first letter of every work capitalized) */
+    myData.changeColumnName(&myData, "Dept", "Department");
 
 
 
@@ -83,7 +83,7 @@ int main(void)
 
 
     //          --- Filter into NEW Object/Data Structure ---
-    // dataLynx filteredData = dataLynxConstructor();
+    // DataLynx filteredData = DataLynxConstructor();
 
     // filter(&myData, &filteredData, "emp_id", ">", "8888");
 
@@ -102,7 +102,7 @@ int main(void)
 
     // Get Field (from CSV)
     // printf("Get field from CSV: '%s'\n", myData.csv.fieldReader(&myData, 0, "Department"));
-    // printf("Get field from CSV: '%s'\n", myData.csv.fieldReader2(&myData, 0, 0));
+    // printf("Get field from CSV: '%s'\n", myData.csv.fieldReaderIdx(&myData, 0, 0));
 
     // Update Field (in CSV)
     // myData.csv_write_permission = true;
@@ -110,21 +110,23 @@ int main(void)
     // else printf("Failure writing to csv\n");
     // myData.csv_write_permission = false;
 
+    // myData.csv.renameFile(&myData, "csv/sales_data3.csv");
 
     // // Backup CSV
     // myData.csv.backup(&myData);
     // myData.csv.writeData(&myData, "testfile.csv");
 
-    // printf("Get Field: %s, %s\n", getField2(&myData, 0, 3), getField2(&myData, 0, 4));
+    // printf("Get Field: %s, %s\n", getFieldIdx(&myData, 0, 3), getFieldIdx(&myData, 0, 4));
     // printf("\n\tUPDATE\n");
     // updateField(&myData, 6, "Emp_ID", "100");
+    // updateFieldIdx(&myData, 6, 0, "100");
     // printHead(&myData, 5);
     // printTail(&myData, 5);
     // printData(&myData);
     // myData.printStats(&myData);
 
-    // printf("%s %s\n", myData.csv.fieldReader2(&myData, 0, 1), myData.csv.fieldReader2(&myData, 0, 90));
-    // printf("%s %s\n", myData.csv.fieldReader2(&myData, 1, 1), myData.csv.fieldReader2(&myData, 1, 2));
+    // printf("%s %s\n", myData.csv.fieldReaderIdx(&myData, 0, 1), myData.csv.fieldReaderIdx(&myData, 0, 90));
+    // printf("%s %s\n", myData.csv.fieldReaderIdx(&myData, 1, 1), myData.csv.fieldReaderIdx(&myData, 1, 2));
     // sort_value_counts(&myData);
     // printStats(&myData, "all");
 
@@ -133,8 +135,8 @@ int main(void)
     //      --- INSERT ROW --- /* VALGRIND ERRORS!! */
     /* When inserting, must at very least set columnCount (whether insertRow ro insertRowDict) */
 
-    // myData.csv_write_permission = true;
-    // myData.destructive_mode = true;
+    myData.csv_write_permission = true;
+    myData.destructive_mode = true;
 
     // Create your own header
     // can either set header or columnCount if do not want to set header
@@ -142,6 +144,7 @@ int main(void)
     // createHeader(&myData, head, 3);
     // myData.printHeader(&myData);
 
+    // myData.columnCount = 6;
     // char *values[] = {"1111", "Tupac Shakur", "Sales", "123", "100000", "s"};
     // myData.insertRow(&myData, values);
     // char *values[] = {"value1", "value2", "value3"};
@@ -178,7 +181,7 @@ int main(void)
     // myData.csv.rowDictWriter(&myData, values);
     // insertRowDict(&myData, values);
 
-    // printf("Field: %s\n", myData.getField2(&myData, 3, 0));
+    // printf("Field: %s\n", myData.getFieldIdx(&myData, 3, 0));
 
     // myData.printData(&myData);
 
@@ -214,8 +217,12 @@ int main(void)
                                         - value counts not updating  DONE */
     // myData.dropRow(&myData, 5);
 
-    // //      --- Strip ---
-    // // stripField(&myData, "Name");
+    //      --- Strip ---
+    // printf("'%s'\n", myData.getField(&myData, 1, "Name"));
+    // stripField(&myData, 1, "Name");
+    // printf("'%s'\n", myData.getField(&myData, 1, "Name"));
+    // myData.stripColumn(&myData, "Name");
+    myData.stripColumnIdx(&myData, 1);
     // myData.stripAll(&myData);
 
 
@@ -231,16 +238,22 @@ int main(void)
 
     // myData.csv_write_permission = true;
     // myData.csv.fieldWriter(&myData, 0, "Emp ID", "HELLO");
-    // myData.csv.fieldWriter2(&myData, 1, 0, "TEST");
+    // myData.csv.fieldWriterIdx(&myData, 1, 0, "TEST");
 
-    // char *row_values[] = {"3333", "E,,lvis", "Presl,,ey", "Sales", "222", "100000"};
+    // char *row_values[] = {NULL, "Rin,,,,go Starr", "S,,,,ales", NULL, "100000", "d"};
     // myData.csv.rowWriter(&myData, row_values);
+    // myData.insertRow(&myData, row_values);
     // myData.csv_write_permission = true;
-    // dict row_values[] = {{"Test", "a,"}, {"\"Salary,  Data & Entries\"", "100000"}, {"Name", "E,,lvis Presly"}, {"Department", "Sales"}, {"Ext", "222"}, {"Emp ID", "3333"}};
-    // myData.csv.rowDictWriter(&myData, row_values);
 
-    // myData.printStatsAll(&myData);
+    dict row_values[] = {{"Test", NULL}, {"\"Salary,  Data & Entries\"", "250000"}, {"Name", "John Lenn,,,on"}, {"Department", "Sales"}, {"Ext", NULL}, {"Emp ID", "3333"}};
+    // myData.csv.rowDictWriter(&myData, row_values);
+    myData.insertRowDict(&myData, row_values);
+
+    myData.printData(&myData);
+    // myData.printDataTable(&myData);
+    myData.printStatsAll(&myData);
     // myData.printStatsColumn(&myData, "Name");
+
     //      --- End ---
     myData.freeAll(&myData);
 
