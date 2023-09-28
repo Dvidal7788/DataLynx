@@ -1409,7 +1409,8 @@ myData.dropColumn(&myData, "Gross Profit");
 ###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
   <ul>
     
-###### <li>Either set the column count then self.insertRow() (this will automatically create a generic header (e.g. "Column 1", "Column 2", etc...) OR use [createHeader()](#create_header) to create a header with the column names of your choosing, then use insertRow().</li>
+###### <li>Either set the column count then run insertRow() (this will automatically create a generic header (e.g. "Column 1", "Column 2", etc...)</li>
+###### <li>OR use [createHeader()](#create_header) to create a header with the column names of your choosing, then run insertRow().</li>
 ###### <li>NOTE: This will *only* create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
   </ul>
 </ul>
@@ -1515,14 +1516,14 @@ myData.insertRow(&myData, values);
 <ul>
 
 ###### <li>Supply the parameters and the function will insert the row of data provided from the array of dicts into the data set (i.e. the row will be appended to the end of the data set).</li>
-###### <li>NOTE: The dicts in the dict array do NOT need to be in correct column order. As long as the column names are correct, the function will automatically rearrange the valuesto the correct order!</li>
+###### <li>NOTE: The dicts in the dict array do NOT need to be in correct column order. As long as the column names are valid, the function will automatically rearrange the values to the correct column order!</li>
 ###### <li>If the row is successfully inserted, the row count (i.e. self.rowCount) will be incremented by 1.</li>
 ###### <li>DESTRUCTIVE MODE: This function can be run in destructive mode, which will simultaneously insert (append) the row in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. (These are both set to false by default.) (If you wish to *only* insert the row into the CSV file, you may use [csv.rowDictWriter()](#rowDictWriter)).</li>
 ###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
   <ul>
     
 ###### <li>If calling insertRowDict() to create a data structure from scratch, the function will automatically create a header from the column names provided in the dict array.</li>
-##### <li>The function will then insert the row using the values provided in the dict array.</li>
+###### <li>The function will then insert the row using the values provided in the dict array.</li>
 ###### <li>NOTE: This will *only* create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow()/insertRowDict(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
   </ul>
 </ul>
