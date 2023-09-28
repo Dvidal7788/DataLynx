@@ -1,4 +1,11 @@
-​​# Data Wrangling, Cleaning & Analytics Library in C
+<div align="center">
+  
+# Data Lynx
+### Data Wrangling, Cleaning & Analytics Library in C
+<kbd>
+<img src="https://github.com/Dvidal7788/dataLynx/assets/91298183/7b6a07be-0669-4d03-ad7e-e98b9840e6c1" alt="DataLynx" width="200"/>
+</kbd>
+</div>
 
 Overview:
 --------
@@ -7,7 +14,8 @@ Overview:
 >###### This is a library of functions written in C, for use in C programs, inspired by Python's standard CSV library as well as Pandas & SQLite3, giving the user an ease of use similar to Object-Oriented Programming, but with the low-level control that C offers. This library has functionality to read/write from/to CSV files as well as data cleaning and statistical analysis functionality. My goal is to bridge the gap between Python and C, and explore what it takes to write the underlying implementation of libraries that one might otherwise take for granted if accustomed to programming in higher-level languages like Python.
 
 ---
->###### NOTE: In order to acheive Object-Oriented style functionality, the first parameter for every user-facing function must be the address of the dataLynx struct (or 'object') you have declared / constructed using the constructor (e.g. `myData.function(&myData)`). Although this is of course not a true object in the OOP sense, moving forward I will be referring to dataLynx structs as objects since this is the intended use of the struct. *All memory management is handled for you, as long as you run `myData.freeAll(&myData)` at the end of your program.*
+>###### NOTE: In order to acheive Object-Oriented style functionality, the first parameter for every user-facing function must be the address of the dataLynx struct (or 'object') currently in use (e.g. `myData.function(&myData)`). Although this is of course not a true object in the OOP sense, moving forward I will be referring to dataLynx structs as objects since this is the intended use of the struct.
+>*All memory management is handled for you, as long as you run `myData.freeAll(&myData)` at the end of your program.*
 
 <hr>
 
@@ -27,6 +35,7 @@ Table of Contents
   <ul>
   
   ###### <li>[Functions for Reading/Writing from/to a CSV file](#csv)</li> 
+  ###### <li>[Functions for Data Wrangling/Cleaning](#data_wrangling)</li>
   ###### <li>[Functions for Statistical / Aggregate Data](#stats)</li>
   ###### <li>[Functions for Printing](#print)</li>
   </ul>
@@ -78,7 +87,6 @@ myData.csv.fileReader(&myData);
 <ul>
 
   ###### <li>This is a 2D array (i.e. an array of strings). Each string in the array correlates to 1 row. Each row is stored as one long string.</li>
-  ###### <li></li>
   <li>
 
   ```C
@@ -116,7 +124,16 @@ myData.csv.reader_v3(&myData);
   
   </ul>
   </ul>
+  <a id="grid_v3_diagram"></a>
+  
+  ![Grid V3](https://github.com/Dvidal7788/dataLynx/assets/91298183/45cb902f-5622-42e8-b14d-dc994a112c23)
 
+  <ul align="center">
+  
+  ###### <li>The diagram above shows the basic layout of the Grid V3 data structure (i.e. 3D array).</li>
+  </ul>
+
+  ----
   ##### <li>Grid</li>
   <ul>
 
@@ -133,12 +150,21 @@ myData.csv.reader(&myData);
   
   </ul>
   </ul>
+  <a id="grid_diagram"></a>
+
+  ![Grid](https://github.com/Dvidal7788/dataLynx/assets/91298183/b6b349f8-5ac1-4543-8c09-2597b5c6055e)
+
+  <ul align="center">
   
+  ###### <li>The diagram above shows the basic layout of the Grid data structure (i.e. array of linked lists).</li>
+  </ul>
+
+  ---
   ##### <li>Dict Grid</li>
   <ul>
 
   ###### <li>This is an array of dict-style linked lists. Each linked list in the array correlates to 1 row. Each node in the linked list correlates to one field in the data.</li>
-  ###### <li>Each node in the linked lists contains not only a string of the value associated with that field, but also a string of the column name that that particular field is in, hence '*dict*-style linked lists'.</li>
+  ###### <li>Each node in each linked list contains not only a string of the value associated with that field, but also a string of the *column name* that that particular field is in, hence '*dict*-style linked lists'.</li>
   <li>
 
   ```C
@@ -150,6 +176,14 @@ myData.csv.dictReader(&myData);
   ###### <li>The example code above will read an opened CSV file into memory as dict-grid data (i.e. an array of dict-style linked lists).</li>
   
   </ul>
+  </ul>
+  <a id="dict_grid_diagram"></a>
+  
+  ![Dict Grid](https://github.com/Dvidal7788/dataLynx/assets/91298183/bae10ce7-886d-4757-92ab-eac5c9a954de)
+
+  <ul align="center">
+  
+  ###### <li>The diagram above shows the basic layout of the Dict Grid data structure (i.e. array of dict-style linked lists).</li>
   </ul>
 
 </ul>
@@ -187,7 +221,7 @@ Statistics / Value Counts (Aggregate Data)
 ##### For non-numeric columns:
 <ul>
   
-###### <li>Value Counts for each unique value in a given column (i.e. how many times that specific value appears a column).</li>
+###### <li>Value Counts for each unique value in a given column (i.e. how many times that specific value appears in a column).</li>
 ###### <li>Is Null (number of empty field in a given column)</li>
 ###### <li>Not Null (number of non-empty field in a given column)</li>
 </ul>
@@ -209,7 +243,7 @@ FUNCTIONS
 <div align="center">
 
 ###### The following is a complete list of *user-facing* functions (i.e. 'methods' as they exist in the dataLynx object).
-###### (Assume that the dataLynx object that has been declared is named 'myData' for the purposes of these s.)
+###### (Assume that the dataLynx object that has been declared is named 'myData' for the purposes of these examples.)
 </div>
 <hr>
 
@@ -243,6 +277,10 @@ FUNCTIONS
 ```C
 dataLynx myData = dataLynxConstructor();
 ```
+<ul>
+ 
+###### <li>The above code will create a dataLynx object and intitialize the internal attributes the their default state.</li>
+</ul>
 <hr>
 
 
@@ -382,7 +420,7 @@ myData.csv.fileRowReader(&myData)
 
 ###### <li>This function reads the file that has already been opened using csv.openFile() into memory.</li>
 ###### <li>The header, as always, will be stored as an array of strings (i.e. one string per column name).</li>
-###### <li>*The data will be stored in memory as a 3D array (i.e. an array of arrays, in which each secondary array is an array of strings). In other words, this is an array, which stores arrays (one for each row), each of which stores strings (one per field). See diagram below.*.</li>
+###### <li>*The data will be stored in memory as a 3D array (i.e. an array of arrays, in which each secondary array is an array of strings). In other words, this is an array, which stores arrays (one for each row), each of which stores strings (one per field). [See diagram](#grid_v3_diagram).*</li>
 
 </ul>
 
@@ -390,7 +428,7 @@ myData.csv.fileRowReader(&myData)
 <ul>
 
 ###### <li>On success, returns a pointer to a 3D array.</li>
-###### <li>Note: You do not need to assign this return value to anything. It is automatically assigned within the function to a pointer within your dataLynx object. The data structure only gets returned for  convenience.</li>
+###### <li>Note: You do not need to assign this return value to anything. It is automatically assigned within the function to a pointer within your dataLynx object. The data structure is only returned for convenience.</li>
 ###### <li>On failure, returns NULL.</li>
 </ul>
 
@@ -418,7 +456,7 @@ myData.csv.reader_v3(&myData);
 
 ###### <li>This function reads the file that has already been opened using csv.openFile() into memory.</li>
 ###### <li>The header, as always, will be stored as an array of strings (i.e. one string per column name).</li>
-###### <li>*The data will be stored in memory as an array of linked lists. Each linked list represents a row. Each node in the linked list represents a value (i.e. field). See diagram below.*.</li>
+###### <li>*The data will be stored in memory as an array of linked lists. Each linked list represents a row. Each node in the linked list represents a value (i.e. field). [See diagram](#grid_diagram).*</li>
 </ul>
 
 ##### RETURN:
@@ -453,7 +491,7 @@ myData.csv.reader(&myData);
 
 ###### <li>This function reads the file that has already been opened using csv.openFile() into memory.</li>
 ###### <li>The header, as always, will be stored as an array of strings (i.e. one string per column name).</li>
-###### <li>*The data will be stored in memory as an array of dict-style linked lists. Each linked list represents a row. Each node in the linked list represents a value (i.e. field). In addition to storing a value, each node also stores the column name that corresponds with that particular value (e.g. {'Employee ID', '4511'}), in which 'Employee ID' is the column name and '4511' is the corresponding value for that row (i.e. linked list) that this particular node is in. See diagram below.*.</li>
+###### <li>*The data will be stored in memory as an array of dict-style linked lists. Each linked list represents a row. Each node in the linked list represents a value (i.e. field). In addition to storing a value, each node also stores the column name that corresponds with that particular value (e.g. {'Employee ID', '4511'}), in which 'Employee ID' is the column name and '4511' is the corresponding value for that row (i.e. linked list) that this particular node is in. [See diagram](#dict_grid_diagram).*</li>
 </ul>
 
 ##### RETURN:
@@ -480,7 +518,7 @@ myData.csv.dictReader(&myData);
 <ul>
     
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
-###### <li>Integer row index location of field you wish to access.</li>
+###### <li>Integer row index of field you wish to access.</li>
 ###### <li>String of column name of field you wish to access.</li>
 </ul>
 
@@ -519,8 +557,8 @@ myData.fieldReader(&myData, 0, "First Name");
 <ul>
     
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
-###### <li>Integer row index location of field you wish to access.</li>
-###### <li>Integer column index location of field you wish to access.</li>
+###### <li>Integer row index of field you wish to access.</li>
+###### <li>Integer column index of field you wish to access.</li>
 </ul>
 
 ##### To Use:
@@ -548,6 +586,7 @@ myData.fieldReader2(&myData, 0, 1);
 </ul>
 <hr>
 
+
 <!-- CSV.FIELDWRITER-->
 <h4 align="center">csv.fieldWriter()</h4>
 <h6 align="center">bool fieldWriter(dataLynx *self, uintmax_t row, char *column, char *new_field)</h6>
@@ -556,7 +595,7 @@ myData.fieldReader2(&myData, 0, 1);
 <ul>
     
 ###### <li>Pointer to (i.e. address of) dataLynx object</li>
-###### <li>Integer row index location of field you wish to update/write to.</li>
+###### <li>Integer row index of field you wish to update/write to.</li>
 ###### <li>String of column name of field you wish to update/write to.</li>
 ###### <li>String of new value you wish to update field to.</li>
 </ul>
@@ -564,7 +603,8 @@ myData.fieldReader2(&myData, 0, 1);
 ##### To Use:
 <ul>
 
-###### <li></li>
+###### <li>This function updates/changes and exists field in an opened CSV file (see [openFile()](https://github.com/Dvidal7788/dataLynx/tree/master#csvopenfile)) who's filename and file pointer are stored in your dataLynx object./li>
+###### <li>NOTE: This function does NOT update the corresponding field in the data structure in *memory* (see [updateField()](https://github.com/Dvidal7788/dataLynx/tree/master#updateFiled) if this is what you are looking to do). You can do both at the same time by giving yourself CSV writer permission and running updateField() in destructive mode.</li>
 </ul>
 
 ##### RETURN:
@@ -578,6 +618,10 @@ myData.fieldReader2(&myData, 0, 1);
 ##### Example Code:
 
 ```C
+// Give CSV write permission
+myData.csv_write_permission = true;
+
+// Update field in CSV file
 myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 ```
 <ul>
@@ -587,6 +631,161 @@ myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 <hr>
 
 
+<!-- CSV.FIELDWRITER2-->
+<h4 align="center">csv.fieldWriter2()</h4>
+<h6 align="center">bool fieldWriter2(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>Integer row index of field you wish to update/write to.</li>
+###### <li>Integer column index of field you wish to update/write to.</li>
+###### <li>String of new value you wish to update field to.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function updates/changes and exists field in an opened CSV file (see [openFile()](https://github.com/Dvidal7788/dataLynx/tree/master#csvopenfile)) who's filename and file pointer are stored in your dataLynx object./li>
+###### <li>NOTE: This function does NOT update the corresponding field in the data structure in *memory* (see [updateField()](https://github.com/Dvidal7788/dataLynx/tree/master#updateFiled) if this is what you are looking to do). You can do both at the same time by giving yourself CSV writer permission and running updateField() in destructive mode.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+// Give CSV write permission
+myData.csv_write_permission = true;
+
+// Update field in CSV file
+myData.csv.fieldWriter2(&myData, 3, 2, "Smith");
+```
+<ul>
+ 
+###### <li>This will update the value at row 3/column 2 to "Smith". (The previous value in this field will be erased.)</li>
+</ul>
+<hr>
+
+
+
+<!-- CSV.ROWWRITER-->
+<a id="rowWriter"></a>
+<h4 align="center">csv.rowWriter()</h4>
+<h6 align="center">bool rowWriter(dataLynx *self, char *values[])</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>Array of strings (one string for each value contained in the new row)</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function writes a new row to a CSV file. *You must first explicitly give yourself CSV write permission.* See example code below.</li>
+###### <li>Supply the parameters and the function will write the new row to the opened CSV file (see [openFile()](https://github.com/Dvidal7788/dataLynx/tree/master#csvopenfile)) who's filename and file pointer are stored in your dataLynx object.</li>
+###### <li>The values in the value array must be in the correct column order.</li>
+###### <li>NOTE: This function does NOT insert a new row into the data structure in *memory* (see [insertRow()](https://github.com/Dvidal7788/dataLynx/tree/master#insertRow) if this is what you are looking to do).</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+// Give CSV write permission
+myData.csv_write_permission = true;
+
+// Create array of the values to be contained in the new row
+char *values[] = {
+                  "4511",
+                  "John",
+                  "Smith",
+                  "Sales",
+                  "333",
+                  "70000"
+};
+
+// Write new row to CSV file
+myData.csv.rowWriter(&myData, values);
+```
+<ul>
+ 
+###### <li>This will write a new row to the opened CSV file. The row will be appended to the end of the file.</li>
+</ul>
+<hr>
+
+
+
+<!-- CSV.ROW DICT WRITER -->
+<a id="rowDictWriter"></a>
+<h4 align="center">csv.rowDictWriter()</h4>
+<h6 align="center">bool rowDictWriter(dataLynx *self, dict values[])</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object</li>
+###### <li>Array of dicts (each dict containing a string of a value and a string of the column name corresponding to that value.)</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function writes a new row to a CSV file. *You must first explicitly give yourself CSV write permission.* See example code below.</li>
+###### <li>Supply the parameters and the function will write the new row to the opened CSV file (see [openFile()](https://github.com/Dvidal7788/dataLynx/tree/master#csvopenfile)) who's filename and file pointer are stored in your dataLynx object.</li>
+###### <li>The values do NOT need to be in the correct column order! This is the purpose of using csv.rowDictWriter() over csv.rowWriter(). This function will write the row to the CSV file, using the column names in the dict array as a guide, so the values will always be in the correct order!</li>
+###### <li>NOTE: This function does NOT insert a new row into the data structure in *memory* (see [insertRow()](https://github.com/Dvidal7788/dataLynx/tree/master#insertRow) if this is what you are looking to do).</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+// Give CSV write permission
+myData.csv_write_permission = true;
+
+// Create array of dicts (i.e. {column name, value}) with the values to be contained in the new row
+dict values[] = {
+                  {"Employee ID", "4511"},
+                  {"First Name", "John" },
+                  {"Last Name",  "Smith"  },
+                  {"Department", "Sales"},
+                  {"Ext",        "333"  },
+                  {"Salary",     "70000"}
+};
+
+// Write new row to CSV file
+myData.csv.rowDictWriter(&myData, values);
+```
+<ul>
+ 
+###### <li>This will write a new row to the opened CSV file. The row will be appended to the end of the file.</li>
+###### <li>These values will be put in the correct order regardless of their order in the dict array!</li>
+</ul>
+<hr>
 
 
 
@@ -598,6 +797,7 @@ myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 Functions for Data Wrangling / Data Cleaning:
 --------
 </div>
+<a id="data_wrangling"></a>
 
 <!-- FORMAT HEADER-->
 <h4 align="center">formatHeader()</h4>
@@ -615,6 +815,7 @@ Functions for Data Wrangling / Data Cleaning:
 ###### <li>Will format all column names in the header to be Title Case (i.e first letter of each word capitalized) and will replace '_' (underscore) with ' ' (space).</li>
 ###### <li>Ex: 'first_name' will be changed to 'First Name'.</li>
 ###### <li>Ex: 'employee_id' will be changed to 'Employee ID'. NOTE: It was NOT changed to 'Employee Id' in this example, because this function identifies the word 'id' and will capitalize 'D' as well.</li>
+###### <li>DESTRUCTIVE MODE: This function can be run in destructive mode, which will simultaneously change the column name in the header in memory, as well as the header in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. (These are both set to false by default.)</li>
 </ul>
 
 ##### RETURN:
@@ -649,6 +850,7 @@ myData.formatHeader(&myData);
 <ul>
 
 ###### <li>Simply supply the function with the name of the column you wish to change (i.e. old_column_name) and the name you wish to change it to.</li>
+###### <li>DESTRUCTIVE MODE: This function can be run in destructive mode, which will simultaneously change the column name in the header in memory, as well as the header in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. (These are both set to false by default.)</li>
 </ul>
 
 ##### RETURN:
@@ -668,7 +870,7 @@ myData.changeColumnName(&myData, "Dept", "Department");
 
 
 
-<!-- UPDATE FIELD-->
+<!-- UPDATE FIELD -->
 <h4 align="center">updateField()</h4>
 <h6 align="center">bool updateField(dataLynx *self, uintmax_t row, char *column, char *new_value)</h6>
 
@@ -684,8 +886,10 @@ myData.changeColumnName(&myData, "Dept", "Department");
 ##### To Use:
 <ul>
 
-###### <li>Supply the parameters and (as long as the row/column name provided is valid), the function will update the field at that location to the new value provided.</li>
+###### <li>Supply the parameters, and the function will update the field at the specified row/column location in the in-memory dataset with the provided new value (provided that the row/column name is valid).</li>
 ###### <li>If you wish to update the desired field to be blank/empty field/NULL, simply input an empty string (e.g. "") as the new_value parameter. NULL strings will be rejected.</li>
+###### <li>NOTE: Whether updating a field in a numeric OR non-numeric column, the input parameter for the new value will be a string for simplicity's sake.</li>
+###### <li>DESTRUCTIVE MODE: This function can be run in destructive mode, which will simultaneously update the corresponding field in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. (These are both set to false by default.)</li>
 </ul>
 
 ##### RETURN:
@@ -693,34 +897,92 @@ myData.changeColumnName(&myData, "Dept", "Department");
     
 ###### <li>On success, return true.</li>
 ###### <li>On faiure, return false (e.g. invalid dataLynx object address, out of range row index, invalid column name or invalid pointer (i.e. string) to the new value).</li>
-###### <li>NOTE: Whether updating a field in a numeric OR non-numeric column, the input parameter for the new value will be a string for simplicity's sake.</li>
 </ul>
 
 
 ##### Example Code:
 
 ```C
-myData.updateField(&myData, 3, "Revenue", "$34,000");
+myData.updateField(&myData, 3, "Revenue", "34000");
 ```
 <ul>
  
-###### <li>This will update (i.e. change) the value currently in row 3/column name "Revenue" to be 34,000.</li>
-###### <li>NOTE: commas and dollar signs *are* accepted with numeric inputs.</li>
+###### <li>This will update (i.e. change) the value currently in row 3/column name "Revenue" to be 34,000 in the dataset in memory.</li>
 </ul>
 
 ```C
+// Give CSV write permission / set object to destructive mode
+myData.csv_write_permission = true;
+myData.csv_write_permission = false;
+
+// Run updateField in destructive mode
 myData.updateField(&myData, 4, "Department", "Sales");
 ```
 <ul>
  
-###### <li>This will update (i.e. change) the value currently in row 4/column name "Department" to be "Sales".</li>
+###### <li>This will update (i.e. change) the value currently in row 4/column name "Department" to be "Sales" in the dataset in memory, *as well as* the CSV file.</li>
 </ul>
 <hr>
 
 
 
+<!-- UPDATE FIELD2 -->
+<h4 align="center">updateField2()</h4>
+<h6 align="center">bool updateField2(dataLynx *self, uintmax_t row, uintmax_t column, char *new_value)</h6>
 
-<!-- REPLACE -->
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer row index of field you wish to update.</li>
+###### <li>Integer column index of field you wish to update.</li>
+###### <li>String of the new value you wish to update the desired field to.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters, and the function will update the field at the specified row/column location in the in-memory dataset with the provided new value (provided that the row/column name is valid).</li>
+###### <li>If you wish to update the desired field to be blank/empty field/NULL, simply input an empty string (e.g. "") as the new_value parameter. NULL strings will be rejected.</li>
+###### <li>NOTE: Whether updating a field in a numeric OR non-numeric column, the input parameter for the new value will be a string for simplicity's sake.</li>
+###### <li>DESTRUCTIVE MODE: This function can be run in destructive mode, which will simultaneously update the corresponding field in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. (These are both set to false by default.)</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, return true.</li>
+###### <li>On faiure, return false (e.g. invalid dataLynx object address, out of range row index, invalid column name or invalid pointer (i.e. string) to the new value).</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.updateField2(&myData, 3, 4, "34000");
+```
+<ul>
+ 
+###### <li>This will update (i.e. change) the value currently in row 3/column 4 to be 34,000 in the dataset in memory.</li>
+</ul>
+
+```C
+// Give CSV write permission / set object to destructive mode
+myData.csv_write_permission = true;
+myData.csv_write_permission = false;
+
+// Run updateField2 in destructive mode
+myData.updateField2(&myData, 4, 3, "Sales");
+```
+<ul>
+ 
+###### <li>This will update (i.e. change) the value currently in row 4/column 3 to be "Sales" in the dataset in memory, *as well as* the CSV file.</li>
+</ul>
+<hr>
+
+
+
+<!-- REPLACE ALL -->
 <h4 align="center">replaceAll()</h4>
 <h6 align="center">bool replaceAll(dataLynx *self, char *to_replace, char *replace_with);</h6>
 
@@ -804,12 +1066,95 @@ myData.replaceInColumn(&myData, 'First Name', 'Tom', 'Thomas');
 ###### <li>Will replace *all* instances of 'Tom' in the data with 'Thomas'.</li>
 </ul>
 
-```C
-myData.replaceAll(&myData, '?', '');
-```
+<hr>
+
+
+<!-- STRIP FIELD -->
+<h4 align="center">stripField()</h4>
+<h6 align="center">bool stripField(dataLynx *self, uintmax_t row, char *column_name)</h6>
+
+##### PARAMETERS:
 <ul>
-  
-###### <li>Will replace all instances of '?' (*only* in the column who's name matches with column_name) with an empty string. (This will make the Is NULL/Not NULL counts accurate, as '?' is not seen as a NULL value. More on this in later sections.) You may also pass NULL in place of an empty string to acheive the same result.</li>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer row index of field you wish to strip.</li>
+###### <li>Column name of field you wish to strip.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and this function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from both the left and right side of the field.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become "Strategic Initiatives & Programs". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripField(&myData, 4, "First Name");
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the left or right side of the field at row 4/column "First Name".</li>
+</ul>
+<hr>
+
+
+
+
+<!-- STRIP ALL -->
+<h4 align="center">stripAll()</h4>
+<h6 align="center">bool stripAll(dataLynx *self)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from both the left and right side of ALL fields in the data set.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become "Strategic Initiatives & Programs". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripAll(&myData);
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the left or right side of all fields in the data set.</li>
 </ul>
 <hr>
 
@@ -1058,8 +1403,9 @@ myData.dropColumn(&myData, "Gross Profit");
 ##### To Use:
 <ul>
 
-###### <li>Supply the parameters and the function will insert the row of data provided from the array of strings (i.e. values) into the data set (i.e. the row will be appended to the end of the data set).</li>
+###### <li>Supply the parameters and the function will insert the row of data provided from the array of strings (i.e. values) into the in-memory dataset (i.e. the row will be appended to the end of the dataset).</li>
 ###### <li>If the row is successfully inserted, the row count (i.e. self.rowCount) will be incremented by 1.</li>
+###### <li>DESTRUCTIVE MODE: This function can be run in destructive mode, which will simultaneously insert (append) the row in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. (These are both set to false by default.) (If you wish to *only* insert the row into the CSV file, you may use [csv.rowWriter()](#rowWriter)).</li>
 ###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
   <ul>
     
@@ -1079,7 +1425,15 @@ myData.dropColumn(&myData, "Gross Profit");
 ##### Example Code:
 
 ```C
-char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+// -----  A DATA SET IS ALREADY PRESENT in dataLynx object -----
+char *values[] = {
+                  "4511",
+                  "John",
+                  "Smith",
+                  "Sales",
+                  "333",
+                  "70000"
+};
 myData.insertRow(&myData, values);
 ```
 <ul>
@@ -1088,34 +1442,57 @@ myData.insertRow(&myData, values);
 </ul>
 
 ```C
-// Set column count
+// -----  CREATE DATA STRUCTURE FROM SCRATCH (i.e. NO DATA EXISTS in dataLynx object yet) (1st method) -----
+// Set column count (i.e. number of values in the row) so that insertRow can create a generic header
 myData.columnCount = 6;
 
 // Insert 1st row of data
-char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+char *values[] = {
+                  "4511",
+                  "John",
+                  "Smith",
+                  "Sales",
+                  "333",
+                  "70000"
+};
 myData.insertRow(&myData, values);
 ```
 
 <ul>
  
-###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
+###### <li>If *no* data structure exists yet in the dataLynx object, this will create a generic header (e.g. "Column 1", "Column 2", etc..) and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
 </ul>
 
 
 ```C
-// Create header
-char *header[] = {"Employee ID", "First Name", "Last Name", "Department", "Ext", "Salary"};
-unsigned int header_size = 6;
-myData.createHeader(&myData, header, header_size);
+// -----  CREATE DATA STRUCTURE FROM SCRATCH (i.e. NO DATA EXISTS in dataLynx object yet) (2nd method) -----
+// Create header array
+char *header[] = {
+                  "Employee ID",
+                  "First Name",
+                  "Last Name",
+                  "Department",
+                  "Ext",
+                  "Salary"
+};
+unsigned int column_count = 6;
+myData.createHeader(&myData, header, column_count);
 
-// Insert 1st row of data
-char *values[] = {"4511", "John", "Doe", "Sales", "333", "70000"};
+// Create values array / Insert 1st row of data
+char *values[] = {
+                  "4511",
+                  "John",
+                  "Smith",
+                  "Sales",
+                  "333",
+                  "70000"
+};
 myData.insertRow(&myData, values);
 ```
 
 <ul>
  
-###### <li>If no data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
+###### <li>If no data structure exists yet in the dataLynx object, this will create a header based on the array passed as a parameter to createHeader(), as well as create a new data structure (Grid V3), and insert a row with the values contained in the values array.</li>
 </ul>
 
 <hr>
@@ -1123,9 +1500,9 @@ myData.insertRow(&myData, values);
 
 
 
-<!-- INSERT ROW 2()-->
-<h4 align="center">insertRow2()</h4>
-<h6 align="center">bool insertRow2(dataLynx *self, dict values[])</h6>
+<!-- INSERT ROW DICT()-->
+<h4 align="center">insertRowDict()</h4>
+<h6 align="center">bool insertRowDict(dataLynx *self, dict values[])</h6>
 
 ##### PARAMETERS:
 <ul>
@@ -1138,13 +1515,15 @@ myData.insertRow(&myData, values);
 <ul>
 
 ###### <li>Supply the parameters and the function will insert the row of data provided from the array of dicts into the data set (i.e. the row will be appended to the end of the data set).</li>
+###### <li>NOTE: The dicts in the dict array do NOT need to be in correct column order. As long as the column names are correct, the function will automatically rearrange the valuesto the correct order!</li>
 ###### <li>If the row is successfully inserted, the row count (i.e. self.rowCount) will be incremented by 1.</li>
+###### <li>DESTRUCTIVE MODE: This function can be run in destructive mode, which will simultaneously insert (append) the row in the opened CSV file. You must give yourself CSV write permission, *as well as* set the dataLynx object to destructive mode: `myData.csv_write_permission = true;` `myData.destructive_mode;`. (These are both set to false by default.) (If you wish to *only* insert the row into the CSV file, you may use [csv.rowDictWriter()](#rowDictWriter)).</li>
 ###### <li>OTHER USE: You can also use this function to create a data set from scratch!</li>
   <ul>
     
-###### <li>If calling insertRow2() to create a data structure from scratch, the function will automatically create a header from the column names provided in the dict array.</li>
+###### <li>If calling insertRowDict() to create a data structure from scratch, the function will automatically create a header from the column names provided in the dict array.</li>
 ##### <li>The function will then insert the row using the values provided in the dict array.</li>
-###### <li>NOTE: This will *only* create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow()/insertRow2(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
+###### <li>NOTE: This will *only* create a Grid V3 (i.e. 3D array). When creating a data structure from scratch like this using insertRow()/insertRowDict(), (as opposed to reading in the data from a CSV), you do not have the options (yet) of creating any data structure you wish. That functionality will come in the future!</li>
   </ul>
 </ul>
 
@@ -1159,20 +1538,23 @@ myData.insertRow(&myData, values);
 ##### Example Code:
 
 ```C
+// Create array of dicts (i.e. {column_name, value})
 dict values[] = {
-                  {"Employee ID", "4511"},
-                  {"First Name", "John" },
-                  {"Last Name",  "Doe"  },
-                  {"Department", "Sales"},
-                  {"Ext",        "333"  },
-                  {"Salary",     "70000"}
+                  {"Employee ID", "4511" },
+                  {"First Name",  "John" },
+                  {"Last Name",   "Smith"},
+                  {"Department",  "Sales"},
+                  {"Ext",         "333"  },
+                  {"Salary",      "70000"}
 };
-myData.insertRow2(&myData, values);
+
+// Insert row
+myData.insertRowDict(&myData, values);
 ```
 <ul>
  
-###### <li>If a data structure already exists in the dataLynx object, this will insert a new row with the values contained in the array named values.</li>
-###### <li>If *no* data structure exists yet in the dataLynx object, this will create a generic header and create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
+###### <li>If a data structure already exists in the dataLynx object, the above code will insert a new row with the values contained in the values array.</li>
+###### <li>If *no* data structure exists yet in the dataLynx object, the above code will create a header from the first string (i.e. column name) in each dict within the dict array. It will then create a new data structure (Grid V3) and insert a row with the values contained in the array named values.</li>
 </ul>
 
 <hr>
@@ -1211,10 +1593,10 @@ myData.insertRow2(&myData, values);
 ```C
 // Set up parameters
 char *header[] = {"Employee ID", "First Name", "Last Name", "Department", "Ext", "Salary"};
-unsigned int header_size = 6;
+unsigned int column_count = 6;
 
 // Create header
-myData.createHeader(&myData, header, header_size);
+myData.createHeader(&myData, header, column_count);
 ```
 
 <ul>
@@ -1234,7 +1616,7 @@ myData.createHeader(&myData, header, header_size);
 <ul>
 
 ###### <li>Pointer to (i.e. address of) original dataLynx object.</li>
-###### <li>Integer row index location of field you wish to access.</li>
+###### <li>Integer row index of field you wish to access.</li>
 ###### <li>String of column name of field you wish to access.</li>
 
 </ul>
@@ -1284,8 +1666,8 @@ printf("%s", myData.getField(&myData, 3, "Employee ID"));
 <ul>
 
 ###### <li>Pointer to (i.e. address of) original dataLynx object.</li>
-###### <li>Integer row index location of field you wish to access.</li>
-###### <li>Integer of column index location of field you wish to access.</li>
+###### <li>Integer row index of field you wish to access.</li>
+###### <li>Integer of column index of field you wish to access.</li>
 
 </ul>
 
@@ -1586,7 +1968,8 @@ myData.printDataTable(&myData);
 ##### RETURN:
 <ul>
     
-###### <li></li>
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
 </ul>
 
 
@@ -1659,8 +2042,8 @@ myData.printTail(&myData, 5);
 <ul>
 
 ###### <li>This function will print the aggregate data for every column in the data set.</li>
-##### <li>For numeric columns, this function will print min, max, sum, mean, standard deviation, 25th percentile, median, 75th percentile, is null and not null.</li>
-##### <li>For non-numeric column, this function will print the value count for every unique value in the data set, as well as is null/not null counts.</li>
+###### <li>For numeric columns, this function will print min, max, sum, mean, standard deviation, 25th percentile, median, 75th percentile, is null and not null.</li>
+###### <li>For non-numeric column, this function will print the value count for every unique value in the data set, as well as is null/not null counts.</li>
 </ul>
 
 ##### RETURN:
