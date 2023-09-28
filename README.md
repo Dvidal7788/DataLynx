@@ -2449,7 +2449,7 @@ myData.getStat(&myData, "Revenue", "std");
 <ul>
 
 ###### <li>Supply the parameters and the function will return the number of times the specified value appears in the specified column.</li>
-###### <li>NOTE: Value counts are currently only available for non-numeric columns. Other statistical data is provided for numeric columns. (See [Statistics / Value Counts (Aggregate Data](#stat_list) for more info.</li>
+###### <li>NOTE: Value counts are currently only available for non-numeric columns. Other statistical data is provided for numeric columns. (See [Statistics / Value Counts (Aggregate Data)](#stat_list) for more info.)</li>
 </ul>
 
 ##### RETURN:
