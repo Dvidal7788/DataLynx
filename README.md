@@ -58,7 +58,7 @@ The DataLynx 'Object'
 ###### (Regardless of which data structure you choose, the header will be always be stored as a 2D array (i.e. an array of strings) separately from the rest of the data.)
 </div>
 
-##### Simple Data Structures:
+##### SIMPLE DATA STRUCTURES:
 <ul>
   
   >###### NOTE: *The simple data structures (e.g. 'raw' & 'rows') are intended only to be used as a simpler, less memory-intensive data structures for certain instances. These data strucures do NOT offer the full capability of data processing that other data structures offer (i.e. Grid V3, Grid & Dict Grid)*. They are only offered for convenience and full flexibility.
@@ -103,7 +103,7 @@ myData.csv.fileRowReader(&myData);
 </ul>
 
 
-##### Full Functionality Data Structures:
+##### FULL FUNCTIONALITY DATA STRUCTURES:
 <ul>
   
   ##### <li>Grid V3</li>
@@ -1084,7 +1084,7 @@ myData.replaceInColumn(&myData, 'First Name', 'Tom', 'Thomas');
 ##### To Use:
 <ul>
 
-###### <li>Supply the parameters and this function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from both the left and right side of the field.</li>
+###### <li>Supply the parameters and this function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from *BOTH* the left and right sides of the specified field.</li>
 ###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
 
 <ul>
@@ -1115,6 +1115,511 @@ myData.stripField(&myData, 4, "First Name");
 
 
 
+<!-- STRIP FIELD LEFT -->
+<h4 align="center">stripFieldL()</h4>
+<h6 align="center">bool stripFieldL(dataLynx *self, uintmax_t row, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer row index of field you wish to strip.</li>
+###### <li>Column name of field you wish to strip.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and this function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from *ONLY* the left side of the specified field.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become "Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripFieldL(&myData, 4, "First Name");
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the left side of the field at row 4/column "First Name".</li>
+</ul>
+<hr>
+
+
+
+<!-- STRIP FIELD RIGHT -->
+<h4 align="center">stripFieldR()</h4>
+<h6 align="center">bool stripFieldR(dataLynx *self, uintmax_t row, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer row index of field you wish to strip.</li>
+###### <li>Column name of field you wish to strip.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and this function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from *ONLY* the right side of the specified field.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripFieldR(&myData, 4, "First Name");
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the right side of the field at row 4/column "First Name".</li>
+</ul>
+<hr>
+
+
+<!-- STRIP FIELD IDX-->
+<h4 align="center">stripFieldIdx()</h4>
+<h6 align="center">bool stripFieldIdx(dataLynx *self, uintmax_t row, uintmax_t column)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer row index of field you wish to strip.</li>
+###### <li>Integer column index of field you wish to strip.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and this function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from *BOTH* the left and right sides of the specified field.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become "Strategic Initiatives & Programs". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripFieldIdx(&myData, 4, 1);
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the left or right side of the field at row 4/column 1.</li>
+</ul>
+<hr>
+
+
+
+<!-- STRIP FIELD INDEX LEFT -->
+<h4 align="center">stripFieldIdxL()</h4>
+<h6 align="center">bool stripFieldIdxL(dataLynx *self, uintmax_t row, uintmax_t column)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer row index of field you wish to strip.</li>
+###### <li>Integer column index of field you wish to strip.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and this function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from *ONLY* the left side of the specified field.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become "Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripFieldIdxL(&myData, 4, 1);
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the left side of the field at row 4/column 1.</li>
+</ul>
+<hr>
+
+
+
+<!-- STRIP FIELD INDEX RIGHT -->
+<h4 align="center">stripFieldIdxR()</h4>
+<h6 align="center">bool stripFieldIdxR(dataLynx *self, uintmax_t row, uintmax_t column)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer row index of field you wish to strip.</li>
+###### <li>Integer column index of field you wish to strip.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and this function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from *ONLY* the right side of the specified field.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripFieldIdxR(&myData, 4, 1);
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the right side of the field at row 4/column 1.</li>
+</ul>
+<hr>
+
+
+
+
+
+<!-- STRIP COLUMN -->
+<h4 align="center">stripColumn()</h4>
+<h6 align="center">bool stripColumn(dataLynx *self, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and this function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from *BOTH* the left and right sides of the all fields in the specified column.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become "Strategic Initiatives & Programs". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripColumn(&myData, "First Name");
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the left or right side of all fields in the column titled "First Name".</li>
+</ul>
+<hr>
+
+
+
+<!-- STRIP COLUMN LEFT -->
+<h4 align="center">stripColumnL()</h4>
+<h6 align="center">bool stripColumnL(dataLynx *self, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and this function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from *ONLY* the left side of all of the fields in the specified column.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become "Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripColumnL(&myData, "First Name");
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the left side of all of the fields in the column titled "First Name".</li>
+</ul>
+<hr>
+
+
+
+<!-- STRIP COLUMN RIGHT -->
+<h4 align="center">stripColumnR()</h4>
+<h6 align="center">bool stripColumnR(dataLynx *self, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and this function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from *ONLY* the right side of all of the fields in the specified column.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripColumnR(&myData, "First Name");
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the right side of all of the fields in the column titled "First Name".</li>
+</ul>
+<hr>
+
+
+
+
+
+
+<!-- STRIP COLUMN INDEX -->
+<h4 align="center">stripColumnIdx()</h4>
+<h6 align="center">bool stripColumnIdx(dataLynx *self, uintmax_t column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer column index.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and this function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from *BOTH* the left and right sides of the all fields in the specified column.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become "Strategic Initiatives & Programs". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripColumnIdx(&myData, 1);
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the left or right side of all fields in column 1.</li>
+</ul>
+<hr>
+
+
+
+<!-- STRIP COLUMN INDEX LEFT -->
+<h4 align="center">stripColumnIdxL()</h4>
+<h6 align="center">bool stripColumnIdxL(dataLynx *self, uintmax_t column)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer column index.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and this function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from *ONLY* the left side of all of the fields in the specified column.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become "Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripColumnIdxL(&myData, 1);
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the left side of all of the fields in column 1.</li>
+</ul>
+<hr>
+
+
+
+<!-- STRIP COLUMN INDEX RIGHT -->
+<h4 align="center">stripColumnIdxR()</h4>
+<h6 align="center">bool stripColumnIdxR(dataLynx *self, uintmax_t column)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer column index.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Supply the parameters and this function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from *ONLY* the right side of all of the fields in the specified column.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripColumnIdxR(&myData, 1);
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the right side of all of the fields in column 1.</li>
+</ul>
+<hr>
+
+
+
+
 
 <!-- STRIP ALL -->
 <h4 align="center">stripAll()</h4>
@@ -1129,7 +1634,7 @@ myData.stripField(&myData, 4, "First Name");
 ##### To Use:
 <ul>
 
-###### <li>This function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from both the left and right side of ALL fields in the data set.</li>
+###### <li>This function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from BOTH the left *and* right sides of ALL fields in the data set.</li>
 ###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
 
 <ul>
@@ -1157,6 +1662,94 @@ myData.stripAll(&myData);
 ###### <li>The above code will strip any whitespace that appears on the left or right side of all fields in the data set.</li>
 </ul>
 <hr>
+
+
+
+<!-- STRIP ALL LEFT -->
+<h4 align="center">stripAllL()</h4>
+<h6 align="center">bool stripAllL(dataLynx *self)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from *ONLY* the left side of ALL fields in the data set.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become "Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripAllL(&myData);
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the left side of all fields in the data set.</li>
+</ul>
+<hr>
+
+
+<!-- STRIP ALL RIGHT -->
+<h4 align="center">stripAllR()</h4>
+<h6 align="center">bool stripAllR(dataLynx *self)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will strip any whitespace (i.e. spaces, tabs and new line characters, and carriage returns) from *ONLY* the right side of ALL fields in the data set.</li>
+###### <li>NOTE: This will NOT strip white space between non-whitespace characters.</li> 
+
+<ul>
+
+  ###### <li>Example: " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" will become " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strategic Initiatives & Programs". You will not lose the internal whitespace.</li>
+</ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.stripAllR(&myData);
+```
+
+<ul>
+ 
+###### <li>The above code will strip any whitespace that appears on the right side of all fields in the data set.</li>
+</ul>
+<hr>
+
 
 
 
