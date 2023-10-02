@@ -15,7 +15,7 @@ Manifesto:
 
 ---
 >###### NOTE: In order to acheive Object-Oriented style functionality, the first parameter for every user-facing function must be the address of the dataLynx struct (or 'object') currently in use (e.g. `myData.function(&myData)`). Although this is of course not a true object in the OOP sense, moving forward I will be referring to dataLynx structs as objects since this is the intended use of the struct.
->*All memory management is handled for you, as long as you run `myData.freeAll(&myData)` at the end of your program.*
+>*All memory management is handled for you, as long as you run `myData.freeAll(&myData)` at the end of your program or when done using your DataLynx object.*
 
 <hr>
 
