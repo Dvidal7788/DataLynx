@@ -108,6 +108,7 @@ myData.csv.fileRowReader(&myData);
 <div align="center">
   
 ##### FULL FUNCTIONALITY DATA STRUCTURES:
+>###### (The following 3 data structures offer the full functionality of the DataLynx object)
 </div>
 <ul>
   
