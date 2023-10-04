@@ -2692,6 +2692,7 @@ myData.printTail(&myData, 5);
   <ul>
     
   ###### <li>Value counts will be sorted in descending order by their counts (i.e. number of times that unique value appears in the column). If all value counts for a given column are equal (i.e. each value is unique, therefore each value has a count of 1), the value counts will be sorted alphabetically by their value, opposed to being sorted by their counts.</li>
+  ###### <li>The value counts table is printed dynamically, therefore the tabe will grow in width to accomodate tha value with the longest string length, unless that value is greater than self.maxFieldPrintLength, at which point the value will be truncated with an ellipses. (You can adjust self.maxFieldPrintLength to you liking. It is set to 50 by default.) This prevents obnoxiusly long values (e.g. password hashes, notes/comments stored in databases etc...) from making your value counts table undreadable on your computer screen.</li>
   </ul>
 </ul>
 
