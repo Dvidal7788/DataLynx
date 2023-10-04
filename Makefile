@@ -1,7 +1,7 @@
-PROGRAM = DataLynx
+LIBNAME = DataLynx
 CC = gcc
 BIN = bin
-DIST = lib$(PROGRAM)_$(DATE)
+DIST = lib$(LIBNAME)_$(DATE)
 
 SRC = src
 OBJ = obj
@@ -31,10 +31,10 @@ dist:
 	tar -czvf $(DIST).tgz *
 	@echo $(DIST).tgz created $(TIME)
 
-staticlib: $(OBJ)/libcsv_reader.o
+staticlib: $(OBJ)/lib$(LIBNAME).o
 	rm -f include/*.a
-	ar rcs ./include/lib$(PROGRAM)_static.a $<
-	@echo ./include/lib$(PROGRAM)_static.a created successfully $(TIME)
+	ar rcs ./include/lib$(LIBNAME)_static.a $<
+	@echo ./include/lib$(LIBNAME)_static.a created successfully $(TIME)
 
 
 .PHONY: run

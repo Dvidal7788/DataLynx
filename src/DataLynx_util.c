@@ -19,6 +19,8 @@ void create_spaces_string(char buffer[], size_t buffer_size, bool with_divider, 
     return;
 }
 
+// add_commas_to_number()
+
 
 //          TRUNCATE WITH ELLIPSES()
 char truncate_with_ellipses(char *original, char truncated[], uint32_t truncation_point) {
@@ -29,6 +31,8 @@ char truncate_with_ellipses(char *original, char truncated[], uint32_t truncatio
 
     strcpy(truncated, original);
     strcpy(&truncated[truncation_point-3], "...");
+
+    original[truncation_point-3] = removed_char;
 
     return removed_char;
 }

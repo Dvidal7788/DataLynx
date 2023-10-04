@@ -59,6 +59,7 @@ typedef struct dict {
 typedef struct ValueCount {
     char *value;
     uintmax_t count;
+    struct DataLynx *grouped_data;
     struct ValueCount *next;
 } ValueCount;
 
@@ -209,6 +210,7 @@ typedef struct DataLynx {
     bool (*printDataTable)(struct DataLynx *self);
     bool (*printStatsAll)(struct DataLynx *self);
     bool (*printStatsColumn)(struct DataLynx *self, char *column_name);
+    bool (*printPivotTable)(struct DataLynx *self, char *group_by, char *aggregated_column, char *stat);
     bool (*printShape)(struct DataLynx *self);
     bool (*printColumnCond)(struct DataLynx *self, char *column_name, char *condition_operator, char *condition_num);
     void (*freeAll)(struct DataLynx *self);
@@ -216,7 +218,9 @@ typedef struct DataLynx {
 
     bool (*replaceAll)(struct DataLynx *self, char *to_replace, char *replace_with);
     bool (*replaceInColumn)(struct DataLynx *self, char *column_name, char *to_replace, char *replace_with);
+    bool (*replaceInColumnIdx)(struct DataLynx *self, uintmax_t column, char *to_replace, char *replace_with);
     bool (*dropColumn)(struct DataLynx *self, char *column_name);
+    bool (*dropColumnIdx)(struct DataLynx *self, uintmax_t column_index);
     bool (*dropRow)(struct DataLynx *self, uintmax_t row_to_dop);
 
     bool (*createHeader)(struct DataLynx *self, char *header[], uint32_t column_count);
@@ -229,6 +233,7 @@ typedef struct DataLynx {
     bool (*isInColumn)(struct DataLynx *self, char *value, char *column_name);
     bool (*isInData)(struct DataLynx *self, char *value);
     double (*getStat)(struct DataLynx *self, char *column_name, char *operation);
+    double (*getStatIdx)(struct DataLynx *self, uint32_t column, char *operation);
     double (*min)(struct DataLynx *self, char *column_name);
     double (*max)(struct DataLynx *self, char *column_name);
     double (*sum)(struct DataLynx *self, char *column_name);
@@ -300,10 +305,6 @@ bool printData(DataLynx *self);
 bool print_data_internal(DataLynx *self);
 bool printHead(DataLynx *self, uintmax_t number_of_rows);
 bool printTail(DataLynx *self, uintmax_t number_of_rows);
-bool printStatsAll(DataLynx *self);
-bool printStatsColumn(DataLynx *self, char *column_name);
-bool print_stats_internal_(DataLynx *self, char *column_name);
-void print_stats_is_not_null_(DataLynx *self, size_t column_strlen, uint32_t column_index, bool is_null);
 bool printShape(DataLynx *self);
 char *changeMissingValue(DataLynx *self, char *missingValue);
 
@@ -328,8 +329,10 @@ bool update_dict_index(DataLynx *self, uintmax_t desired_row, char *desired_colu
     /* user facing */
 bool replaceAll(DataLynx *self, char *to_replace, char *replace_with);
 bool replaceInColumn(DataLynx *self, char *column_name, char *to_replace, char *replace_with);
+bool replaceInColumnIdx(DataLynx *self, uintmax_t column, char *to_replace, char *replace_with);
 
 bool dropColumn(DataLynx *self, char *column_name);
+bool dropColumnIdx(DataLynx *self, uintmax_t column_index);
 bool dropRow(DataLynx *self, uintmax_t row_to_drop);
 
     /* _internal_ */
@@ -365,9 +368,11 @@ char **string_into_2d_array(DataLynx *self);
 node **split_2darray_by(DataLynx *self, char split_by);
 dict_node **grid_into_dict_grid(DataLynx *self);
 
-// Doubly linked list functions (for use inside of other functions)
+// Doubly linked list functions
 bool build_dblink_list(char **s_ptr, node **head, node **last);
-bool build_dict_link_list(char **s_ptr, dict_node **head, dict_node **last, char **current_column_name); // TODO RENAME TO APPEND
+bool build_dict_link_list(char **s_ptr, dict_node **head, dict_node **last, char **current_column_name);
+void drop_node(node **head, node **cursor);
+void drop_dict_node(dict_node **head, dict_node **cursor);
 
 bool sortRowsByColumn(DataLynx *self, const char *column_name, const char *asc_desc); /* self.in_place_sort & self.case_sensitive_sort will affect this function */
 bool compare_for_sort_(char *field1, char *field2, bool ascending, bool case_sensitive, bool is_number);
@@ -379,7 +384,6 @@ void print_grid(DataLynx *self);
 bool print_lnk_list(DataLynx *self, node *head, uintmax_t current_row);
 bool print_dict_grid(DataLynx *self);
 bool print_dict_grid2(DataLynx *self);
-void stat_print_(char *stat_name, double stat, uint8_t column_strlen);
 
 
 void freeAll(DataLynx *self);

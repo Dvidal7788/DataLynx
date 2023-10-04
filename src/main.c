@@ -93,7 +93,7 @@ int main(void)
     // filteredData.freeAll(&filteredData);
 
     // Needed to make sales_data2.csv print correctly as of 9.8.23 (need to factor screen resolution into print functions)
-    // dropColumn(&myData, "sub_category");
+    // dropColumn(&myData, "Department");
     // dropColumn(&myData, "product");
     // dropColumn(&myData, "product_category");
 
@@ -222,7 +222,8 @@ int main(void)
     // stripField(&myData, 1, "Name");
     // printf("'%s'\n", myData.getField(&myData, 1, "Name"));
     // myData.stripColumn(&myData, "Name");
-    myData.stripColumnIdx(&myData, 1);
+    // printStatsAll(&myData);
+    // myData.stripColumnIdx(&myData, 2);
     // myData.stripAll(&myData);
 
 
@@ -245,15 +246,17 @@ int main(void)
     // myData.insertRow(&myData, row_values);
     // myData.csv_write_permission = true;
 
-    dict row_values[] = {{"Test", NULL}, {"\"Salary,  Data & Entries\"", "250000"}, {"Name", "John Lenn,,,on"}, {"Department", "Sales"}, {"Ext", NULL}, {"Emp ID", "3333"}};
+    // dict row_values[] = {{"Test", NULL}, {"\"Salary,  Data & Entries\"", "250000"}, {"Name", "John Lenn,,,on"}, {"Department", "Sales"}, {"Ext", NULL}, {"Emp ID", "3333"}};
     // myData.csv.rowDictWriter(&myData, row_values);
-    myData.insertRowDict(&myData, row_values);
+    // myData.insertRowDict(&myData, row_values);
 
     myData.printData(&myData);
-    // myData.printDataTable(&myData);
-    myData.printStatsAll(&myData);
+    myData.printDataTable(&myData);
+    // myData.printStatsAll(&myData);
     // myData.printStatsColumn(&myData, "Name");
 
+
+    myData.printPivotTable(&myData, "Department", "Salary,  Data & Entries", "mean");
     //      --- End ---
     myData.freeAll(&myData);
 

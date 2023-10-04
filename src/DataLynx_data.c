@@ -93,8 +93,10 @@ DataLynx DataLynxConstructor(void) {
 
     self.replaceAll = &replaceAll;
     self.replaceInColumn = &replaceInColumn;
+    self.replaceInColumnIdx = &replaceInColumnIdx;
 
     self.dropColumn = &dropColumn;
+    self.dropColumnIdx = &dropColumnIdx;
     self.dropRow = &dropRow;
 
     self.createHeader = &createHeader;
@@ -107,6 +109,7 @@ DataLynx DataLynxConstructor(void) {
     self.valueCount = &valueCount;
     self.isInColumn = &isInColumn;
     self.getStat = &getStat;
+    self.getStatIdx = &getStatIdx;
     self.min = &min;
     self.max = &max;
     self.sum = &sum;
@@ -144,6 +147,7 @@ DataLynx DataLynxConstructor(void) {
     self.printDataTable = &printDataTable;
     self.printStatsAll = &printStatsAll;
     self.printStatsColumn = &printStatsColumn;
+    self.printPivotTable = &printPivotTable;
     self.printShape = &printShape;
     self.printColumnCond = &printColumnCond;
     self.changeMissingValue = &changeMissingValue;
@@ -652,13 +656,21 @@ bool replaceInColumn(DataLynx *self, char *column_name, char *to_replace, char *
 
     if (column_index < 0) return false;
 
-    if (self->grid_v3 != NULL) return grid_v3_replace(self, to_replace, replace_with, column_index);
-    else if (self->grid != NULL) return grid_replace(self, to_replace, replace_with, column_index);
-    else if (self->dict_grid != NULL) return dict_grid_replace(self, to_replace, replace_with, column_index);
+    return replaceInColumnIdx(self, column_index, to_replace, replace_with);
+}
+
+
+bool replaceInColumnIdx(DataLynx *self, uintmax_t column, char *to_replace, char *replace_with) {
+
+    if (self == NULL || to_replace == NULL || replace_with == NULL || column > self->columnCount-1) return false;
+
+
+    if (self->grid_v3 != NULL) return grid_v3_replace(self, to_replace, replace_with, column);
+    else if (self->grid != NULL) return grid_replace(self, to_replace, replace_with, column);
+    else if (self->dict_grid != NULL) return dict_grid_replace(self, to_replace, replace_with, column);
 
     return false;
 }
-
 
 // GRID REPLACE_v3
 bool grid_v3_replace(DataLynx *self, char *to_replace, char *replace_with, intmax_t column) {
@@ -781,18 +793,29 @@ bool dict_grid_replace(DataLynx *self, char *to_replace, char *replace_with, int
 }
 
 
-
 //          DROP COLUMN()
 bool dropColumn(DataLynx *self, char *column_name) {
 
     if (self == NULL) return false;
 
+    // Find index correlating to column name
     int32_t column_index_signed;
     if ((column_index_signed = findColumnIndex(self, column_name)) < 0) return false;
 
     uint32_t column_index = column_index_signed;
 
-    const char *func_name = "dropColumn";
+    return dropColumnIdx(self, column_index);
+
+}
+
+
+
+//          DROP COLUMN INDEX()
+bool dropColumnIdx(DataLynx *self, uintmax_t column_index) {
+
+    if (self == NULL) return false;
+
+    const char *func_name = "dropColumnIdx";
 
     // Allocate new header
     char **new_header = (char**)malloc(sizeof(char*) * (self->columnCount-1));
@@ -805,74 +828,56 @@ bool dropColumn(DataLynx *self, char *column_name) {
 
     for (uintmax_t row = 0; row < self->rowCount; row++) {
 
+        // Set up pointers for new row
+        char **new_row_grid_v3 = NULL;
+        node *grid_row_cursor = NULL;
+        dict_node *dict_grid_row_cursor = NULL;
+
         // Allocate new row (1 less column)
-        char **new_row = NULL;
         if (self->grid_v3 != NULL) {
-            new_row = (char**)malloc(sizeof(char*) * (self->columnCount-1));
-            if (new_row == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+            new_row_grid_v3 = (char**)malloc(sizeof(char*) * (self->columnCount-1));
+            if (new_row_grid_v3 == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
         }
+        // Assign pointer to row
+        else if (self->grid != NULL) grid_row_cursor = self->grid[row];
+        else if (self->dict_grid != NULL) dict_grid_row_cursor = self->dict_grid[row];
 
 
         // Copy data from old row to new row (skip column to drop)
         uint32_t new_row_column = 0; /* Must use separate column counter or else will get off track after drop column is reached (i.e. will be one index off)*/
         for (uint32_t column = 0; column < self->columnCount; column++) {
 
+
+            // Copy all columns, except drop column (do not need to copy for grid/dict_grid. Will simply drop the node when we come across it)
             if (column != column_index) {
 
-                if (self->grid_v3 != NULL) {new_row[new_row_column] = self->grid_v3[row][column];}
+                if (self->grid_v3 != NULL) {new_row_grid_v3[new_row_column] = self->grid_v3[row][column];}
 
                 new_header[new_row_column] = self->__header__[column];
                 new_aggregate[new_row_column] = self->aggregate[column];
 
                 new_row_column++;
+
+                // Next column (this goes here, because if on column to drop, drop_node/drop_dict_node will get pointer to next node)
+                if (self->grid != NULL) grid_row_cursor = grid_row_cursor->next;
+                else if (self->dict_grid != NULL) dict_grid_row_cursor = dict_grid_row_cursor->next;
             }
             else {
+
+                // Free field (in the column to drop) in current row
                 if (self->grid_v3 != NULL) free_null(&self->grid_v3[row][column]);
+                else if (self->grid != NULL) drop_node(&self->grid[row], &grid_row_cursor);
+                else if (self->dict_grid != NULL) drop_dict_node(&self->dict_grid[row], &dict_grid_row_cursor);
+
             }
 
 
         }
 
+        // Free old row and reassign (only for grid_v3)
         if (self->grid_v3 != NULL) {
-            // Free old row and reassign
             free(self->grid_v3[row]);
-            self->grid_v3[row] = new_row;
-        }
-        else if (self->grid != NULL) {
-
-            if (column_index == 0) {
-                node *tmp = self->grid[row];
-                self->grid[row] = self->grid[row]->next;
-                free_null(&tmp->s);
-                free(tmp);
-            }
-            else {
-                node *tmp_prev = self->grid[row];
-                get_ptr_to_correct_column(column_index-1, &tmp_prev, NULL);
-                node *tmp_to_drop = tmp_prev->next;
-                tmp_prev->next = tmp_to_drop->next;
-                free_null(&tmp_to_drop->s);
-                free(tmp_to_drop);
-            }
-
-        }
-        else if (self->dict_grid != NULL) {
-
-            if (column_index == 0) {
-                dict_node *tmp = self->dict_grid[row];
-                self->dict_grid[row] = self->dict_grid[row]->next;
-                free_null(&tmp->s);
-                free(tmp);
-            }
-            else {
-                dict_node *tmp_prev = self->dict_grid[row];
-                get_ptr_to_correct_column(column_index-1, NULL, &tmp_prev);
-                dict_node *tmp_to_drop = tmp_prev->next;
-                tmp_prev->next = tmp_to_drop->next;
-                free_null(&tmp_to_drop->s);
-                free(tmp_to_drop);
-            }
-
+            self->grid_v3[row] = new_row_grid_v3;
         }
 
     }
@@ -913,6 +918,77 @@ bool dropColumn(DataLynx *self, char *column_name) {
 
     return true;
 }
+
+
+//      DROP NODE (in linked list)
+void drop_node(node **head, node **cursor) {
+
+    node *tmp_to_drop = *cursor;
+
+    if ((*cursor)->prev == NULL) {
+
+        // Get cursor to next node
+        (*cursor) = (*cursor)->next;
+        (*cursor)->prev = NULL;
+
+        // Make sure pointer in array of linked lists now points to correct node
+        *head = *cursor;
+
+
+    }
+    else {
+        node *tmp_prev = (*cursor)->prev;
+        tmp_prev->next = tmp_to_drop->next;
+
+        (*cursor)->next = tmp_prev;
+
+        // Get cursor to next node
+        (*cursor) = (*cursor)->next;
+
+    }
+
+    // Free / set to NULL
+    free_null(&tmp_to_drop->s);
+    free(tmp_to_drop);
+
+    return;
+}
+
+
+//      DROP DICT NODE (in linked list)
+void drop_dict_node(dict_node **head, dict_node **cursor) {
+
+    dict_node *tmp_to_drop = *cursor;
+
+    if ((*cursor)->prev == NULL) {
+
+        // Get cursor to next dict_node
+        (*cursor) = (*cursor)->next;
+        (*cursor)->prev = NULL;
+
+        // Make sure pointer in array of linked lists now points to correct dict_node
+        *head = *cursor;
+
+
+    }
+    else {
+        dict_node *tmp_prev = (*cursor)->prev;
+        tmp_prev->next = tmp_to_drop->next;
+
+        (*cursor)->next = tmp_prev;
+
+        // Get cursor to next dict_node
+        (*cursor) = (*cursor)->next;
+
+    }
+
+    // Free / set to NULL
+    free_null(&tmp_to_drop->s);
+    free(tmp_to_drop);
+
+    return;
+}
+
 
 
 //      DROP ROW()
@@ -1372,10 +1448,12 @@ bool strip_column_internal_(DataLynx *self, uintmax_t column, int8_t strip_side)
         else if (self->grid != NULL) {
             grid_tmp = self->grid[row];
             get_ptr_to_correct_column(column, &grid_tmp, NULL);
+            field = grid_tmp->s;
         }
         else if (self->dict_grid != NULL) {
             dict_tmp = self->dict_grid[row];
             get_ptr_to_correct_column(column, NULL, &dict_tmp);
+            field = dict_tmp->s;
         }
 
 
@@ -2158,21 +2236,14 @@ intmax_t findColumnIndex(DataLynx *self, const char *desired_column) {
     if (self->__header__ == NULL && self->file_ptr != NULL) headerReader(self);
 
     bool found_column = false;
+    bool case_sensitive = true;
     uintmax_t current_column = 0;
     while (current_column < self->columnCount) {
 
         // Compare strings
-        if (strcmp(self->__header__[current_column], desired_column) == 0) {
+        if (strcmp_quotes(self->__header__[current_column], desired_column, case_sensitive) == 0) {
             found_column = true;
             break;
-        }
-        else if (has_quotes(self->__header__[current_column])) {
-            // Compare strings without quotes:
-
-            if (strcmp(remove_quotes(self, self->__header__[current_column]), desired_column) == 0) {
-                found_column = true;
-                break;
-            }
         }
 
         current_column++;
@@ -2932,7 +3003,7 @@ bool printColumn(DataLynx *self, char *column_name) {
 bool printDataTable(DataLynx *self) {
     // TO DO scientifi notation, all data structure
     printf("\t<DATA SQL STYLE>\n\n");
-    uint8_t column_lengths[self->columnCount]; /* This can be 8-bits instead of size_t, bc we will not store anything in it greater than self->maxFieldPrintLength */
+    uint16_t column_lengths[self->columnCount]; /* This can be 16-bits instead of size_t, bc we will not store anything in it greater than self->maxFieldPrintLength */
     size_t head_strlens[self->columnCount];
     uint8_t padding = 2;
 
@@ -2947,7 +3018,6 @@ bool printDataTable(DataLynx *self) {
         else column_lengths[column] = self->aggregate[column].longest_field_strlen + padding;
 
         head_strlens[column] = head_strlen;
-        // printf("c: %d, c_length: %d, head_strlen: %ld\n", column, column_lengths[column], head_strlens[column]);
 
     }
 
@@ -2986,11 +3056,9 @@ bool printDataTable(DataLynx *self) {
 
                 if (num_spaces < 0) {
 
-                    char tmp = truncate_with_ellipses(self->__header__[column], truncated, self->maxFieldPrintLength-1);
+                    truncate_with_ellipses(self->__header__[column], truncated, self->maxFieldPrintLength-2);
 
-                    (column == 0) ? printf("|%s|", truncated) : printf("%s|", truncated);
-
-                    self->__header__[column][self->maxFieldPrintLength-3] = tmp;
+                    (column == 0) ? printf("| %s |", truncated) : printf(" %s |", truncated);
 
                     continue;
                 }
@@ -3062,12 +3130,10 @@ bool printDataTable(DataLynx *self) {
             if (num_spaces <= 0) {
 
                 // self->maxFieldPrintLength - 2 to make room for at least 1 space before & after field value
-                char tmp = truncate_with_ellipses(field, truncated, self->maxFieldPrintLength-2);
+                truncate_with_ellipses(field, truncated, self->maxFieldPrintLength-2);
 
                 (column == 0) ? printf("| %s |", truncated) : printf(" %s |", truncated);
 
-                // Replace char
-                field[self->maxFieldPrintLength-3] = tmp;
 
                 continue;
             }
@@ -3699,563 +3765,6 @@ bool print_dict_grid2(DataLynx *self)
 
 
 
-bool printStatsAll(DataLynx *self) {
-
-    if (self == NULL) return false;
-
-    if (self->aggregate == NULL) return false;
-
-    return print_stats_internal_(self, PRINT_ALL_STATS);
-
-}
-
-
-bool printStatsColumn(DataLynx *self, char *column_name) {
-
-    if (self == NULL || column_name == NULL) return false;
-
-    if (self->aggregate == NULL) return false;
-
-    return print_stats_internal_(self, column_name);
-
-}
-
-
-        // PRINT STATS INTERNAL() (side by side) and Sorted Value Counts Works :)
-bool print_stats_internal_(DataLynx *self, char *column_name) {
-
-    // if (self == NULL) return false;
-
-    // if (self->aggregate == NULL || column_name == NULL) return false;
-
-    char *func_name = "print_stats_internal_";
-
-    // Determine whether to display all columns or just one (i.e. this does not work IF csv has a column named "All")
-    int16_t c = 0, start = 0, stop = self->columnCount;
-    bool print_one_column = false;
-    if (strcmp(column_name, PRINT_ALL_STATS) != 0) {
-
-        // Adjust start and stop to only print desired column
-        if ((c = findColumnIndex(self, column_name)) >= 0) stop = c + 1;
-        // else c = 0; /* if an invalid column name is given, we will print all stats */
-        else return false;
-
-        print_one_column = true;
-
-        start = c;
-
-    }
-
-    // Buffer to remember columns for value counts
-    uint16_t non_numeric_columns[self->columnCount];
-    uint16_t non_numeric_column_count = 0;
-
-    printf("\n\t\t<Data from file: %s>\n", self->filename);
-
-    if (!print_one_column || (print_one_column && self->aggregate[c].is_number) ) printf("\n\t\t- Numeric Stats - \n");
-
-    const int8_t STAT_COUNT = 10; /* This is the number of numeric stats we are printing per column
-                                    (i.e. Min, Max, Sum, Mean, 25th %, Median, 75th %, Std,
-                                    as well as Is Null and Not Null, which are also printed for non-numeric stats aka Value Counts) */
-
-
-    char space = ' ';
-    bool numeric_stats_in_data = false;
-
-    // For each stat: iterate through columns to find numeric columns
-    for (int8_t stat = -1; stat < STAT_COUNT; stat++) {
-
-        c = start;
-        // Iterate through columns to find numeric columns
-        while (c < stop) {
-
-            uint8_t column_strlen = strlen(self->__header__[c]) + 23; /* stat_print_() needs this to give proper spacing (to make the column stats line up nicely)*/
-
-            // Found numeric column
-            if (self->aggregate[c].is_number) {
-
-                numeric_stats_in_data = true;
-
-                // Print stats
-                if (stat == -1) {
-                    !has_quotes(self->__header__[c]) ? printf("'%s' <Aggregate Data>%3c", self->__header__[c], space) : printf("%s <Aggregate Data>%3c", self->__header__[c], space);
-                }
-                else if (stat == 0) {
-                    stat_print_("Min", self->aggregate[c].min, column_strlen);
-                }
-                else if (stat == 1){
-                    stat_print_("Max", self->aggregate[c].max, column_strlen);
-                }
-                else if (stat == 2){
-                    stat_print_("Sum", self->aggregate[c].sum, column_strlen);
-                }
-                else if (stat == 3){
-                    stat_print_("Mean", self->aggregate[c].mean, column_strlen);
-                }
-                else if (stat == 4){
-                    stat_print_("25th %", self->aggregate[c].lower_qrt, column_strlen);
-                }
-                else if (stat == 5){
-                    stat_print_("Median", self->aggregate[c].median, column_strlen);
-                }
-                else if (stat == 6){
-                    stat_print_("75th %", self->aggregate[c].upper_qrt, column_strlen);
-                }
-                else if (stat == 7){
-                    stat_print_("Std", self->aggregate[c].std, column_strlen);
-                }
-                else if (stat == 8){
-                    stat_print_("Is Null", (double)self->aggregate[c].is_null, column_strlen);
-                }
-                else if (stat == 9){
-                    stat_print_("Not Null", (double)self->aggregate[c].not_null, column_strlen);
-                }
-
-            }
-            else if (stat == -1) {
-                /* functionally the same as saying else if (stat == -1 && !self->aggregate[c].is_number) */
-                /* Only do this one time around, otherwise will count columns multiple times.*/
-
-                // Remember which column indexes are non-numeric, so we do not have to iterate through each column and check again when we print the value counts
-                non_numeric_columns[non_numeric_column_count] = c;
-                non_numeric_column_count++;
-            }
-
-            c++;
-        }
-
-        /* Without this if statement, it will print new lines for every stat as it looks for numeric columns even when no numeric columns exist*/
-        if (numeric_stats_in_data) {
-            (stat == STAT_COUNT-1) ? printf("\n\n"): printf("\n");
-        }
-
-
-    }
-
-    if (!numeric_stats_in_data && !print_one_column) printf("\n* No numeric stats for this dataset *\n\n\n");
-    else if (!numeric_stats_in_data && print_one_column) printf("\n* No numeric stats for this column *\n\n\n");
-
-
-    //              --- COPY VALUE COUNTS INTO SEPARATE ARRAYS TO SORT ---
-
-    // Allocate main sorted array (i.e. array of arrays of sorted value counts per column)
-    ValueCount **sorted = (ValueCount**)malloc(sizeof(ValueCount*) * non_numeric_column_count);
-    if (sorted == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
-
-    // Array to keep track of unique values for each non-numeric column
-    uint16_t *unique_values = (uint16_t*)malloc(sizeof(uint16_t) * non_numeric_column_count);
-    if (unique_values == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
-
-    uint16_t most_unique_values = 0;
-
-    // Put Value Counts for current column into separate array
-    for (c = 0; c < non_numeric_column_count; c++) {
-
-        uint32_t column = non_numeric_columns[c];
-
-        // Allocate array for sorted value counts
-        uint32_t current_unique_values = 0;
-
-        // Allocate array for sorted value counts of current column
-        ValueCount *current_sorted = (ValueCount*)malloc(sizeof(ValueCount));
-        if (current_sorted == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
-
-        bool first_value = true, values_exist = false;
-
-        // Iterate through alpha value count array
-        for (int l = 0; l < 27; l++) {
-            ValueCount *tmp = self->aggregate[column].value_counts[l];
-
-            // Traverse linked list for current alpha character
-            while (tmp != NULL) {
-
-                values_exist = true;
-
-                //  Realloc sorted array
-                if (!first_value) {
-                    current_sorted = (ValueCount*)realloc(current_sorted, sizeof(ValueCount) * ((++current_unique_values) + 1));
-                    if (current_sorted == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
-                }
-                else first_value = false;
-
-                // Assign to sorted array to be sorted in next section
-                current_sorted[current_unique_values].value = tmp->value;
-                current_sorted[current_unique_values].count = tmp->count;
-
-                tmp = tmp->next;
-
-            }
-
-        }
-
-        // Keep track of unique values for current non-numeric column
-        unique_values[c] = (values_exist) ? ++current_unique_values : 0;
-
-        if (current_unique_values > most_unique_values) most_unique_values = current_unique_values;
-
-        // Sort current column's value counts
-        for (uint32_t i = 0; i < current_unique_values; i++) {
-
-            uint32_t largest = i;
-
-            for (uint32_t j = i + 1; j < current_unique_values; j++) {
-
-                if (current_sorted[j].count > current_sorted[largest].count) largest = j;
-            }
-
-            // Swap
-            if (i != largest) {
-                ValueCount tmp = current_sorted[i];
-                current_sorted[i] = current_sorted[largest];
-                current_sorted[largest] = tmp;
-            }
-        }
-
-        // Attach array of sorted value counts for current column to array of arrays
-        sorted[c] = current_sorted;
-
-    }
-
-    //          --- PRINT VALUE COUNTS ---
-    if (non_numeric_column_count == 0) return true;
-    printf("\t\t- Value Counts -\n\t   (i.e. non-numeric stats)\n");
-
-    bool with_divider = true;
-
-    for (int32_t v = -2; v < most_unique_values+4; v++) {
-
-        for (uint32_t c = 0; c < non_numeric_column_count; c++) {
-
-            uint32_t column_index = non_numeric_columns[c];
-
-            // Column string length sets the length for that column
-            size_t column_strlen = strlen(self->__header__[column_index]) + 31;
-
-            // Print column name
-            if (v == -2) {
-                has_quotes(self->__header__[c]) ? printf("%s <Aggregate Data>%10c| ", self->__header__[column_index], space) : printf("'%s' <Aggregate Data>%10c| ", self->__header__[column_index], space);
-                continue;
-            }
-            else if (v == -1 || v == most_unique_values) {
-                // This create a line break after column head / after values are printed, before unique values is printed
-                char dashes[column_strlen+1];
-                char char_to_print = (v == -1) ? '-' : ' ';
-                create_spaces_string(dashes, column_strlen+1, with_divider, char_to_print);
-                if (c == (uint32_t)non_numeric_column_count-1) dashes[column_strlen-1] = '\0';
-                printf("%s", dashes);
-
-                continue;
-            }
-            else if (v == most_unique_values+1) {
-                // Print Unique Values
-                char unique_string[32];
-                sprintf(unique_string, "Unique values: %u", unique_values[c]);
-
-                int8_t num_spaces = column_strlen - strlen(unique_string);
-                char spaces[num_spaces+1];
-                create_spaces_string(spaces, num_spaces+1, with_divider, ' ');
-
-                printf("%s%s", unique_string, spaces);
-                continue;
-            }
-            else if (v == most_unique_values+2) {
-                // Print Is Null
-                bool is_null = true;
-                uint32_t column_index = non_numeric_columns[c];
-                print_stats_is_not_null_(self, column_strlen, column_index, is_null);
-                continue;
-            }
-            else if (v == most_unique_values+3) {
-                // Print Not Null
-                bool is_null = false;
-                uint32_t column_index = non_numeric_columns[c];
-                print_stats_is_not_null_(self, column_strlen, column_index, is_null);
-                continue;
-            }
-
-
-            // Print spaces if no more values to dislay for this column
-            if (unique_values[c] <= v) {
-                char spaces[column_strlen+1];
-                create_spaces_string(spaces, column_strlen+1, with_divider, ' ');
-                printf("%s", spaces);
-                continue;
-            }
-
-            char print_string[64];
-            has_quotes(sorted[c][v].value) ? sprintf(print_string, "Value: %s", sorted[c][v].value) : sprintf(print_string, "Value: '%s'", sorted[c][v].value);
-
-            uint8_t value_strlen = strlen(print_string);
-
-            char count_string[32];
-
-            sprintf(count_string, "Count: %ld | ", sorted[c][v].count);
-
-            size_t count_strlen = strlen(count_string);
-
-            // Spaces
-            int8_t num_spaces = column_strlen - value_strlen - count_strlen;
-
-            if (num_spaces > 0) {
-                char spaces[num_spaces+1];
-                for (uint8_t s = 0; s < num_spaces+1; s++) spaces[s] =  (s == num_spaces) ? '\0' : ' ';
-                printf("%s%s%s", print_string, spaces, count_string);
-            }
-            else {
-
-                // num spaces is negative
-                sprintf(&print_string[value_strlen+num_spaces-4], "... ");
-                printf("%s%s", print_string, count_string);
-            }
-
-        }
-
-        // (v == most_unique_values-1) ? printf("\n\n") : printf("\n");
-        printf("\n");
-    }
-
-    // Free arrays
-    for (uint16_t c = 0; c < non_numeric_column_count; c++) free(sorted[c]);
-    free(sorted);
-    free(unique_values);
-
-    return true;
-}
-
-
-//      stat_print_ (Called from print_stats_internal_)
-void stat_print_(char *stat_name, double stat, uint8_t column_strlen) {
-
-    char print_string[32];
-
-    // Fill buffer with print string - (Numeric stats are all doubles, however Is Null/Not Null is an integer, hence the inline if)
-    (strcasecmp(stat_name, "Is Null") != 0 && strcasecmp(stat_name, "Not Null") != 0) ? snprintf(print_string, 32, "%s: %.2f", stat_name, stat) : snprintf(print_string, 32, "%s: %.0f", stat_name, stat);
-
-    uint8_t stat_length = strlen(print_string);
-
-    // Express stat in scientific notation if longer than header
-    if (stat_length > (size_t)column_strlen-2) {
-        snprintf(print_string, 32, "%s: %e", stat_name, stat);
-        stat_length = strlen(print_string); /* Recalc stat_length */
-    }
-
-    // Print stat
-    printf("%s", print_string);
-
-    // Print correct number of spaces to line up next stat
-    uint8_t spaces_count = column_strlen - stat_length;
-    char spaces[spaces_count];
-    for (uint8_t s = 0; s < spaces_count; s++) {spaces[s] = (s == spaces_count-1) ? '\0' : ' ';}
-
-    printf("%s", spaces);
-    return;
-}
-
-
-void print_stats_is_not_null_(DataLynx *self, size_t column_strlen, uint32_t column_index, bool is_null) {
-
-    char print_string[32];
-    is_null ? sprintf(print_string, "Is Null %ld", self->aggregate[column_index].is_null) : sprintf(print_string, "Not Null %ld", self->aggregate[column_index].not_null);
-    char spaces[32];
-    bool with_divider = true;
-    uint8_t num_spaces = column_strlen - strlen(print_string) + 1;
-    create_spaces_string(spaces, num_spaces, with_divider, ' ');
-
-    (!is_null && column_index == self->columnCount-1) ? printf("%s%s\n", print_string, spaces) : printf("%s%s", print_string, spaces);
-
-    return;
-}
-
-
-//         // PRINT STATS() (side by side) and Sorted Value Counts Works :)
-// bool printStats(DataLynx *self, char *column_name) {
-
-//     if (self == NULL) return false;
-
-//     if (self->aggregate == NULL || column_name == NULL) return false;
-
-//     char *func_name = "printStats";
-
-//     // Determine whether to display all columns or just one (i.e. this does not work IF csv has a column named "All")
-//     int16_t c = 0, start = 0, stop = self->columnCount;
-//     if (strcasecmp(column_name, "all") != 0) {
-
-//         if ((c = findColumnIndex(self, column_name)) >= 0) stop = c + 1;
-//         else c = 0;
-
-//         start = c;
-
-//     }
-
-//     // Buffer to remember columns for value counts
-//     uint16_t non_numeric_columns[self->columnCount];
-//     uint16_t non_numeric_column_count = 0;
-
-//     printf("\n\t<Data from file: %s>\n", self->filename);
-
-//     printf("\n\t- Numeric Stats - \n");
-
-//     int8_t stat_count = 10;
-
-//     char space = ' ';
-//     bool numeric_stats_in_data = false;
-//     for (int8_t stat = -1; stat < stat_count; stat++) {
-
-//         c = start;
-//         while (c < stop) {
-
-//             uint8_t column_strlen = strlen(self->__header__[c]) + 23;
-
-//             // Numeric Stats
-//             if (self->aggregate[c].is_number) {
-
-//                 numeric_stats_in_data = true;
-
-//                 // Print stats
-//                 if (stat == -1) {
-//                     !has_quotes(self->__header__[c]) ? printf("'%s' <Aggregate Data>%3c", self->__header__[c], space) : printf("%s <Aggregate Data>%3c", self->__header__[c], space);
-//                 }
-//                 else if (stat == 0) {
-//                     stat_print_("Min", self->aggregate[c].min, column_strlen);
-//                 }
-//                 else if (stat == 1){
-//                     stat_print_("Max", self->aggregate[c].max, column_strlen);
-//                 }
-//                 else if (stat == 2){
-//                     stat_print_("Sum", self->aggregate[c].sum, column_strlen);
-//                 }
-//                 else if (stat == 3){
-//                     stat_print_("Mean", self->aggregate[c].mean, column_strlen);
-//                 }
-//                 else if (stat == 4){
-//                     stat_print_("25th %", self->aggregate[c].lower_qrt, column_strlen);
-//                 }
-//                 else if (stat == 5){
-//                     stat_print_("Median", self->aggregate[c].median, column_strlen);
-//                 }
-//                 else if (stat == 6){
-//                     stat_print_("75th %", self->aggregate[c].upper_qrt, column_strlen);
-//                 }
-//                 else if (stat == 7){
-//                     stat_print_("Std", self->aggregate[c].std, column_strlen);
-//                 }
-//                 else if (stat == 8){
-//                     stat_print_("Is Null", (double)self->aggregate[c].is_null, column_strlen);
-//                 }
-//                 else if (stat == 9){
-//                     stat_print_("Not Null", (double)self->aggregate[c].not_null, column_strlen);
-//                 }
-
-//             }
-//             else if (stat == -1) {
-//                 /* Only do this one time around, otherwise will count columns multiple times.*/
-//                 // Remember which column indexes are non-numeric, so we do not have to iterate through each column and check again when we print the value counts
-//                 non_numeric_columns[non_numeric_column_count] = c;
-//                 non_numeric_column_count++;
-//             }
-
-//             c++;
-//         }
-
-//         if (numeric_stats_in_data) {
-//             (stat == stat_count-1) ? printf("\n\n"): printf("\n");
-//         }
-
-
-//     }
-
-//     if (!numeric_stats_in_data) printf("\n* No numeric stats for this dataset *\n\n\n");
-
-//     printf("\t- Value Counts -\n(i.e. non-numeric stats)\n\n");
-
-
-
-//     // Print Value Counts (i.e Non Numeric Columns)
-//     for (c = 0; c < non_numeric_column_count; c++) {
-
-//         uint32_t column = non_numeric_columns[c];
-
-//         // Print column name
-//         has_quotes(self->__header__[column]) ? printf("%s <Aggregate Data>\n", self->__header__[column]) : printf("'%s' <Aggregate Data>\n", self->__header__[column]);
-
-//         // Allocate array for sorted value counts
-//         uint32_t unique_values = 0;
-
-//         ValueCount *sorted = (ValueCount*)malloc(sizeof(ValueCount));
-//         if (sorted == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
-
-//         // Put Value Counts for current column into separate array
-//         for (int l = 0; l < 27; l++) {
-//             ValueCount *tmp = self->aggregate[column].value_counts[l];
-
-//             while (tmp != NULL) {
-
-//                 // Either print with '' or without if field has ""
-//                 // has_quotes(tmp->value) ? printf("Value: %s, Count: %ld\n", tmp->value, tmp->count) : printf("Value: '%s', Count: %ld\n", tmp->value, tmp->count);
-
-//                 sorted[unique_values].value = tmp->value;
-//                 sorted[unique_values].count = tmp->count;
-
-//                 tmp = tmp->next;
-
-//                 //  Realloc sorted array
-//                 if (tmp != NULL) {
-//                     sorted = (ValueCount*)realloc(sorted, sizeof(ValueCount) * (++unique_values + 1));
-//                     if (sorted == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
-//                 }
-
-//             }
-//         }
-
-
-//         // SORT
-//         for (uint32_t i = 0; i < unique_values-1; i++) {
-
-//             uint32_t largest = i;
-
-//             for (uint32_t j = i + 1; j < unique_values; j++) {
-
-//                 if (sorted[j].count > sorted[i].count) largest = j;
-//             }
-
-//             // Swap
-//             if (i != largest) {
-//                 ValueCount tmp = sorted[i];
-//                 sorted[i] = sorted[largest];
-//                 sorted[largest] = tmp;
-//             }
-//         }
-
-//         // uint8_t column_strlen = strlen(self->__header__[c]) + 23;
-//         // char space = ' ';
-
-//         // PRINT value counts for current column
-//         printf("Unique values: %u\n", unique_values);
-
-//         for (uint32_t v = 0; v < unique_values; v++) {
-
-//             // uint8_t value_strlen = strlen(sorted[v].value) + 23;
-
-//             // char print_string[value_strlen+32];
-
-//             has_quotes(sorted[v].value) ? printf("Value: %s, Count: %ld\n", sorted[v].value, sorted[v].count) : printf("Value: '%s', Count: %ld\n", sorted[v].value,sorted[v].count);
-
-//             // printf("%s", print_string);
-//         }
-
-
-//         printf("Is Null: %ld\n", (uintmax_t)self->getStat(self, self->__header__[c], "isnull"));
-//         printf("Not Null: %ld\n\n", (uintmax_t)self->getStat(self, self->__header__[c], "notnull"));
-
-//         free(sorted);
-//     }
-
-//     return true;
-// }
-
-
-
-
 //          -- FREE ALL --
 void freeAll(DataLynx *self) {
 
@@ -4299,6 +3808,7 @@ void freeAll(DataLynx *self) {
 
 
     if (self->tmp_column != NULL) {free(self->tmp_column); self->tmp_column = NULL;}
+
 
     self = NULL;
 
@@ -4456,9 +3966,18 @@ bool free_value_counts(DataLynx *self) {
                 // Remember next node
                 tmp = self->aggregate[c].value_counts[i]->next;
 
-                // Free
+                // Free value
                 free_null(&(self->aggregate[c].value_counts[i]->value)); /* Will only need to free this if a replace has been done and no longer points to value in data structure. free_null() will bounce back right away if already null, so no double frees */
                 self->aggregate[c].value_counts[i]->next = NULL;
+
+                // Free internal DataLynx object
+                if (self->aggregate[c].value_counts[i]->grouped_data != NULL) {
+                    freeAll(self->aggregate[c].value_counts[i]->grouped_data);
+                    free(self->aggregate[c].value_counts[i]->grouped_data);
+                    self->aggregate[c].value_counts[i]->grouped_data = NULL;
+                }
+
+                // Free current value count node
                 free(self->aggregate[c].value_counts[i]);
                 self->aggregate[c].value_counts[i] = tmp;
             }
