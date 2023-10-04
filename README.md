@@ -2689,6 +2689,10 @@ myData.printTail(&myData, 5);
 ###### <li>This function will print the aggregate data for every column in the data set.</li>
 ###### <li>For numeric columns, this function will print min, max, sum, mean, standard deviation, 25th percentile, median, 75th percentile, is null and not null.</li>
 ###### <li>For non-numeric column, this function will print the value count for every unique value in the data set, as well as is null/not null counts.</li>
+  <ul>
+    
+  ###### <li>Value counts will be sorted in descending order by their counts (i.e. number of times that unique value appears in the column). If all value counts for a given column are equal (i.e. each value is unique, therefore each value has a count of 1), the value counts will be sorted alphabetically by their value, opposed to being sorted by their counts.</li>
+  </ul>
 </ul>
 
 ##### RETURN:
