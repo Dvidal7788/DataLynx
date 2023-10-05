@@ -2713,6 +2713,51 @@ myData.printStats(&myData);
 <hr>
 
 
+<!-- PRINT PIVOT TABLE() -->
+<h4 align="center">printPivotTable()</h4>
+<h6 align="center">bool printPivotTable(DataLynx *self, char *group_by, char *aggregated_column, char *stat)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name to group data by.</li>
+###### <li>String of column name you wish to see aggregate data of.</li>
+###### <li>String of aggregate statisitic you wish to see.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will print the aggregate data for every column in the data set.</li>
+###### <li>For numeric columns, this function will print min, max, sum, mean, standard deviation, 25th percentile, median, 75th percentile, is null and not null.</li>
+###### <li>For non-numeric column, this function will print the value count for every unique value in the data set, as well as is null/not null counts.</li>
+  <ul>
+    
+  ###### <li>Value counts will be sorted in descending order by their counts (i.e. number of times that unique value appears in the column). If all value counts for a given column are equal (i.e. each value is unique, therefore each value has a count of 1), the value counts will be sorted alphabetically by their value, opposed to being sorted by their counts.</li>
+  ###### <li>The value counts table is printed dynamically, therefore the tabe will grow in width to accomodate tha value with the longest string length, unless that value is greater than self.maxFieldPrintLength, at which point the value will be truncated with an ellipses. (You can adjust self.maxFieldPrintLength to you liking. It is set to 50 by default.) This prevents obnoxiusly long values (e.g. password hashes, notes/comments stored in databases etc...) from making your value counts table undreadable on your computer screen.</li>
+  </ul>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.printPivotTable(&myData, "Department", "Salary", "mean");
+```
+<ul>
+ 
+###### <li>The above code will print a pivot table showing the mean/average Salary for every Department in the dartaset</li>
+</ul>
+
+
 
 
 
