@@ -2790,7 +2790,7 @@ double revenue_std = myData.std(&myData, "Revenue");
 
 
 <!-- IS NULL -->
-<h4 align="center">isNUll()</h4>
+<h4 align="center">isNull()</h4>
 <h6 align="center">uintmax_t isNull(maxDataLynx *self, char *column_name)</h6>
 
 ##### PARAMETERS:
