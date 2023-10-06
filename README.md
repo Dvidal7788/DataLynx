@@ -2832,8 +2832,8 @@ double revenue_is_null = myData.isNull(&myData, "Revenue");
 
 
 <!-- NOT NULL -->
-<h4 align="center">notNUll()</h4>
-<h6 align="center">uintmax_t notNUll(maxDataLynx *self, char *column_name)</h6>
+<h4 align="center">notNull()</h4>
+<h6 align="center">uintmax_t notNull(maxDataLynx *self, char *column_name)</h6>
 
 ##### PARAMETERS:
 <ul>
