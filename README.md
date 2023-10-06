@@ -2475,7 +2475,400 @@ myData.valueCount(&myData, "Refrigerator", "Product");
 <hr>
 
 
+<!-- MIN -->
+<h4 align="center">min()</h4>
+<h6 align="center">double min(DataLynx *self, char *column_name)</h6>
 
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name of which you wish to recieve the minimum value of.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will return the minimum value in the column you requested.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns the minimum value in the column requested.</li>
+###### <li>On failure, returns 0. (Not to be confused with an actual minimum value of 0. If you request an invalid column or supply an invalid DataLynx object pointer, this function will return 0.)</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+double revenue_min = myData.min(&myData, "Revenue");
+```
+
+<ul>
+ 
+###### <li>The above code will return the minimum value in the "Revenue" column of the dataset.</li>
+</ul>
+<hr>
+
+
+<!-- MAX -->
+<h4 align="center">max()</h4>
+<h6 align="center">double max(maxDataLynx *self, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name of which you wish to recieve the maximum value of.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will return the maximum value in the column you requested.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns the maximum value in the column requested.</li>
+###### <li>On failure, returns 0. (Not to be confused with an actual maximum value of 0. If you request an invalid column or supply an invalid DataLynx object pointer, this function will return 0.)</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+double revenue_max = myData.max(&myData, "Revenue");
+```
+
+<ul>
+ 
+###### <li>The above code will return the maximum value in the "Revenue" column of the dataset.</li>
+</ul>
+<hr>
+
+
+
+
+<!-- SUM -->
+<h4 align="center">sum()</h4>
+<h6 align="center">double sum(maxDataLynx *self, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name of which you wish to recieve the sum of.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will return the sum of all the values in the column you requested.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns the sum of all the values in the column requested.</li>
+###### <li>On failure, returns 0. (Not to be confused with an actual sum value of 0. If you request an invalid column or supply an invalid DataLynx object pointer, this function will return 0.)</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+double revenue_sum = myData.sum(&myData, "Revenue");
+```
+
+<ul>
+ 
+###### <li>The above code will return the sum of all the values in the "Revenue" column of the dataset.</li>
+</ul>
+<hr>
+
+
+
+<!-- MEAN -->
+<h4 align="center">mean()</h4>
+<h6 align="center">double mean(maxDataLynx *self, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name of which you wish to recieve the mean/average of.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will return the mean/average of the column you requested.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns the mean/average of the column requested.</li>
+###### <li>On failure, returns 0. (Not to be confused with an actual mean value of 0. If you request an invalid column or supply an invalid DataLynx object pointer, this function will return 0.)</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+double revenue_avg = myData.mean(&myData, "Revenue");
+```
+
+<ul>
+ 
+###### <li>The above code will return the mean/average of the "Revenue" column of the dataset.</li>
+</ul>
+<hr>
+
+
+
+
+<!-- LOWER QRT -->
+<h4 align="center">lowerQrt()</h4>
+<h6 align="center">double lowerQrt(maxDataLynx *self, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name of which you wish to recieve the lower quartile (i.e. 25th percentile) of.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will return the lower quartile (i.e. 25th percentile)  of the column you requested.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns the lower quartile (i.e. 25th percentile)  of the column requested.</li>
+###### <li>On failure, returns 0. (Not to be confused with an actual lower quartile (i.e. 25th percentile) value of 0. If you request an invalid column or supply an invalid DataLynx object pointer, this function will return 0.)</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+double revenue_lower_qrt = myData.lowerQrt(&myData, "Revenue");
+```
+
+<ul>
+ 
+###### <li>The above code will return the lower quartile (i.e. 25th percentile) of the "Revenue" column of the dataset.</li>
+</ul>
+<hr>
+
+
+<!-- MEDIAN -->
+<h4 align="center">median()</h4>
+<h6 align="center">double median(maxDataLynx *self, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name of which you wish to recieve the median (i.e 50th percentile) of.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will return the median of the column you requested.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns the median (i.e. 50th percentile)  of the column requested.</li>
+###### <li>On failure, returns 0. (Not to be confused with an actual median value of 0. If you request an invalid column or supply an invalid DataLynx object pointer, this function will return 0.)</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+double revenue_median = myData.median(&myData, "Revenue");
+```
+
+<ul>
+ 
+###### <li>The above code will return the median of the "Revenue" column of the dataset.</li>
+</ul>
+<hr>
+
+
+
+<!-- UPPER QRT -->
+<h4 align="center">upperQrt()</h4>
+<h6 align="center">double upperQrt(maxDataLynx *self, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name of which you wish to recieve the upper quartile (i.e. 75th percentile) of.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will return the upper quartile (i.e. 75th percentile)  of the column you requested.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns the upper quartile (i.e. 75th percentile)  of the column requested.</li>
+###### <li>On failure, returns 0. (Not to be confused with an actual upper quartile (i.e. 75th percentile) value of 0. If you request an invalid column or supply an invalid DataLynx object pointer, this function will return 0.)</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+double revenue_upper_qrt = myData.upperQrt(&myData, "Revenue");
+```
+
+<ul>
+ 
+###### <li>The above code will return the upper quartile (i.e. 75th percentile) of the "Revenue" column of the dataset.</li>
+</ul>
+<hr>
+
+
+
+
+
+<!-- STD -->
+<h4 align="center">std()</h4>
+<h6 align="center">double std(maxDataLynx *self, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name of which you wish to recieve the standard deviation of.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will return the standard deviation of the column you requested.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns the standard deviation of the column requested.</li>
+###### <li>On failure, returns 0. (Not to be confused with an actual sum value of 0. If you request an invalid column or supply an invalid DataLynx object pointer, this function will return 0.)</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+double revenue_std = myData.std(&myData, "Revenue");
+```
+
+<ul>
+ 
+###### <li>The above code will return the standard deviation of the "Revenue" column of the dataset.</li>
+</ul>
+<hr>
+
+
+
+<!-- IS NULL -->
+<h4 align="center">isNUll()</h4>
+<h6 align="center">uintmax_t isNull(maxDataLynx *self, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name of which you wish to recieve the count of NULL values (i.e. empty fields).</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will return the total count of NULL values (i.e empty fields) in the column requested.</li>
+###### <li>NOTE: The total isNull count and the total notNull count will add up to the total row count of the dataset.</li>
+###### <li>NOTE: There are no NULL strings in any of the data structures in the DataLynx object. All NULL values/empty fields are represented as an empty string (i.e. buffer size of 1 char, string length of 0, the only char being '\0'), however you can change how NULL values/empty fields are represented with printing your data set by using changeMissingValue(). By default, the missing value is represented by "---".</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns the total count of NULL values (i.e. empty fields) in the column requested.</li>
+###### <li>On failure, returns 0. (Not to be confused with an actual isNull value of 0. If you request an invalid column or supply an invalid DataLynx object pointer, this function will return 0.)</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+double revenue_is_null = myData.isNull(&myData, "Revenue");
+```
+
+<ul>
+ 
+###### <li>The above code will return the total count of NULL values (i.e. empty fields) in the "Revenue" column of the dataset.</li>
+</ul>
+<hr>
+
+
+
+
+<!-- NOT NULL -->
+<h4 align="center">notNUll()</h4>
+<h6 align="center">uintmax_t notNUll(maxDataLynx *self, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name of which you wish to recieve the count of *non*-NULL values (i.e. *non*-empty fields).</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will return the total count of *non*-NULL values (i.e. *non*-empty fields) in the column requested.</li>
+###### <li>NOTE: The total isNull count and the total notNull count will add up to the total row count of the dataset.</li>
+###### <li>NOTE: There are no NULL strings in any of the data structures in the DataLynx object. All NULL values/empty fields are represented as an empty string (i.e. buffer size of 1 char, string length of 0, the only char being '\0'), however you can change how NULL values/empty fields are represented with printing your data set by using changeMissingValue(). By default, the missing value is represented by "---".</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns the total count of NULL values (i.e. empty fields) in the column requested.</li>
+###### <li>On failure, returns 0. (Not to be confused with an actual isNull value of 0. If you request an invalid column or supply an invalid DataLynx object pointer, this function will return 0.)</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+double revenue_not_null = myData.notNull(&myData, "Revenue");
+```
+
+<ul>
+ 
+###### <li>The above code will return the total count of *non*-NULL values (i.e. *non*-empty fields) in the "Revenue" column of the dataset.</li>
+</ul>
+<hr>
 
 
 
