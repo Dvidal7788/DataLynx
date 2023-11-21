@@ -179,7 +179,7 @@ myData.csv.dictReader(&myData);
   </li>
   <ul>
   
-  ###### <li>The example code above will read an opened CSV file into memory as dict-grid data (i.e. an array of dict-style linked lists).</li>
+  ###### <li>The example code above will read an opened CSV file into memory as dict-grid data (i.e. an array of dict-style linked lists, meaning each node not only contains the value associated with that index location, but also the corresponding column name as well.).</li>
   
   </ul>
   </ul>
