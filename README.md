@@ -797,13 +797,57 @@ myData.csv.rowDictWriter(&myData, values);
 
 
 
-<!-- FUNCTIONS FOR DATA WRANGLING / DATA CLEANINING -->
+<!-- FUNCTIONS FOR DATA WRANGLING / DATA CLEANINING / ACCESSING DATA -->
 <div align="center">
   
-Functions for Data Wrangling / Data Cleaning:
+Functions for Data Wrangling / Data Cleaning / Accessing Data:
 --------
 </div>
 <a id="data_wrangling"></a>
+
+
+<!-- HEADER() -->
+<h4 align="center">header()</h4>
+<h6 align="center">char *header(DataLynx *self, uint32_t column)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Integer of the column you wish to retrieve the column name of.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Provided with a valid integer column index, this function will return the correct column name.</li>
+###### <li>The header is stored as an array of strings (i.e. `myData.__header__[0]` is where the string is stored that `myData.header(&myData, 0)` returns. However, the reason for using the header() function as opposed to accessing the internal header array directy is that the function will 1st check to make sure the integer column index provided is valid, thus preventing buffer overflows. You may use the internal header array (i.e. `myData.__header__`) at your own risk, although it is not advised, especially when taking user input.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns a string of the requested column name. (Do NOT free this string, as it is simply a pointer to the string in the header.)</li>
+###### <li>On failure, returns NULL.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+int column_index = 3;
+printf("Column index %d is %s\n", column_index, myData.header(&myData, column_index);
+```
+
+```C
+char *column_name = myData.header(&myData, 3);
+```
+
+<ul>
+ 
+###### <li>The above code shows 2 examples of retreiving the corresponding column name for column 3.</li>
+</ul>
+<hr>
 
 <!-- FORMAT HEADER-->
 <h4 align="center">formatHeader()</h4>
