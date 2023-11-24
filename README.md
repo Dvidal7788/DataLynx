@@ -72,7 +72,7 @@ The DataLynx 'Object'
   ##### <li>Raw Data</li>
   <ul>
   
-  ###### <li>This is a string. It is *one* long string containg the entire dataset, hence 'raw data'.</li>
+  ###### <li>This is a string. It is *one* long string containing the entire dataset, hence 'raw data'.</li>
   <li>
 
   ```C
