@@ -555,9 +555,9 @@ myData.fieldReader(&myData, 0, "First Name");
 
 
 
-<!-- CSV.FIELDREADER2() -->
-<h4 align="center">csv.fieldReader2()</h4>
-<h6 align="center">char *fieldReader2(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column)</h6>
+<!-- CSV.FIELDREADERIdx() -->
+<h4 align="center">csv.fieldReaderIdx()</h4>
+<h6 align="center">char *fieldReaderIdx(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column)</h6>
 
 ##### PARAMETERS:
 <ul>
@@ -584,7 +584,7 @@ myData.fieldReader(&myData, 0, "First Name");
 ##### Example Code:
 
 ```C
-myData.fieldReader2(&myData, 0, 1);
+myData.fieldReaderIdx(&myData, 0, 1);
 ```
 <ul>
  
@@ -637,9 +637,9 @@ myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 <hr>
 
 
-<!-- CSV.FIELDWRITER2-->
-<h4 align="center">csv.fieldWriter2()</h4>
-<h6 align="center">bool fieldWriter2(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field)</h6>
+<!-- CSV.FIELDWRITERIdx -->
+<h4 align="center">csv.fieldWriterIdx()</h4>
+<h6 align="center">bool fieldWriterIdx(dataLynx *self, uintmax_t row, uintmax_t column, char *new_field)</h6>
 
 ##### PARAMETERS:
 <ul>
@@ -672,7 +672,7 @@ myData.csv.fieldWriter(&myData, 3, "Last Name", "Smith");
 myData.csv_write_permission = true;
 
 // Update field in CSV file
-myData.csv.fieldWriter2(&myData, 3, 2, "Smith");
+myData.csv.fieldWriterIdx(&myData, 3, 2, "Smith");
 ```
 <ul>
  
@@ -976,9 +976,9 @@ myData.updateField(&myData, 4, "Department", "Sales");
 
 
 
-<!-- UPDATE FIELD2 -->
-<h4 align="center">updateField2()</h4>
-<h6 align="center">bool updateField2(dataLynx *self, uintmax_t row, uintmax_t column, char *new_value)</h6>
+<!-- UPDATE FIELDIdx -->
+<h4 align="center">updateFieldIdx()</h4>
+<h6 align="center">bool updateFieldIdx(dataLynx *self, uintmax_t row, uintmax_t column, char *new_value)</h6>
 
 ##### PARAMETERS:
 <ul>
@@ -1009,7 +1009,7 @@ myData.updateField(&myData, 4, "Department", "Sales");
 ##### Example Code:
 
 ```C
-myData.updateField2(&myData, 3, 4, "34000");
+myData.updateFieldIdx(&myData, 3, 4, "34000");
 ```
 <ul>
  
@@ -1021,8 +1021,8 @@ myData.updateField2(&myData, 3, 4, "34000");
 myData.csv_write_permission = true;
 myData.csv_write_permission = false;
 
-// Run updateField2 in destructive mode
-myData.updateField2(&myData, 4, 3, "Sales");
+// Run updateFieldIdx in destructive mode
+myData.updateFieldIdx(&myData, 4, 3, "Sales");
 ```
 <ul>
  
@@ -2302,9 +2302,9 @@ printf("%s", myData.getField(&myData, 3, "Employee ID"));
 
 
 
-<!-- GET FIELD2() -->
-<h4 align="center">getField2()</h4>
-<h6 align="center">char *getField2(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column);</h6>
+<!-- GET FIELDIdx() -->
+<h4 align="center">getFieldIdx()</h4>
+<h6 align="center">char *getFieldIdx(dataLynx *self, uintmax_t desired_row, uintmax_t desired_column);</h6>
 
 ##### PARAMETERS:
 <ul>
@@ -2332,7 +2332,7 @@ printf("%s", myData.getField(&myData, 3, "Employee ID"));
 ##### Example Code:
 
 ```C
-char *field = myData.getField2(&myData, 3, 0);
+char *field = myData.getFieldIdx(&myData, 3, 0);
 ```
 
 <ul>
@@ -2341,7 +2341,7 @@ char *field = myData.getField2(&myData, 3, 0);
 </ul>
 
 ```C
-printf("%s", myData.getField2(&myData, 3, 0));
+printf("%s", myData.getFieldIdx(&myData, 3, 0));
 ```
 
 <ul>
