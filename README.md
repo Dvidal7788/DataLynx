@@ -2214,7 +2214,8 @@ myData.insertRowDict(&myData, values);
 <ul>
     
 ###### <li>Pointer to (i.e. address of) dataLynx object.</li>
-###### <li>Array of strings containing all of the column names you want in the header. You may input NULL here if you wish to create a generic header (e.g. "Column 1", "Column 2", etc...)</li>
+###### <li>Array of strings containing all of the column names you want in the header.</li>
+###### <li>NOTE: You may input NULL here if you wish to create a generic header (e.g. "Column 1", "Column 2", "Column 3"etc...)</li>
 ###### <li>An integer of the number of columns. Must be correct or you run the risk of overrunning the header buffer.</li>
 </ul>
 
@@ -2222,6 +2223,7 @@ myData.insertRowDict(&myData, values);
 <ul>
 
 ###### <li>Supply the parameters and the function will create a header from the column names provided in the header parameter.</li>
+###### <li>The column_count parameter must be the number of elements in the header array provided as input.</li>
 </ul>
 
 ##### RETURN:
@@ -2235,6 +2237,7 @@ myData.insertRowDict(&myData, values);
 ##### Example Code:
 
 ```C
+//       Example 1:
 // Set up parameters
 char *header[] = {"Employee ID", "First Name", "Last Name", "Department", "Ext", "Salary"};
 unsigned int column_count = 6;
@@ -2246,6 +2249,18 @@ myData.createHeader(&myData, header, column_count);
 <ul>
  
 ###### <li>This will create a header in the dataLynx object with the column names provided.</li>
+</ul>
+
+```C
+//       Example 2:
+unsigned int column_count = 6;
+
+// Create header
+myData.createHeader(&myData, NULL, column_count);
+```
+<ul>
+
+###### <li>This will create a _generic_ header (e.g. "Column 1", "Column 2", "Column 3" etc...) header in the dataLynx object with the column names provided.</li>
 </ul>
 <hr>
 
