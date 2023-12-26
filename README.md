@@ -7,7 +7,7 @@
 </kbd>
 </div>
 
-Manifesto:
+Overview:
 --------
 
 ---
