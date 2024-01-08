@@ -27,7 +27,7 @@ bool openFile(DataLynx *self, char *filename) {
 
         // Allocate buffer to store filename
         self->filename = malloc(sizeof(char) * (strlen(filename)+1));
-        if (self->filename == NULL) {if_error(MALLOC_FAILED, func_name); free_null(&self->filename); return false;}
+        if (self->filename == NULL) {log_error(MALLOC_FAILED, func_name); free_null(&self->filename); return false;}
 
         strcpy(self->filename, filename);
 
@@ -35,7 +35,7 @@ bool openFile(DataLynx *self, char *filename) {
 
     // Attempt to Open File (Read mode)
     self->file_ptr = fopen(self->filename, "r");
-    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); free_null(&self->filename); return false;}
+    if (self->file_ptr == NULL) {log_error(FOPEN_FAILED, func_name); free_null(&self->filename); return false;}
 
     return true;
 
@@ -52,7 +52,7 @@ char **headerReader(DataLynx *self) {
 
     if (self->file_ptr == NULL) return NULL;
 
-    // Function name (for use in if_error())
+    // Function name (for use in log_error())
     const char *func_name = "csv.headerReader";
 
     /* THIS FUNCTION: 1. Reads csv header into dynamically allocated array of string pointers (i.e. 2D array)
@@ -68,7 +68,7 @@ char **headerReader(DataLynx *self) {
 
     // Allocate first pointer in array of strings
     char **header = (char**)malloc(sizeof(char*));
-    if (header == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+    if (header == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
     // Create temp string (to be used for each column name)
     char *s = NULL;
@@ -79,7 +79,7 @@ char **headerReader(DataLynx *self) {
 
         // Allocate first char of string for current column in header
         s = (char*)malloc(sizeof(char));
-        if (s == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+        if (s == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
         // Iterate until end of current index
         uintmax_t i = 0;
@@ -96,14 +96,14 @@ char **headerReader(DataLynx *self) {
             else if (inside_quotes && s[i] == '"') inside_quotes = false;
 
             // Check if at next column or end of header
-            if ((!inside_quotes && s[i] == ',') || s[i] == '\n') {
+            if ((!inside_quotes && s[i] == self->DELIMITER) || s[i] == '\n') {
                 self->columnCount++;
                 if (s[i] == '\n') {end_of_header = true;}
                 break;
             }
             else {
                 s = realloc(s, sizeof(char)*(i+2));
-                if (s == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
+                if (s == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
                 i++;
             }
         }
@@ -119,7 +119,7 @@ char **headerReader(DataLynx *self) {
         // Realloc array
         if (!end_of_header) {
             header = realloc(header, sizeof(char*)*((self->columnCount)+1));
-            if (header == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
+            if (header == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
         }
         else break;
     }
@@ -150,7 +150,7 @@ char *fileReader(DataLynx *self) {
     // Check
     if (self->file_size == 0) return NULL;
 
-    // Function name (for use in if_error())
+    // Function name (for use in log_error())
     const char *func_name = "fileReader";
 
 
@@ -162,7 +162,7 @@ char *fileReader(DataLynx *self) {
 
     // Allocate buffer
     uintmax_t buffer_size;
-    if (self->skip_header) {
+    if (self->has_header) {
         buffer_size = self->file_size - self->header_size;
 
         // Get file stream to end of header
@@ -174,11 +174,11 @@ char *fileReader(DataLynx *self) {
     }
 
     char *buffer = (char*)malloc(sizeof(char)*(buffer_size+1));
-    if (buffer == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+    if (buffer == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
-    // Read
+    // Read entire CSV into memory as one long string
     /* If this fails, try to read smaller size */
-    if (fread(buffer, buffer_size, 1, self->file_ptr) != 1) {if_error(FREAD_FAILED, func_name); return NULL;}
+    if (fread(buffer, buffer_size, 1, self->file_ptr) != 1) {log_error(FREAD_FAILED, func_name); return NULL;}
 
     buffer[buffer_size] = '\0';
 
@@ -221,7 +221,7 @@ char ***reader_v3(DataLynx *self) {
     // self->find_rows_at_file_read = false; /* Do not find rows at file read, because we will count rows as we convert from one long string (raw) into dict-style linked list */
     if (fileReader(self) == NULL) return NULL;
 
-    // Function name (for use in if_error())
+    // Function name (for use in log_error())
     const char *func_name = "csv.reader_v3";
 
     /* THIS FUNCTION: - Reads file contents and parses into an array of doubly linked DICT nodes.
@@ -235,7 +235,7 @@ char ***reader_v3(DataLynx *self) {
 
     // Allocate: MAIN ARRAY POINTER (array of pointers to dict-style linked lists)
     self->grid_v3 = (char***)malloc(sizeof(char**));
-    if (self->grid_v3 == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+    if (self->grid_v3 == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
     // Variables
     uintmax_t row_count = 1;
@@ -249,7 +249,7 @@ char ***reader_v3(DataLynx *self) {
         // self->grid_v3[row_count-1] = NULL;
         if (row_count-1 < self->rowCount) {
             self->grid_v3[row_count-1] = (char**)malloc(sizeof(char*));
-            if (self->grid_v3[row_count-1] == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+            if (self->grid_v3[row_count-1] == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
         }
 
 
@@ -264,7 +264,7 @@ char ***reader_v3(DataLynx *self) {
 
             // Allocate 1st char of string (this string will be taken over by linked list node, so do not free)
             char *s = (char*)malloc(sizeof(char));
-            if (s == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+            if (s == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
             uintmax_t i = 0;
             bool inside_quotes = false;
@@ -290,7 +290,7 @@ char ***reader_v3(DataLynx *self) {
                 }
 
                 // Check if found next column or end of row
-                if (!inside_quotes && s[i] == ',') {
+                if (!inside_quotes && s[i] == self->DELIMITER) {
                     break;
                 }
                 else if (s[i] == '\n') {
@@ -301,7 +301,7 @@ char ***reader_v3(DataLynx *self) {
                 else {
                     // Reallocate next char in string
                     s = realloc(s, sizeof(char)*(i+2));
-                    if (s == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
+                    if (s == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
                     i++;
                 }
             }
@@ -364,7 +364,7 @@ char ***reader_v3(DataLynx *self) {
             if (end_of_row) break;
             else {
                 self->grid_v3[row_count-1] = realloc(self->grid_v3[row_count-1], sizeof(char*)*(current_column+2));
-                if (self->grid_v3[row_count-1] == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
+                if (self->grid_v3[row_count-1] == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
             }
             current_column++;
         }
@@ -373,7 +373,7 @@ char ***reader_v3(DataLynx *self) {
         if (!end_of_data) {
             // Realloc
             self->grid_v3 = realloc(self->grid_v3, sizeof(char**)*(++row_count));
-            if (self->grid_v3 == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
+            if (self->grid_v3 == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
         }
         else break;
     }
@@ -381,8 +381,8 @@ char ***reader_v3(DataLynx *self) {
     // Free raw data
     free_null(&self->raw);
 
-    // Calculate means, now that we have sums. Calc stds once we have means. Find medians now that we have all the data.
-    for (uintmax_t i = 0; i < self->columnCount; i++) self->aggregate[i].mean = self->aggregate[i].sum / self->aggregate[i].not_null;
+    // Calculate means, now that we have sums. Calc stds once we have means. Find median (and IQR) now that we have all the data.
+    calc_mean(self);
     calc_std(self);
     find_median(self);
 
@@ -401,7 +401,7 @@ node **reader(DataLynx *self) {
     // self->find_rows_at_file_read = false; /* Do not find rows at file read, because we will count rows as we convert from one long string (raw) into dict-style linked list */
     if (fileReader(self) == NULL) return NULL;
 
-    // Function name (for use in if_error())
+    // Function name (for use in log_error())
     const char *func_name = "csv.reader";
 
     /* THIS FUNCTION: - Reads file contents and parses into an array of doubly linked DICT nodes.
@@ -415,7 +415,7 @@ node **reader(DataLynx *self) {
 
     // Allocate: MAIN ARRAY POINTER (array of pointers to dict-style linked lists)
     self->grid = (node**)malloc(sizeof(node*));
-    if (self->grid == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+    if (self->grid == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
     // Variables
     uintmax_t row_count = 1;
@@ -440,7 +440,7 @@ node **reader(DataLynx *self) {
 
             // Allocate 1st char of string (this string will be taken over by linked list node, so do not free)
             char *s = (char*)malloc(sizeof(char));
-            if (s == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+            if (s == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
             uintmax_t i = 0;
             bool inside_quotes = false;
@@ -466,7 +466,7 @@ node **reader(DataLynx *self) {
                 }
 
                 // Check if found next column or end of row
-                if (!inside_quotes && s[i] == ',') {
+                if (!inside_quotes && s[i] == self->DELIMITER) {
                     break;
                 }
                 else if (s[i] == '\n') {
@@ -477,7 +477,7 @@ node **reader(DataLynx *self) {
                 else {
                     // Reallocate next char in string
                     s = realloc(s, sizeof(char)*(i+2));
-                    if (s == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
+                    if (s == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
                     i++;
                 }
             }
@@ -543,7 +543,7 @@ node **reader(DataLynx *self) {
         if (!end_of_data) {
             // Realloc
             self->grid = realloc(self->grid, sizeof(node*)*(++(row_count)));
-            if (self->grid == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
+            if (self->grid == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
         }
         else break;
     }
@@ -552,8 +552,8 @@ node **reader(DataLynx *self) {
     // Free raw data
     free_null(&self->raw);
 
-    // Calculate means, now that we have sums. Calc stds once we have means. Find medians now that we have all the data.
-    for (uintmax_t i = 0; i < self->columnCount; i++) self->aggregate[i].mean = self->aggregate[i].sum / self->aggregate[i].not_null;
+    // Calculate means, now that we have sums. Calc stds once we have means. Find median (and IQR) now that we have all the data.
+    calc_mean(self);
     calc_std(self);
     find_median(self);
 
@@ -570,7 +570,7 @@ dict_node **dictReader(DataLynx *self) {
     if (fileReader(self) == NULL) return NULL;
 
 
-    // Function name (for use in if_error())
+    // Function name (for use in log_error())
     const char *func_name = "csv.dictReader";
 
     /* THIS FUNCTION: - Reads file contents and parses into an array of doubly linked DICT nodes.
@@ -584,7 +584,7 @@ dict_node **dictReader(DataLynx *self) {
 
     // Allocate: MAIN ARRAY POINTER (array of pointers to dict-style linked lists)
     self->dict_grid = (dict_node**)malloc(sizeof(dict_node*));
-    if (self->dict_grid == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+    if (self->dict_grid == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
     // Variables
     uintmax_t row_count = 1;
@@ -610,7 +610,7 @@ dict_node **dictReader(DataLynx *self) {
 
             // Allocate 1st char of string (this string will be taken over by linked list node, so do not free)
             char *s = (char*)malloc(sizeof(char));
-            if (s == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+            if (s == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
             uintmax_t i = 0;
             bool inside_quotes = false;
@@ -636,7 +636,7 @@ dict_node **dictReader(DataLynx *self) {
                 }
 
                 // Check if found next column or end of row
-                if (!inside_quotes && s[i] == ',') {
+                if (!inside_quotes && s[i] == self->DELIMITER) {
                     break;
                 }
                 else if (s[i] == '\n') {
@@ -647,7 +647,7 @@ dict_node **dictReader(DataLynx *self) {
                 else {
                     // Reallocate next char in string
                     s = realloc(s, sizeof(char)*(i+2));
-                    if (s == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
+                    if (s == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
                     i++;
                 }
             }
@@ -713,7 +713,7 @@ dict_node **dictReader(DataLynx *self) {
         if (!end_of_data) {
             // Realloc
             self->dict_grid = realloc(self->dict_grid, sizeof(dict_node*)*(++row_count));
-            if (self->dict_grid == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
+            if (self->dict_grid == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
         }
         else break;
     }
@@ -721,8 +721,8 @@ dict_node **dictReader(DataLynx *self) {
     // Free raw data
     free_null(&self->raw);
 
-    // Calculate means, now that we have sums. Calc stds once we have means. Find medians now that we have all the data.
-    for (uintmax_t i = 0; i < self->columnCount; i++) self->aggregate[i].mean = self->aggregate[i].sum / self->aggregate[i].not_null;
+    // Calculate means, now that we have sums. Calc stds once we have means. Find median (and IQR) now that we have all the data.
+    calc_mean(self);
     calc_std(self);
     find_median(self);
 
@@ -772,7 +772,7 @@ char *fieldReaderIdx(DataLynx *self, uintmax_t row, uintmax_t column) {
 
 char *field_reader_internal_(DataLynx *self, uintmax_t row, uintmax_t column) {
 
-    // Function name (for use in if_error()) (formerly csv_reader_index)
+    // Function name (for use in log_error()) (formerly csv_reader_index)
     const char *func_name = "field_reader_internal_";
 
     /* THIS FUNCTION: Allows you to index directly into a csv file, without reading the whole file into memory.
@@ -783,7 +783,7 @@ char *field_reader_internal_(DataLynx *self, uintmax_t row, uintmax_t column) {
     fseek(self->file_ptr, 0, SEEK_SET);
 
     // Skip header or not
-    if (self->skip_header) row++;
+    if (self->has_header) row++;
 
     // Declare variables
     int8_t tmp;
@@ -808,7 +808,7 @@ char *field_reader_internal_(DataLynx *self, uintmax_t row, uintmax_t column) {
             else if (tmp == '"') inside_quotes = false;
 
             // Break conditions
-            if (tmp == ',' && inside_quotes == false) break;
+            if (tmp == self->DELIMITER && inside_quotes == false) break;
 
             if (tmp == EOF) {reached_eof = true; break;}
         }
@@ -824,7 +824,7 @@ char *field_reader_internal_(DataLynx *self, uintmax_t row, uintmax_t column) {
 
         // Alocate 1st char of string
         s = (char*)malloc(sizeof(char));
-        if (s == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+        if (s == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
         uintmax_t i = 0;
 
@@ -834,11 +834,11 @@ char *field_reader_internal_(DataLynx *self, uintmax_t row, uintmax_t column) {
             if (!inside_quotes && s[i] == '"') inside_quotes = true;
             else if (s[i] == '"') inside_quotes = false;
 
-            if (s[i] == ',' && inside_quotes == false) break;
+            if (s[i] == self->DELIMITER && inside_quotes == false) break;
 
             // Realloc
             s = realloc(s, sizeof(char)*(i+2));
-            if (s == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
+            if (s == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
             i++;
         }
 
@@ -860,7 +860,7 @@ bool fieldWriter(DataLynx *self, uintmax_t row, char *column_name, char *new_fie
 
     // Safety Checks (do not check if row is greater than row count because should work even if file has not been read into memory)
     if (self == NULL || column_name == NULL || new_field == NULL) return false;
-    if (self->file_ptr == NULL || !self->csv_write_permission) return false;
+    if (self->file_ptr == NULL || !self->csv.write_permission) return false;
 
     // Find column index which correlates to the column name provided
     intmax_t column_index = findColumnIndex(self, column_name);
@@ -874,7 +874,7 @@ bool fieldWriterIdx(DataLynx *self, uintmax_t row, uintmax_t column, char *new_f
 
     // Safety Checks (do not check if row or column is greater than row/column count because should work even if file has not been read into memory)
     if (self == NULL || new_field == NULL) return false;
-    if (self->file_ptr == NULL || !self->csv_write_permission) return false;
+    if (self->file_ptr == NULL || !self->csv.write_permission) return false;
 
     return field_writer_internal_(self, row, column, new_field);
 }
@@ -887,8 +887,7 @@ bool field_writer_internal_(DataLynx *self, uintmax_t row, uintmax_t column, cha
     /* THIS FUNCTION: Updates csv file based on choice of index
             Note: In order destructive mode to work with updateField() (i.e. updates CSV file at same time as updating data structure in memory), I must close in read mode and then reopen in write mode, as opposed to allowing user to choose how to open file. */
 
-
-    // Function name (for use in if_error())
+    // Function name (for use in log_error())
     const char *func_name = "field_writer_internal_";
 
     // Check if file is empty
@@ -903,13 +902,13 @@ bool field_writer_internal_(DataLynx *self, uintmax_t row, uintmax_t column, cha
 
     // Make new_field into a dynamically allocated string (so I can pass the address of string through add_quotes() and resize if necessary)
     char *new_field_dyn = (char*)malloc(sizeof(char) * strlen(new_field)+1);
-    if (new_field_dyn == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (new_field_dyn == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
     strcpy(new_field_dyn, new_field);
 
     // Allocate initial char for buffer to read file contents into
     char *s = (char*)malloc(sizeof(char));
-    if (s == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (s == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
     // Iterate through HEADER char by char
     uint64_t i = 0;
@@ -919,13 +918,13 @@ bool field_writer_internal_(DataLynx *self, uintmax_t row, uintmax_t column, cha
 
         // Reallocate for next char
         s = realloc(s, sizeof(char)*(i+2));
-        if (s == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+        if (s == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
         i++;
     }
 
     // Reallocate for next char for priming of next loop
     s = realloc(s, sizeof(char)*(i+2));
-    if (s == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+    if (s == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
     i++;
 
     // Variables to keep track of current row/column to match with input row/column
@@ -948,7 +947,7 @@ bool field_writer_internal_(DataLynx *self, uintmax_t row, uintmax_t column, cha
 
             // Copy new_field into string
             s = realloc(s, sizeof(char)*(strlen(new_field_dyn)+i+1));
-            if (s == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+            if (s == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
 
             uintmax_t len =  strlen(new_field_dyn);
             for (uintmax_t index = 0; index < len; index++) {
@@ -961,7 +960,7 @@ bool field_writer_internal_(DataLynx *self, uintmax_t row, uintmax_t column, cha
             while (fscanf(self->file_ptr, "%c", &tmp) == 1) {
 
                 if (inside_quotes && tmp == '"') inside_quotes = false;
-                else if ((!inside_quotes && tmp == ',' ) || tmp == '\n') break;
+                else if ((!inside_quotes && tmp == self->DELIMITER) || tmp == '\n') break;
             }
             s[i] = tmp;
         }
@@ -971,7 +970,7 @@ bool field_writer_internal_(DataLynx *self, uintmax_t row, uintmax_t column, cha
 
             if (!inside_quotes && s[i] == '"') inside_quotes = true;
             else if (inside_quotes && s[i] == '"') inside_quotes = false;
-            else if (s[i] == ',' && !inside_quotes) {
+            else if (s[i] == self->DELIMITER && !inside_quotes) {
                 current_column++;
             }
             else if (s[i] == '\n') {current_row++; current_column = 0;}
@@ -979,7 +978,7 @@ bool field_writer_internal_(DataLynx *self, uintmax_t row, uintmax_t column, cha
 
         // Reallocate for next char
         s = realloc(s, sizeof(char)*(i+2));
-        if (s == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+        if (s == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
         i++;
 
     }
@@ -990,7 +989,7 @@ bool field_writer_internal_(DataLynx *self, uintmax_t row, uintmax_t column, cha
 
     // Reopen file in r+ mode in order to write (i.e. write mode will erase file contents)
     self->file_ptr = fopen(self->filename, "r+");
-    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+    if (self->file_ptr == NULL) {log_error(FOPEN_FAILED, func_name); return false;}
 
     // Print new data to file
     fprintf(self->file_ptr, "%s", s);
@@ -1002,7 +1001,7 @@ bool field_writer_internal_(DataLynx *self, uintmax_t row, uintmax_t column, cha
 
     // Reopen in read mode
     self->file_ptr = fopen(self->filename, "r");
-    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+    if (self->file_ptr == NULL) {log_error(FOPEN_FAILED, func_name); return false;}
 
     // Make sure file size is up to date
     get_file_size_(self);
@@ -1016,7 +1015,7 @@ bool field_writer_internal_(DataLynx *self, uintmax_t row, uintmax_t column, cha
 bool rowWriter(DataLynx *self, char *values[]) {
 
     if (self == NULL || values == NULL) return false;
-    if (self->file_ptr == NULL || !self->csv_write_permission) return false;
+    if (self->file_ptr == NULL || !self->csv.write_permission) return false;
 
     // Get header and column count
     if (self->__header__ == NULL) headerReader(self);
@@ -1037,7 +1036,7 @@ bool rowDictWriter(DataLynx *self, dict values[]) {
 
     // Safety checks
     if (self == NULL || values == NULL) return false;
-    if (self->file_ptr == NULL || !self->csv_write_permission) return false;
+    if (self->file_ptr == NULL || !self->csv.write_permission) return false;
 
     // Get header and column count
     if (self->__header__ == NULL) headerReader(self);
@@ -1123,7 +1122,7 @@ bool row_writer_internal_(DataLynx *self, char *values[]) {
 
     // Open in append mode
     self->file_ptr = fopen(self->filename, "a");
-    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+    if (self->file_ptr == NULL) {log_error(FOPEN_FAILED, func_name); return false;}
 
     // Append row to file
     fprintf(self->file_ptr, "%s\n", row_string);
@@ -1133,7 +1132,7 @@ bool row_writer_internal_(DataLynx *self, char *values[]) {
 
     // Reopen in read mode
     self->file_ptr = fopen(self->filename, "r");
-    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+    if (self->file_ptr == NULL) {log_error(FOPEN_FAILED, func_name); return false;}
 
     // Get new file size
     get_file_size_(self);
@@ -1167,7 +1166,7 @@ bool renameFile(DataLynx *self, char *new_filename) {
 
     // Allocate for new filename
     self->filename = (char *)malloc(sizeof(char) * (length+1));
-    if (self->filename == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (self->filename == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
     strcpy(self->filename, new_filename);
 
@@ -1185,7 +1184,7 @@ bool backup(DataLynx *self) {
 
     // Open file
     FILE *file = fopen(self->filename, "r");
-    if (file == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+    if (file == NULL) {log_error(FOPEN_FAILED, func_name); return false;}
 
     // Get file size
     fseek(file, 0L, SEEK_END);
@@ -1264,7 +1263,7 @@ bool backup(DataLynx *self) {
 
     // Create new file
     FILE *backup_file = fopen(backup_filename, "w");
-    if (backup_file == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+    if (backup_file == NULL) {log_error(FOPEN_FAILED, func_name); return false;}
 
     // Write to file
     fwrite(buffer, file_size, 1, backup_file);
@@ -1274,36 +1273,32 @@ bool backup(DataLynx *self) {
     return true;
 }
 
-
 //          --- CSV.WRITEDATA()  ---
-bool writeData(DataLynx *self, char *new_filename) {
+bool overwriteData(DataLynx *self) {
 
+    // Safety checks
     if (self == NULL) return false;
 
-    if (self->filename == NULL) return false;
-
-    if (strcasecmp(self->filename, new_filename) == 0 && !self->csv_write_permission) return false;
-
-    // Make this create default new filename
-    if (strlen(new_filename) == 0) return false;
+    if (self->filename == NULL || !self->csv.write_permission) return false;
 
     const char *func_name = "csv.writeData";
 
     // Create (open) new file
-    FILE *new_file = fopen(new_filename, "w");
-    if (new_file == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+    FILE *file = self->file_ptr;
+    file = fopen(self->filename, "w");
+    if (file == NULL) {log_error(FOPEN_FAILED, func_name); return false;}
 
     // Write Header to file
-    if (self->skip_header && self->__header__ != NULL) {
+    if (self->has_header && self->__header__ != NULL) {
 
         for (uintmax_t i = 0; i < self->columnCount; i++) {
 
             // Print with comma if not the last column
             if (i < self->columnCount-1) {
-                fprintf(new_file, "%s,", self->__header__[i]);
+                fprintf(file, "%s,", self->__header__[i]);
                 if (self->with_spaces) printf(" ");
             }
-            else fprintf(new_file, "%s\n", self->__header__[i]);
+            else fprintf(file, "%s\n", self->__header__[i]);
         }
 
     }
@@ -1312,15 +1307,15 @@ bool writeData(DataLynx *self, char *new_filename) {
     if (self->raw != NULL) {
 
         // Write raw data (one long string) to file
-        fprintf(new_file, "%s", self->raw);
+        fprintf(file, "%s", self->raw);
 
-        fclose(new_file);
+        fclose(file);
         return true;
     }
 
     // Iterate through every row
     uintmax_t i;
-    if (!self->skip_header) i = 1;
+    if (!self->has_header) i = 1;
     else i = 0;
 
 
@@ -1328,11 +1323,11 @@ bool writeData(DataLynx *self, char *new_filename) {
 
         // Write array of strings (rows) to file
         while (i < self->rowCount) {
-            fprintf(new_file, "%s\n", self->rows[i]);
+            fprintf(file, "%s\n", self->rows[i]);
             i++;
         }
 
-        fclose(new_file);
+        fclose(file);
         return true;
     }
 
@@ -1344,14 +1339,14 @@ bool writeData(DataLynx *self, char *new_filename) {
 
                 // Write grid to file
                 if (column != self->columnCount-1)
-                    fprintf(new_file, "%s,", self->grid_v3[i][column]);
-                else fprintf(new_file, "%s\n", self->grid_v3[i][column]);
+                    fprintf(file, "%s,", self->grid_v3[i][column]);
+                else fprintf(file, "%s\n", self->grid_v3[i][column]);
             }
             i++;
         }
 
 
-        fclose(new_file);
+        fclose(file);
         return true;
     }
 
@@ -1365,8 +1360,8 @@ bool writeData(DataLynx *self, char *new_filename) {
 
                 // Write grid to file
                 if (tmp->next != NULL)
-                    fprintf(new_file, "%s,", tmp->s);
-                else fprintf(new_file, "%s\n", tmp->s);
+                    fprintf(file, "%s,", tmp->s);
+                else fprintf(file, "%s\n", tmp->s);
 
                 tmp = tmp->next;
             }
@@ -1374,7 +1369,7 @@ bool writeData(DataLynx *self, char *new_filename) {
         }
 
 
-        fclose(new_file);
+        fclose(file);
         return true;
 
     }
@@ -1389,28 +1384,166 @@ bool writeData(DataLynx *self, char *new_filename) {
             dict_node *tmp = self->dict_grid[i];
             while (tmp != NULL) {
                 if (tmp->next != NULL)
-                    fprintf(new_file, "%s, ", tmp->s);
+                    fprintf(file, "%s, ", tmp->s);
                 else
-                    fprintf(new_file, "%s\n", tmp->s);
+                    fprintf(file, "%s\n", tmp->s);
                 tmp = tmp->next;
             }
             i++;
         }
 
 
-        fclose(new_file);
+        fclose(file);
         return true;
 
     }
 
     // End
-    fclose(new_file);
+    fclose(file);
 
     return false;
 
 
 
 }
+
+
+// //          --- CSV.WRITEDATA()  --- ORIGINAL
+// bool writeData(DataLynx *self, char *new_filename) {
+
+//     if (self == NULL) return false;
+
+//     if (self->filename == NULL) return false;
+
+//     if (strcasecmp(self->filename, new_filename) == 0 && !self->csv.write_permission) return false;
+
+//     // Make this create default new filename
+//     if (strlen(new_filename) == 0) return false;
+
+//     const char *func_name = "csv.writeData";
+
+//     // Create (open) new file
+//     FILE *new_file = fopen(new_filename, "w");
+//     if (new_file == NULL) {log_error(FOPEN_FAILED, func_name); return false;}
+
+//     // Write Header to file
+//     if (self->has_header && self->__header__ != NULL) {
+
+//         for (uintmax_t i = 0; i < self->columnCount; i++) {
+
+//             // Print with comma if not the last column
+//             if (i < self->columnCount-1) {
+//                 fprintf(new_file, "%s,", self->__header__[i]);
+//                 if (self->with_spaces) printf(" ");
+//             }
+//             else fprintf(new_file, "%s\n", self->__header__[i]);
+//         }
+
+//     }
+
+//     // Data
+//     if (self->raw != NULL) {
+
+//         // Write raw data (one long string) to file
+//         fprintf(new_file, "%s", self->raw);
+
+//         fclose(new_file);
+//         return true;
+//     }
+
+//     // Iterate through every row
+//     uintmax_t i;
+//     if (!self->has_header) i = 1;
+//     else i = 0;
+
+
+//     if (self->rows != NULL) {
+
+//         // Write array of strings (rows) to file
+//         while (i < self->rowCount) {
+//             fprintf(new_file, "%s\n", self->rows[i]);
+//             i++;
+//         }
+
+//         fclose(new_file);
+//         return true;
+//     }
+
+//     if (self->grid_v3 != NULL) {
+
+//         while (i < self->rowCount) {
+
+//             for (uint32_t column = 0; column < self->columnCount; column++) {
+
+//                 // Write grid to file
+//                 if (column != self->columnCount-1)
+//                     fprintf(new_file, "%s,", self->grid_v3[i][column]);
+//                 else fprintf(new_file, "%s\n", self->grid_v3[i][column]);
+//             }
+//             i++;
+//         }
+
+
+//         fclose(new_file);
+//         return true;
+//     }
+
+//     if (self->grid != NULL) {
+
+//         // Write array of db link list (grid) to file
+//         while (i < self->rowCount) {
+
+//             node *tmp = self->grid[i];
+//             while (tmp != NULL) {
+
+//                 // Write grid to file
+//                 if (tmp->next != NULL)
+//                     fprintf(new_file, "%s,", tmp->s);
+//                 else fprintf(new_file, "%s\n", tmp->s);
+
+//                 tmp = tmp->next;
+//             }
+//             i++;
+//         }
+
+
+//         fclose(new_file);
+//         return true;
+
+//     }
+
+//     if (self->dict_grid != NULL) {
+
+//         // Write array of db link list (dict grid) to file
+
+//         while (i < self->rowCount) {
+
+//             // Traverse linked list
+//             dict_node *tmp = self->dict_grid[i];
+//             while (tmp != NULL) {
+//                 if (tmp->next != NULL)
+//                     fprintf(new_file, "%s, ", tmp->s);
+//                 else
+//                     fprintf(new_file, "%s\n", tmp->s);
+//                 tmp = tmp->next;
+//             }
+//             i++;
+//         }
+
+
+//         fclose(new_file);
+//         return true;
+
+//     }
+
+//     // End
+//     fclose(new_file);
+
+//     return false;
+
+
+
+// }
 
 
 
@@ -1442,7 +1575,7 @@ bool write_csv_header_(DataLynx *self) {
 
     // Reopen in write mode
     self->file_ptr = fopen(self->filename, "w");
-    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+    if (self->file_ptr == NULL) {log_error(FOPEN_FAILED, func_name); return false;}
 
     // Write new header to CSV file
     for (unsigned int i = 0; i < self->columnCount; i++)
@@ -1456,11 +1589,157 @@ bool write_csv_header_(DataLynx *self) {
 
     // Reopen in read mode (default state)
     self->file_ptr = fopen(self->filename, "r");
-    if (self->file_ptr == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+    if (self->file_ptr == NULL) {log_error(FOPEN_FAILED, func_name); return false;}
 
     // Make sure file size is up to date
     get_file_size_(self);
 
     return true;
+
+}
+
+
+
+//          -- WRITE XML() --
+bool writeXML(DataLynx *self, char *filename_param) {
+
+    if (self == NULL) return false;
+    if (!data_exists(self)) return false;
+
+    char *filename = NULL;
+    bool filename_malloc = false;
+
+    const char *func_name = "writeXML";
+
+    // If filename provided, must be xml file extension
+    if (filename_param != NULL && !is_ext(filename_param, ".xml")) return false;
+
+    // Create default filename if none provided
+    else if (filename_param == NULL) {
+
+        // Create timestamp
+        time_t t;
+        time(&t);
+        const char *timestamp_read_only = ctime(&t);
+
+        // Create writable timestamp to make necessary adjustments
+        size_t timestamp_length = strlen(timestamp_read_only);
+
+        char timestamp[timestamp_length+1];
+        strcpy(timestamp, timestamp_read_only);
+        timestamp[--timestamp_length] = '\0'; /* Cut off \n from end of timestamp */
+
+        // Get rid of spaces
+        for (uint8_t i = 0; i < timestamp_length; i++) {if (timestamp[i] == ' ') timestamp[i] = '_';}
+
+        int16_t dot = find_dot(self->filename);
+        if (dot != -1) {
+
+            size_t original_filename_len = strlen(self->filename);
+
+
+            filename = (char*)malloc(sizeof(char) * (original_filename_len - (original_filename_len - dot) + strlen(timestamp) + strlen(".xml") + 2));
+            if (filename == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+            strcpy(filename, self->filename);
+            sprintf(&filename[original_filename_len - (original_filename_len - dot)], "_%s.xml", timestamp);
+
+            filename_malloc = true;
+
+        }
+
+
+    }
+    else filename = filename_param;
+
+
+    // Create new file
+    FILE *xml_file = fopen(filename, "w");
+    if (xml_file == NULL) {log_error(FOPEN_FAILED, func_name); return false;}
+
+    // Create xml String
+    toXMLString(self);
+
+    // Write to file
+    fprintf(xml_file, "%s\n", self->xml);
+
+    fclose(xml_file);
+
+    if (filename_malloc) free(filename);
+
+    return true;
+
+}
+
+
+//          -- WRITE JSON() --
+bool writeJSON(DataLynx *self, char *filename_param) {
+
+    if (self == NULL) return false;
+    if (!data_exists(self)) return false;
+
+    char *filename = NULL;
+    bool filename_malloc = false;
+
+    const char *func_name = "writeJSON";
+
+    // If filename provided, must be JSON file extension
+    if (filename_param != NULL && !is_ext(filename_param, ".json")) return false;
+
+    // Create default filename if none provided
+    else if (filename_param == NULL) {
+
+        // Create timestamp
+        time_t t;
+        time(&t);
+        const char *timestamp_read_only = ctime(&t);
+
+        // Create writable timestamp to make necessary adjustments
+        size_t timestamp_length = strlen(timestamp_read_only);
+
+        char timestamp[timestamp_length+1];
+        strcpy(timestamp, timestamp_read_only);
+        timestamp[--timestamp_length] = '\0'; /* Cut off \n from end of timestamp */
+
+        // Get rid of spaces
+        for (uint8_t i = 0; i < timestamp_length; i++) {if (timestamp[i] == ' ') timestamp[i] = '_';}
+
+        int16_t dot = find_dot(self->filename);
+        if (dot != -1) {
+
+            size_t original_filename_len = strlen(self->filename);
+            // uint16_t
+
+            filename = (char*)malloc(sizeof(char) * (original_filename_len - (original_filename_len - dot) + strlen(timestamp) + strlen(".json") + 2));
+            if (filename == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+            strcpy(filename, self->filename);
+            sprintf(&filename[original_filename_len - (original_filename_len - dot)], "_%s.json", timestamp);
+
+            filename_malloc = true;
+
+        }
+
+
+    }
+    else filename = filename_param;
+
+
+    // Create new file
+    FILE *json_file = fopen(filename, "w");
+    if (json_file == NULL) {log_error(FOPEN_FAILED, func_name); return false;}
+
+    // Create JSON String
+    toJSONString(self);
+
+    // Write to file
+    fprintf(json_file, "%s\n", self->json);
+
+    fclose(json_file);
+
+    if (filename_malloc) free(filename);
+
+    return true;
+
 
 }

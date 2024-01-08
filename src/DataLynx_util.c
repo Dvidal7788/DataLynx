@@ -97,7 +97,9 @@ bool has_quotes(char *s)
 {
 
     if (s == NULL) return false;
-    /* THIS FUNCTION: Checks if a string has quotes */
+
+    /* THIS FUNCTION: Checks if a string is surrounded by quotes */
+
     if (s[0] == '"' && s[strlen(s)-1] == '"') return true;
     else return false;
 }
@@ -125,7 +127,7 @@ bool add_quotes(char **s)
     // Don't add quotes if unnecessary
     if (has_quotes(*s)) return false;
 
-    // Function name for if_error()
+    // Function name for log_error()
     char *func_name = "add_quotes";
 
     // Original string length
@@ -139,7 +141,7 @@ bool add_quotes(char **s)
 
         // Resize s to be long enough for quotes
         *s = realloc(*s, sizeof(char)*(strlen(*s)+3));
-        if (*s == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+        if (*s == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
 
         //
         strcpy(&((*s)[1]), s_no_quotes);
@@ -167,7 +169,7 @@ char *remove_quotes(DataLynx *self, char *s) {
     uint16_t new_length = strlen(s)-2;
 
     char *s_sans_quotes = malloc(sizeof(char)*(new_length+1));
-    if (s == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+    if (s == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
     // Copy, excluding first double quote
     strncpy(s_sans_quotes, &s[1], new_length);
@@ -203,7 +205,7 @@ bool verify_column(char **header, uintmax_t column_count, char *column)
 // ___ INFINITE BUFFER (User Input) ___
 char *inf_buffer(char *prompt)
 {
-    // Function name (for use in if_error())
+    // Function name (for use in log_error())
     const char *func_name = "inf_buffer";
 
     /* THIS FUNCTION: allows the user to input a dynamically allocated string, of "any" length (i.e. length dictated by size of heap of course)*/
@@ -213,7 +215,7 @@ char *inf_buffer(char *prompt)
 
     // Allocate 1st char of string
     char *s = (char*)malloc(sizeof(char));
-    if (s == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+    if (s == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
     // Scan command line char by char
     uint64_t i = 0;
@@ -221,7 +223,7 @@ char *inf_buffer(char *prompt)
     while ((scanReturn = scanf("%c", &s[i])) == 1)
     {
         // Check EOF
-        if (scanReturn == EOF) {free_null(&s); if_error(SCANF_FAILED, func_name); return NULL;}
+        if (scanReturn == EOF) {free_null(&s); log_error(SCANF_FAILED, func_name); return NULL;}
 
         // Check if end of user input
         if (s[i] == '\n') {
@@ -230,7 +232,7 @@ char *inf_buffer(char *prompt)
         }
         else {
             s = realloc(s, sizeof(char)*(i+2));
-            if (s == NULL) {free_null(&s); if_error(REALLOC_FAILED, func_name); return NULL;}
+            if (s == NULL) {free_null(&s); log_error(REALLOC_FAILED, func_name); return NULL;}
             i++;
         }
     }
@@ -303,7 +305,7 @@ bool convert_to_csv(DataLynx *self, char *filename) {
     const char *func_name = "convert_to_csv";
 
     FILE *file = fopen(filename, "r");
-    if (file == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+    if (file == NULL) {log_error(FOPEN_FAILED, func_name); return false;}
 
     fseek(file, 0, SEEK_END);
     uintmax_t file_size = ftell(file);
@@ -320,7 +322,7 @@ bool convert_to_csv(DataLynx *self, char *filename) {
     uint8_t filename_length = strlen(filename);
 
     char *new_filename = malloc(sizeof(char)*filename_length+1);
-    if (new_filename == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (new_filename == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
     for (uint8_t i = 0; i < filename_length; i++) {
 
@@ -337,7 +339,7 @@ bool convert_to_csv(DataLynx *self, char *filename) {
 
 
     FILE *new_file = fopen(new_filename, "w");
-    if (new_file == NULL) {if_error(FOPEN_FAILED, func_name); return false;}
+    if (new_file == NULL) {log_error(FOPEN_FAILED, func_name); return false;}
 
     fwrite(buffer, 0, file_size, new_file);
 
@@ -358,7 +360,7 @@ char *append_last_retrieved_fields(DataLynx *self, char **field) {
 
     // Allocate for new node
     node *n = (node *)malloc(sizeof(node));
-    if (n ==  NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+    if (n ==  NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
     n->next = self->last_retrieved_fields;
     self->last_retrieved_fields = n;
@@ -374,21 +376,22 @@ bool is_ext(char *filename, char *ext) {
 
     /* THIS FUNCTION: Checks if filename has correct file extension of your choice */
 
+    if (filename == NULL || ext == NULL) return false;
+
     // Check that proper argument for file extension (char *ext) has been passed through
     if (ext[0] != '.') return false;
 
     // Make sure not to dereference NULL pointer
     if (filename == NULL || ext == NULL) return false;
 
-    // Check if filename is at least 5 chars long (e.g. ".csv" plus at least 1 char prior to ".csv")
-        //  This avoids buffer underrun once we backup 4 chars in next section
-    if (strlen(filename) < 5) return false;
+    // Check if filename is at least strlen(ext)+1 chars long (e.g. ".csv" plus at least 1 char prior to ".csv")
+        //  This avoids buffer underrun once we backup strlen(ext) chars in next section
+    if (strlen(filename) < (strlen(ext)+1)) return false;
 
     // Return true if filename has correct extension
-    if (strcmp(&filename[strlen(filename)-4], ext) == 0) {
-        return true;
-    }
-    else return false;
+    if (strcmp(&filename[strlen(filename)-strlen(ext)], ext) == 0) return true;
+
+    return false;
 }
 
 
@@ -446,6 +449,36 @@ bool rearrange_dict_array(DataLynx *self, dict values[]) {
 }
 
 
+//          -- FIND_DOT() --
+int16_t find_dot(char *filename) {
+
+    /* Returns -1 if no dot in filename */
+
+    if (filename == NULL) return -1;
+
+    size_t length = strlen(filename);
+
+    // Iterate backwards through string
+    for (int16_t i = length-1; i >= 0; i--) {
+        if (filename[i] == '.') return i;
+    }
+
+
+    return -1;
+}
+
+void fill_buffer(char *buffer, const char *s) {
+    /* Fills buffer with a "string", but does not null terminate end */
+
+    size_t length = strlen(s);
+
+    for (uint16_t i = 0; i < length; i++) {
+        buffer[i] = s[i];
+    }
+
+    return;
+}
+
 //      ___ GET FILE SIZE() ___
 size_t get_file_size_(DataLynx *self) {
 
@@ -474,10 +507,19 @@ size_t get_file_size_(DataLynx *self) {
 }
 
 
+bool data_exists(DataLynx *self) {
 
-//      ___ IF_ERROR() ___
-uint8_t if_error(uint8_t error_code, const char *function_name)
-{
+    if (self == NULL) return false;
+
+    if (self->grid_v3 == NULL && self->grid == NULL && self->dict_grid == NULL) return false;
+
+    return true;
+}
+
+
+//      ___ log_error() ___
+uint8_t log_error(uint8_t error_code, const char *function_name) {
+
     /* THIS FUNCTION: 1. Takes error code and function name
                       2. Creates error_log.csv if doesn't already exist
                       3. Concatontates error_code with function code to create final error code
@@ -491,7 +533,7 @@ uint8_t if_error(uint8_t error_code, const char *function_name)
     const char *LIBRARY_FUNCTIONS[NUM_OF_FUNCTIONS] = {"build_dblink_list", "build_dict_link_list", "read_file_v1", "string_into_2d_array", "update_csv_index",
                                             "read_file_v2", "csv_reader_index", "add_quotes", "index_2darray_csv", "split_2darray_by", "headerReader", "csv_dictreader_index",
                                             "dictReader", "get_field_dict", "update_dict_and_csv", "inf_buffer", "get_uint", "is_ext", "print_lnk_list",
-                                            "print_dict_list", "free_list", "free_dict_list", "free_null", "fclose_null", "if_error"};
+                                            "print_dict_list", "free_list", "free_dict_list", "free_null", "fclose_null", "log_error"};
 
     // Find corresponding number for function that failed
     uint8_t libcsv_function_code = 0;

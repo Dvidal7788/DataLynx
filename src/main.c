@@ -19,7 +19,7 @@ int main(void)
         // if (strcasecmp(myData.filename, "quit") == 0) {printf("\n\tGOODBYE!\n\n"); free_null(&myData.filename); return 1;}
 
         // Open
-        if (myData.csv.openFile(&myData, "csv/staff.csv")) break;
+        if (myData.csv.openFile(&myData, "csv/printers.csv")) break;
 
     }
     // End of set up section
@@ -29,12 +29,17 @@ int main(void)
     // fileReader(&myData);                /* Raw     */
     // fileRowReader(&myData);             /* Rows    */
 
+    // myData.DELIMITER = '|';
+
     myData.csv.reader_v3(&myData);      /* Grid_v3 */
     // myData.csv.reader(&myData);         /* Grid    */
     // myData.csv.dictReader(&myData);        /* Dict    */
 
-    // Print
+
+
+    //          -- PRINT --
     // myData.printData(&myData);
+    myData.printDataTable(&myData);
     // myData.printStats(&myData, "all");
 
     // print one column / one column's stats
@@ -44,12 +49,40 @@ int main(void)
     // // Get one specific stat
     // printf("Sum: %.2f\n\n", myData.getStat(&myData, "Ext", "sum"));
     // printf("Sum: %.2f\n\n", myData.sum(&myData, "Ext"));
-    myData.csv_write_permission = true;
-    myData.destructive_mode = true;
+    // myData.csv.write_permission = true;
+    // myData.destructive_mode = true;
+
+            //  -- Correlation --
+    // replaceAll(&myData, "?", "");
+    // printf("\nCorrelation: %.2f\n\n", corr(&myData, "city-mpg", "price"));
+
+
+    // //      -- One Hot --
+    // oneHot(&myData, "name");
+    // printDataTable(&myData);
+
+    // freeAll(&myData);
+    // return 0;
+
+    //          -- Bins -
+    // char *bin_names[] = {"Low", "Medium", "High"};
+    uint8_t num_bins = 4;
+    myData.getBins(&myData, "salary, Salary & Salary", num_bins, NULL);
+
+    // Example storing dividers
+    // char *bin_names2[] = {"Low", "Medium-Low", "Medium-High", "High"};
+    double *dividers = myData.getBins(&myData, "emp_id", ++num_bins, NULL);
+
+    // Print bin dividers
+    if (dividers != NULL) {
+        uint8_t num_dividers = num_bins + 1;
+        for (uint8_t d = 0; d < num_dividers; d++) (d == num_dividers-1) ? printf("%.2f\n", dividers[d]) : printf("%.2f | ", dividers[d]) ;
+    }
+
 
     //          -- FIX HEADER --
-    myData.formatHeader(&myData); /* Format to title case (i.e. first letter of every work capitalized) */
-    myData.changeColumnName(&myData, "Dept", "Department");
+    // myData.formatHeader(&myData); /* Format to title case (i.e. first letter of every work capitalized) */
+    // myData.changeColumnName(&myData, "Dept", "Department");
 
 
 
@@ -67,7 +100,7 @@ int main(void)
     // // Sort by non-numeric column
     // myData.sortRowsByColumn(&myData, "Name", "ASC");
 
-    // myData.printData(&myData);
+    myData.printData(&myData);
 
 
 
@@ -105,10 +138,10 @@ int main(void)
     // printf("Get field from CSV: '%s'\n", myData.csv.fieldReaderIdx(&myData, 0, 0));
 
     // Update Field (in CSV)
-    // myData.csv_write_permission = true;
+    // myData.csv.write_permission = true;
     // if (myData.csv.fieldWriter(&myData, 0, "Name", "Dave Vidal")) printf("Success writing to csv\n");
     // else printf("Failure writing to csv\n");
-    // myData.csv_write_permission = false;
+    // myData.csv.write_permission = false;
 
     // myData.csv.renameFile(&myData, "csv/sales_data3.csv");
 
@@ -135,7 +168,7 @@ int main(void)
     //      --- INSERT ROW --- /* VALGRIND ERRORS!! */
     /* When inserting, must at very least set columnCount (whether insertRow ro insertRowDict) */
 
-    myData.csv_write_permission = true;
+    myData.csv.write_permission = true;
     myData.destructive_mode = true;
 
     // Create your own header
@@ -237,26 +270,43 @@ int main(void)
     // printf("Anna in Name: %d\n", myData.valueCount(&myData, "Anna", "Name"));
     // myData.printColumnCond(&myData, "Name", "==", "Annie");
 
-    // myData.csv_write_permission = true;
+    // myData.csv.write_permission = true;
     // myData.csv.fieldWriter(&myData, 0, "Emp ID", "HELLO");
     // myData.csv.fieldWriterIdx(&myData, 1, 0, "TEST");
 
     // char *row_values[] = {NULL, "Rin,,,,go Starr", "S,,,,ales", NULL, "100000", "d"};
     // myData.csv.rowWriter(&myData, row_values);
     // myData.insertRow(&myData, row_values);
-    // myData.csv_write_permission = true;
+    // myData.csv.write_permission = true;
 
     // dict row_values[] = {{"Test", NULL}, {"\"Salary,  Data & Entries\"", "250000"}, {"Name", "John Lenn,,,on"}, {"Department", "Sales"}, {"Ext", NULL}, {"Emp ID", "3333"}};
     // myData.csv.rowDictWriter(&myData, row_values);
     // myData.insertRowDict(&myData, row_values);
 
-    myData.printData(&myData);
+    //      -- Drop Null --
+    printf("DrOP NULL\n\n");
+    dropNull(&myData, "name");
+
+
+    //          -- to JSON --
+    // toJSONString(&myData);
+    // writeJSON(&myData, NULL);
+    writeXML(&myData, NULL);
+
+    // printf("\n\t\t---- JSON ----\n\n%s\n", myData.json);
+
+    // //      -- PRINT --
+    // myData.printData(&myData);
     myData.printDataTable(&myData);
+
+
     // myData.printStatsAll(&myData);
-    // myData.printStatsColumn(&myData, "Name");
+    myData.printStatsColumn(&myData, "salary, Salary & Salary_binned");
 
+    // toXMLString(&myData);
+    // printf("\tXML:\n%s\n", myData.xml);
+    // myData.printPivotTable(&myData, "dept", "salary, Salary & Salary", "mean");
 
-    myData.printPivotTable(&myData, "Department", "Salary,  Data & Entries", "mean");
     //      --- End ---
     myData.freeAll(&myData);
 

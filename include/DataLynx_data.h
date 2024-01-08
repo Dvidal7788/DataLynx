@@ -15,7 +15,7 @@
 
 //          ---- Error Codes----
 enum ErrorCodes {MALLOC_FAILED=1, REALLOC_FAILED, FOPEN_FAILED, FREAD_FAILED, SCANF_FAILED};
-#define NUM_OF_FUNCTIONS 25 /* For use in if_error()*/
+#define NUM_OF_FUNCTIONS 25 /* For use in log_error()*/
 
 #define MISSING_VALUE "---" /* This is the default missing value, which gets assigned to the char * */
 
@@ -96,10 +96,10 @@ typedef struct DataLynx {
     FILE *file_ptr;
     uintmax_t file_size;
     uintmax_t header_size;
-    bool skip_header;
+    char DELIMITER;
+    bool has_header;
     bool with_spaces;
     char *missingValue;
-    bool csv_write_permission;
     bool printRowIndex;
     uintmax_t maxPrintRows;
     uint16_t maxFieldPrintLength;
@@ -116,7 +116,6 @@ typedef struct DataLynx {
     bool case_sensitive_sort;
     uintmax_t number_of_rows_to_print;
     bool print_tail;
-    char if_error_buffer[50];
 
     char **__header__;
     Aggregate *aggregate;
@@ -139,7 +138,15 @@ typedef struct DataLynx {
     char *last_retrieved_field;
     node *last_retrieved_fields;
 
-    // -- Function pointers --
+    // Keep track of bin dividers
+    double **all_bin_dividers;
+    uint8_t num_binned_columns;
+
+    // Strings to contain JSON & XML
+    char *json;
+    char *xml;
+
+    //          -- Function pointers --
 
     char *(*header)(struct DataLynx *self, uint32_t column);
 
@@ -148,6 +155,9 @@ typedef struct DataLynx {
 
     // .csv - (Functions that read/write directly to CSV file)
     struct {
+
+        bool write_permission;
+
         bool (*openFile)(struct DataLynx *self, char *filename);
         char **(*headerReader)(struct DataLynx *self);
         char *(*fileReader)(struct DataLynx *self);
@@ -168,7 +178,7 @@ typedef struct DataLynx {
 
         bool (*renameFile)(struct DataLynx *self, char *new_filename);
         bool (*backup)(struct DataLynx *self);
-        bool (*writeData)(struct DataLynx *self, char *new_filename);
+        bool (*overwriteData)(struct DataLynx *self);
 
     } csv;
 
@@ -228,6 +238,8 @@ typedef struct DataLynx {
     bool (*insertRowDict)(struct DataLynx *self, dict values[]);
 
     bool (*sortRowsByColumn)(struct DataLynx *self, const char *column_name, const char *asc_desc);
+
+    double *(*getBins)(struct DataLynx *self, char *column_name, uint16_t num_bins, char **bin_names);
 
     uint16_t (*valueCount)(struct DataLynx *self, char *value, char *column_name);
     bool (*isInColumn)(struct DataLynx *self, char *value, char *column_name);
@@ -334,6 +346,9 @@ bool replaceInColumnIdx(DataLynx *self, uintmax_t column, char *to_replace, char
 bool dropColumn(DataLynx *self, char *column_name);
 bool dropColumnIdx(DataLynx *self, uintmax_t column_index);
 bool dropRow(DataLynx *self, uintmax_t row_to_drop);
+int16_t dropNull(DataLynx *self, char *column_name);
+int16_t dropNullIdx(DataLynx *self, uint16_t column_index);
+int16_t drop_null_(DataLynx *self, uint16_t column_index);
 
     /* _internal_ */
 bool grid_replace(DataLynx *self, char *to_replace, char *replace_with, intmax_t column);
@@ -362,6 +377,10 @@ char *get_field_grid_v3(DataLynx *self, uintmax_t desired_row, uintmax_t desired
 char *get_field_grid(DataLynx *self, uintmax_t desired_row, uintmax_t desired_column, char *condition_operator, double condition_num);
 char *get_field_dict(DataLynx *self, uintmax_t desired_row, char *desired_column);
 
+char *get_field_(DataLynx *self, uintmax_t row, int16_t column);
+
+double *getBins(DataLynx *self, char *column_name, uint16_t num_bins, char **bin_names);
+bool oneHot(DataLynx *self, char *column_name);
 
 // Convert to other data structures
 char **string_into_2d_array(DataLynx *self);
@@ -377,7 +396,8 @@ void drop_dict_node(dict_node **head, dict_node **cursor);
 bool sortRowsByColumn(DataLynx *self, const char *column_name, const char *asc_desc); /* self.in_place_sort & self.case_sensitive_sort will affect this function */
 bool compare_for_sort_(char *field1, char *field2, bool ascending, bool case_sensitive, bool is_number);
 
-
+char *toJSONString(DataLynx *self);
+char *toXMLString(DataLynx *self);
 
 void print_grid_v3(DataLynx *self);
 void print_grid(DataLynx *self);

@@ -26,9 +26,12 @@ double upperQrt(DataLynx *self, char *column_name);
 uintmax_t isNull(DataLynx *self, char *column_name);
 uintmax_t notNull(DataLynx *self, char *column_name);
 
+double corr(DataLynx *self, char *column_name1, char *column_name2);
+
 double find_new_min(DataLynx *self, uintmax_t column, double old_field_float, double new_field_float);
 double find_new_max(DataLynx *self, uintmax_t column, double old_field_float, double new_field_float);
 bool update_stats(DataLynx *self, uintmax_t column, char *old_field, char *new_field);
+void calc_mean(DataLynx *self);
 void calc_std(DataLynx *self);
 bool find_median(DataLynx *self);
 
@@ -41,7 +44,7 @@ char *format_number(double value);
 
 bool create_value_counts(DataLynx *self, uintmax_t column_index);
 uint8_t find_alpha_index(char *value) ;
-bool prepend_value_count(DataLynx *self, uintmax_t column_index, char *value, uint8_t alpha_index);
+ValueCount *prepend_value_count(DataLynx *self, uintmax_t column_index, char *value, uint8_t alpha_index);
 bool increment_decrement_value_count(DataLynx *self, char *column_name, char *value, bool increment);
 void remove_value_count_node(DataLynx *self, uintmax_t column_index, uint8_t alpha_index, uintmax_t node_index);
 void sort_value_counts(DataLynx *self);
@@ -55,5 +58,6 @@ bool printStatsColumn(DataLynx *self, char *column_name);
 bool print_stats_internal_(DataLynx *self, char *column_name);
 void print_stats_is_not_null_(DataLynx *self, size_t column_strlen, uint32_t column_index, bool is_null);
 void stat_print_(char *stat_name, double stat, uint8_t column_strlen);
+
 
 #endif /* DATALYNX_STATS_H */

@@ -31,7 +31,11 @@ bool row_writer_internal_(DataLynx *self, char *values[]);
 
 bool renameFile(DataLynx *self, char *new_filename);
 bool backup(DataLynx *self);
-bool writeData(DataLynx *self, char *new_filename);
+bool overwriteData(DataLynx *self);
+
+
+bool writeXML(DataLynx *self, char *filename_param);
+bool writeJSON(DataLynx *self, char *filename_param);
 
 bool write_csv_header_(DataLynx *self);
 

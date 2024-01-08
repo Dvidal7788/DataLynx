@@ -8,9 +8,9 @@ DataLynx DataLynxConstructor(void) {
     self.file_ptr = NULL;
     self.file_size = 0;
     self.header_size = 0;
-    self.skip_header = true;
+    self.DELIMITER = ',';
+    self.has_header = true;
     self.with_spaces = true;
-    self.csv_write_permission = false;
     self.printRowIndex = true;
     self.maxPrintRows = 25;
     self.maxFieldPrintLength = 50;
@@ -50,11 +50,20 @@ DataLynx DataLynxConstructor(void) {
     self.last_retrieved_field = NULL;
     self.last_retrieved_fields = NULL;
 
-    //  --- Assign function pointers ---
+    self.all_bin_dividers = NULL;
+    self.num_binned_columns = 0;
+
+    self.json = NULL;
+    self.xml = NULL;
+
+    //          --- Assign function pointers ---
     self.header = &header;
 
     self.userInputFilename = &userInputFilename;
     self.changeFilename = &changeFilename;
+
+    //          -- CSV Struct --
+    self.csv.write_permission = false;
 
     // Read/Write to CSV Functions
     self.csv.openFile = &openFile;
@@ -76,7 +85,7 @@ DataLynx DataLynxConstructor(void) {
 
     self.csv.renameFile = &renameFile;
     self.csv.backup = &backup;
-    self.csv.writeData = &writeData;
+    self.csv.overwriteData = &overwriteData;
 
     // Functions that operate on the data structure in memory
 
@@ -104,6 +113,8 @@ DataLynx DataLynxConstructor(void) {
     self.insertRowDict = &insertRowDict;
 
     self.sortRowsByColumn = &sortRowsByColumn;
+
+    self.getBins = &getBins;
 
     // Can call min, max etc from .min()/.max() etc or .stats()
     self.valueCount = &valueCount;
@@ -189,7 +200,7 @@ bool createHeader(DataLynx *self, char *header[], uint32_t column_count) {
 
     // Allocate array of strings
     self->__header__ = (char **)malloc(sizeof(char *) * column_count);
-    if (self->__header__ == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (self->__header__ == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
     for (uint32_t column = 0; column < column_count; column++) {
 
@@ -200,7 +211,7 @@ bool createHeader(DataLynx *self, char *header[], uint32_t column_count) {
 
             // Allocate each string
             self->__header__[column] = (char*)malloc(sizeof(char)*16);
-            if (self->__header__[column] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+            if (self->__header__[column] == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
             sprintf(self->__header__[column], "Column %d", column+1);
 
@@ -209,13 +220,13 @@ bool createHeader(DataLynx *self, char *header[], uint32_t column_count) {
         else if (header[column][0] == '\0') {
 
             self->__header__[column] = (char *)malloc(sizeof(char)*16);
-            if (self->__header__[column] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+            if (self->__header__[column] == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
             sprintf(self->__header__[column], "Column %d", column+1);
         }
         else {
             self->__header__[column] = (char *)malloc( sizeof(char) * (strlen(header[column])+1) );
-            if (self->__header__[column] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+            if (self->__header__[column] == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
             strcpy(self->__header__[column], header[column]);
         }
 
@@ -253,7 +264,7 @@ bool insertRow(DataLynx *self, char *values[]) {
 
         // Allocate for field string
         values2[column].field = (char*)malloc(sizeof(char) * (length+1));
-        if (values2[column].field == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+        if (values2[column].field == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
         // Copy string (protect against NULL string)
         if (values[column] != NULL) strcpy(values2[column].field, values[column]);
@@ -297,13 +308,13 @@ bool insertRowDict(DataLynx *self, dict values[]) {
 
         // Allocate array of pointers
         self->__header__ = (char**)malloc(sizeof(char*) * self->columnCount);
-        if (self->__header__ == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+        if (self->__header__ == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
         for (uint32_t column = 0; column < self->columnCount; column++) {
 
             // Allocate each string
             self->__header__[column] = (char*)malloc(sizeof(char) * (strlen(values[column].column_name)+1));
-            if (self->__header__[column] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+            if (self->__header__[column] == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
             strcpy(self->__header__[column], values[column].column_name);
 
@@ -317,7 +328,7 @@ bool insertRowDict(DataLynx *self, dict values[]) {
 
         // Inserting from scratch (i.e. no existing data structure)
         self->grid_v3 = (char***)malloc(sizeof(char**));
-        if (self->grid_v3 == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+        if (self->grid_v3 == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
         self->rowCount++;
         create_stats(self);
     }
@@ -325,24 +336,24 @@ bool insertRowDict(DataLynx *self, dict values[]) {
     else if (self->grid_v3 != NULL) {
 
         self->grid_v3 = (char***)realloc(self->grid_v3, sizeof(char**) * (++self->rowCount));
-        if (self->grid_v3 == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+        if (self->grid_v3 == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
     }
     else if (self->grid != NULL) {
 
         self->grid = (node**)realloc(self->grid, sizeof(node*) * (++(self->rowCount)));
-        if (self->grid == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+        if (self->grid == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
     }
     else if (self->dict_grid != NULL) {
 
         self->dict_grid = (dict_node**)realloc(self->dict_grid, sizeof(dict_node*) * (++(self->rowCount)));
-        if (self->dict_grid == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+        if (self->dict_grid == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
     }
 
 
     // Allocate / setup new row
     if (self->grid_v3 != NULL) {
         self->grid_v3[self->rowCount-1] = (char**)malloc(sizeof(char*) * self->columnCount);
-        if (self->grid_v3 == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+        if (self->grid_v3 == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
     }
     // Make head row pointer NULL, so linked list builder functions handle it prooerly
     else if (self->grid != NULL) {
@@ -373,7 +384,7 @@ bool insertRowDict(DataLynx *self, dict values[]) {
 
         //  Allocate for string
         char *new_field = (char*)malloc(sizeof(char) * buffer_size);
-        if (new_field == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+        if (new_field == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
         // Copy string to new buffer
         if (field_not_null) {
@@ -388,7 +399,7 @@ bool insertRowDict(DataLynx *self, dict values[]) {
 
         // Allocate next string for values2 (for input into update_stats_new_row())
         values2[column] = (char*)malloc(sizeof(char) * buffer_size);
-        if (values2[column] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+        if (values2[column] == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
         strcpy(values2[column], new_field);
 
@@ -409,7 +420,7 @@ bool insertRowDict(DataLynx *self, dict values[]) {
     update_stats_new_row(self, values2);
 
     // Simultaneously write this row to the CSV file if permissions allows
-    if (self->csv_write_permission && self->destructive_mode) rowWriter(self, values2);
+    if (self->csv.write_permission && self->destructive_mode) rowWriter(self, values2);
 
     // Free
     for (uint32_t column = 0; column < self->columnCount; column++) free_null(&values2[column]);
@@ -446,11 +457,11 @@ bool insertRowDict(DataLynx *self, dict values[]) {
 
 //     if (row == 0) {
 //         self->grid_v3 = (char ***)malloc(sizeof(char **) * self->columnCount);
-//         if (self->grid_v3 == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+//         if (self->grid_v3 == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 //     }
 //     else {
 //         self->grid_v3 == (char ***)realloc(self->grid_v3, (sizeof(char **) * self->columnCount * (++self->rowCount)));
-//         if (self->grid_v3 == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+//         if (self->grid_v3 == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
 //     }
 
 
@@ -458,7 +469,7 @@ bool insertRowDict(DataLynx *self, dict values[]) {
 
 //         // Allocate string
 //         self->grid_v3[row][column] = (char*)malloc(sizeof(char) * (strlen(values[column])+1));
-//         if (self->grid_v3[row][column] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+//         if (self->grid_v3[row][column] == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
 //         strcpy(self->grid_v3[row][column], values[column]);
 //     }
@@ -495,7 +506,7 @@ bool build_dblink_list(char **s_ptr, node **head, node **last) {
     // -- APPEND NODE --
     // Create new node
     node *n = (node*)malloc(sizeof(node));
-    if (n == NULL) {if_error(MALLOC_FAILED, "build_dblink_list"); return false;}
+    if (n == NULL) {log_error(MALLOC_FAILED, "build_dblink_list"); return false;}
 
     // This string pointer in the node takes over the allocated string buffer (i.e. **s_ptr).
     n->s = *s_ptr;
@@ -520,7 +531,7 @@ bool build_dblink_list(char **s_ptr, node **head, node **last) {
 // ___ BUILD - DICT - DOUBLE LINK LIST ___
 bool build_dict_link_list(char **s_ptr, dict_node **head, dict_node **last, char **current_column_name) {
 
-    // Function name (for use in if_error())
+    // Function name (for use in log_error())
     const char *func_name = "build_dict_link_list";
 
     /* THIS FUNCTION: Builds an array of doubly linked lists that acts an array of dicts. It is called from dictReader() */
@@ -534,7 +545,7 @@ bool build_dict_link_list(char **s_ptr, dict_node **head, dict_node **last, char
     // -- APPEND NODE --
     // Create new node
     dict_node *n = (dict_node*)malloc(sizeof(dict_node));
-    if (n == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (n == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
     // This string pointer in the node takes over the allocated string buffer (i.e. **s_ptr).
     n->s = *s_ptr;
@@ -543,7 +554,7 @@ bool build_dict_link_list(char **s_ptr, dict_node **head, dict_node **last, char
 
     // Allocate buffer column name and copy string
     // n->column_name = (char*)malloc(sizeof(char)*strlen(*current_column_name)+1);
-    // if (n->column_name == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    // if (n->column_name == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
     // strcpy(n->column_name, current_column_name);
     n->column_name = *current_column_name;
 
@@ -578,7 +589,7 @@ char *changeMissingValue(DataLynx *self, char *missingValue) {
 
     // Allocate
     self->missingValue = malloc(sizeof(char)*strlen(missingValue)+1);
-    if (self->missingValue == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+    if (self->missingValue == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
     // Assign
     strcpy(self->missingValue, missingValue);
@@ -596,7 +607,7 @@ bool changeFilename(DataLynx *self, char *filename) {
 
     // Allocate buffer for filename
     self->filename = (char*)malloc(sizeof(char) * (strlen(filename)+1));
-    if (self->filename == NULL)  {if_error(MALLOC_FAILED, func_name); return false;}
+    if (self->filename == NULL)  {log_error(MALLOC_FAILED, func_name); return false;}
 
     strcpy(self->filename, filename);
 
@@ -617,10 +628,10 @@ char *userInputFilename(DataLynx *self, char *prompt) {
 
     // Allocate buffer
     self->filename = (char *)malloc(sizeof(char)*FILENAME_BUFFER_SIZE+1);
-    if (self->filename == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+    if (self->filename == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
     // Read from command line
-    if (fgets(self->filename, FILENAME_BUFFER_SIZE, stdin) == NULL) {if_error(FREAD_FAILED, func_name); return NULL;}
+    if (fgets(self->filename, FILENAME_BUFFER_SIZE, stdin) == NULL) {log_error(FREAD_FAILED, func_name); return NULL;}
 
     for (uintmax_t i = 0; i < FILENAME_BUFFER_SIZE; i++) {
         if (self->filename[i] == '\n') {self->filename[i] = '\0'; break;}
@@ -701,7 +712,7 @@ bool grid_v3_replace(DataLynx *self, char *to_replace, char *replace_with, intma
 
                 // Allocate for new string
                 self->grid_v3[i][j] = realloc(self->grid_v3[i][j], sizeof(char)*(strlen(replace_with)+1));
-                if (self->grid_v3[i][j] == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+                if (self->grid_v3[i][j] == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
 
                 strcpy(self->grid_v3[i][j], replace_with);
 
@@ -739,7 +750,7 @@ bool grid_replace(DataLynx *self, char *to_replace, char *replace_with, intmax_t
 
                 // Allocate for new string
                 tmp->s = realloc(tmp->s, sizeof(char)*(strlen(replace_with)+1));
-                if (tmp->s == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+                if (tmp->s == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
 
                 strcpy(tmp->s, replace_with);
 
@@ -776,7 +787,7 @@ bool dict_grid_replace(DataLynx *self, char *to_replace, char *replace_with, int
 
                 // Allocate for new string
                 tmp->s = realloc(tmp->s, sizeof(char)*(strlen(replace_with)+1));
-                if (tmp->s == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+                if (tmp->s == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
 
                 strcpy(tmp->s, replace_with);
 
@@ -819,11 +830,11 @@ bool dropColumnIdx(DataLynx *self, uintmax_t column_index) {
 
     // Allocate new header
     char **new_header = (char**)malloc(sizeof(char*) * (self->columnCount-1));
-    if (new_header == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (new_header == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
     // Allocate new aggregate array
     Aggregate *new_aggregate = (Aggregate*)malloc(sizeof(Aggregate) * (self->columnCount-1));
-    if (new_aggregate == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (new_aggregate == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
 
     for (uintmax_t row = 0; row < self->rowCount; row++) {
@@ -836,7 +847,7 @@ bool dropColumnIdx(DataLynx *self, uintmax_t column_index) {
         // Allocate new row (1 less column)
         if (self->grid_v3 != NULL) {
             new_row_grid_v3 = (char**)malloc(sizeof(char*) * (self->columnCount-1));
-            if (new_row_grid_v3 == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+            if (new_row_grid_v3 == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
         }
         // Assign pointer to row
         else if (self->grid != NULL) grid_row_cursor = self->grid[row];
@@ -1006,15 +1017,15 @@ bool dropRow(DataLynx *self, uintmax_t row_to_drop) {
 
     if (self->grid_v3 != NULL) {
         new_grid_v3 = (char***)malloc(sizeof(char**) * self->rowCount-1);
-        if (new_grid_v3 == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+        if (new_grid_v3 == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
     }
     else if (self->grid != NULL) {
         new_grid = (node**)malloc(sizeof(node*) * self->rowCount-1);
-        if (new_grid == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+        if (new_grid == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
     }
     else if (self->dict_grid != NULL) {
         new_dict_grid = (dict_node**)malloc(sizeof(dict_node*) * self->rowCount-1);
-        if (new_dict_grid == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+        if (new_dict_grid == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
     }
 
     // Iterate through row and assign all rows (except row to drop) to new grid
@@ -1113,6 +1124,155 @@ bool dropRow(DataLynx *self, uintmax_t row_to_drop) {
 
 
 
+//          -- DROP NULL() --
+int16_t dropNull(DataLynx *self, char *column_name) {
+
+    if (self == NULL || column_name == NULL) return false;
+
+    int16_t column_index = findColumnIndex(self, column_name);
+    if (column_index < 0) return false;
+
+    return drop_null_(self, column_index);
+}
+
+int16_t dropNullIdx(DataLynx *self, uint16_t column_index) {
+
+    if (self == NULL) return false;
+    if (column_index > self->columnCount-1) return false;
+
+    return drop_null_(self, column_index);
+}
+
+
+int16_t drop_null_(DataLynx *self, uint16_t column_index) {
+
+    /* Returns number of rows dropped. -1 if error occurs */
+
+    const char *func_name = "drop_null_";
+
+    // Allocate buffer to remember which rows to drop
+    uintmax_t num_rows_to_drop = 0;
+    uintmax_t *rows_to_drop = (uintmax_t*)malloc(sizeof(uintmax_t));
+    if (rows_to_drop == NULL) {log_error(MALLOC_FAILED, func_name); return -1;}
+
+    // Iterate through data to determine which rows to drop
+    for (uintmax_t row = 0; row < self->rowCount; row++) {
+
+        char *field = get_field_(self, row, column_index);
+
+        if (field[0] == '\0') {
+            rows_to_drop[num_rows_to_drop] = row;
+
+            num_rows_to_drop++;
+
+            rows_to_drop = (uintmax_t*)realloc(rows_to_drop, sizeof(uintmax_t) * (num_rows_to_drop+1));
+            if (rows_to_drop == NULL) {log_error(REALLOC_FAILED, func_name); return -1;}
+        }
+    }
+
+    // Return if no rows to drop
+    if (num_rows_to_drop == 0) {
+        free(rows_to_drop);
+        return num_rows_to_drop;
+    }
+
+
+    // Allocate new data structure
+    char ***new_grid_v3 = NULL;
+    node **new_grid = NULL;
+    dict_node **new_dict_grid = NULL;
+
+
+    // Allocate new main array
+    if (self->grid_v3 != NULL) {
+        new_grid_v3 = (char***)malloc(sizeof(char**) * (self->rowCount-num_rows_to_drop));
+        if (new_grid_v3 == NULL) {log_error(MALLOC_FAILED, func_name); return -1;}
+    }
+    else if (self->grid != NULL) {
+        new_grid = (node**)malloc(sizeof(node*) * (self->rowCount-num_rows_to_drop));
+        if (new_grid == NULL) {log_error(MALLOC_FAILED, func_name); return -1;}
+    }
+    else if (self->dict_grid != NULL) {
+        new_dict_grid = (dict_node**)malloc(sizeof(dict_node*) * (self->rowCount-num_rows_to_drop));
+        if (new_dict_grid == NULL) {log_error(MALLOC_FAILED, func_name); return -1;}
+    }
+
+
+    //      -- Drop  (Copy all rows except the ones to drop) --
+    uintmax_t rows_dropped = 0;
+    for (uintmax_t row = 0; row < self->rowCount; row++) {
+
+        // Skip rows to drop
+        if (rows_dropped != num_rows_to_drop && row == rows_to_drop[rows_dropped]) {
+            // Free
+            for (uint16_t c = 0; c < self->columnCount; c++) {
+
+                bool increment = false;
+
+                increment_decrement_value_count(self, self->__header__[c], get_field_(self, row, c), increment);
+
+                // Free strings (fields) in current row
+                if (self->grid_v3 != NULL) free(self->grid_v3[row][c]);
+
+            }
+
+            // Must free linked lists outside of above loop because otherwise will mess up get_field_()
+            if (self->grid != NULL) {
+                node *tmp = NULL;
+                while (self->grid[row] != NULL) {
+                    tmp = self->grid[row]->next;
+                    free(self->grid[row]->s);
+                    free(self->grid[row]);
+                    self->grid[row] = tmp;
+                }
+            }
+            else if (self->dict_grid != NULL) {
+                dict_node *tmp = NULL;
+                while (self->dict_grid[row] != NULL) {
+                    tmp = self->dict_grid[row]->next;
+                    free(self->dict_grid[row]->s);
+                    free(self->dict_grid[row]);
+                    self->dict_grid[row] = tmp;
+                }
+            }
+
+            // Free current row
+            if (self->grid_v3 != NULL) free(self->grid_v3[row]);
+
+            rows_dropped++;
+            continue;
+        }
+
+        // Attach non-dropped row to new data structure
+        if (self->grid_v3 != NULL) new_grid_v3[row-rows_dropped] = self->grid_v3[row];
+        else if (self->grid != NULL) new_grid[row-rows_dropped] = self->grid[row];
+        else if (self->dict_grid != NULL) new_dict_grid[row-rows_dropped] = self->dict_grid[row];
+
+
+    }
+
+
+    self->rowCount -= num_rows_to_drop;
+
+    // Free old main arrays and and assign new data structure
+    if (self->grid_v3 != NULL) {
+        free(self->grid_v3);
+        self->grid_v3 = new_grid_v3;
+    }
+    else if (self->grid != NULL) {
+        free(self->grid);
+        self->grid = new_grid;
+    }
+    else if (self->dict_grid != NULL) {
+        free(self->dict_grid);
+        self->dict_grid = new_dict_grid;
+    }
+
+    free(rows_to_drop);
+
+    return num_rows_to_drop;
+
+}
 
 //          FIND ALPHA INDEX()
 uint8_t find_alpha_index(char *value) {
@@ -1192,7 +1352,7 @@ bool formatHeader(DataLynx *self) {
     }
 
     // Simultaneously update CSV file if permissions allow
-    if (self->csv_write_permission && self->destructive_mode) write_csv_header_(self);
+    if (self->csv.write_permission && self->destructive_mode) write_csv_header_(self);
 
     return formatted;
 }
@@ -1214,7 +1374,7 @@ bool changeColumnName(DataLynx *self, char *old_column_name, char *new_column_na
 
     // Allocate buffer for new column name
     self->__header__[column_index] = (char*)malloc(sizeof(char)*(strlen(new_column_name)+1));
-    if (self->__header__[column_index] == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (self->__header__[column_index] == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
     strcpy(self->__header__[column_index], new_column_name);
 
@@ -1233,7 +1393,7 @@ bool changeColumnName(DataLynx *self, char *old_column_name, char *new_column_na
     }
 
     // Simultaneously update CSV file if permissions allow
-    if (self->csv_write_permission && self->destructive_mode) write_csv_header_(self);
+    if (self->csv.write_permission && self->destructive_mode) write_csv_header_(self);
 
     return true;
 
@@ -1570,7 +1730,7 @@ bool strip_field_internal_(DataLynx *self, uintmax_t row, uintmax_t column, char
         // Alocate new buffer
         size_t new_length = len - chars_to_strip_left - chars_to_strip_right;
         char *stripped_field = (char *)malloc(sizeof(char) * (new_length+1));
-        if (stripped_field == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+        if (stripped_field == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
         // Temporarily cut off right white space (doing this because strncpy() gives valgrind issues)
         char last_non_white_char = field[len-chars_to_strip_right];
@@ -1776,7 +1936,7 @@ bool filter_internal_(DataLynx *self, uintmax_t desired_column, char *condition_
 
         // Allocate for new filename
         new_data->filename = (char*)malloc(sizeof(char) * (new_filename_length + 1));
-        if (new_data->filename == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+        if (new_data->filename == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
         sprintf(new_data->filename, "%s%s", self->filename, new_filename_append);
 
@@ -1956,7 +2116,7 @@ char *get_field_raw(DataLynx *self, uintmax_t desired_row, uintmax_t desired_col
 
     // Allocate buffer
     char *buffer = malloc(sizeof(char)*(field_char_count+1));
-    if (buffer == NULL) {if_error(MALLOC_FAILED, func_name);}
+    if (buffer == NULL) {log_error(MALLOC_FAILED, func_name);}
 
     // Get cursor back to beginning of field
     cursor -= field_char_count;
@@ -2021,7 +2181,7 @@ char *get_field_rows(DataLynx *self, uintmax_t desired_row, uintmax_t desired_co
 
     // Allocate buffer
     char *buffer = malloc(sizeof(char)*(field_char_count+1));
-    if (buffer == NULL) {if_error(MALLOC_FAILED, func_name);}
+    if (buffer == NULL) {log_error(MALLOC_FAILED, func_name);}
 
     // Get cursor back to beginning of field
     cursor -= field_char_count;
@@ -2173,7 +2333,7 @@ char *get_field_dict(DataLynx *self, uintmax_t desired_row, char *desired_column
     // if (self == NULL) return NULL;
     if (desired_row > self->rowCount-1 || self->dict_grid == NULL) return NULL;
 
-    // Function name (for use in if_error())
+    // Function name (for use in log_error())
     const char *func_name = "get_field_dict";
 
     /* THIS FUNCTION: allows you to index into array of dicts (i.e. array of doubly linked lists acting as dicts) */
@@ -2191,7 +2351,7 @@ char *get_field_dict(DataLynx *self, uintmax_t desired_row, char *desired_column
 
             // Allocate buffer
             desired_column_with_quotes = (char *)malloc(sizeof(char)*(strlen(desired_column)+1));
-            if (desired_column_with_quotes == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;};
+            if (desired_column_with_quotes == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;};
 
             // Copy
             strcpy(desired_column_with_quotes, desired_column);
@@ -2235,6 +2395,7 @@ intmax_t findColumnIndex(DataLynx *self, const char *desired_column) {
 
     if (self->__header__ == NULL && self->file_ptr != NULL) headerReader(self);
 
+
     bool found_column = false;
     bool case_sensitive = true;
     uintmax_t current_column = 0;
@@ -2242,6 +2403,7 @@ intmax_t findColumnIndex(DataLynx *self, const char *desired_column) {
 
         // Compare strings
         if (strcmp_quotes(self->__header__[current_column], desired_column, case_sensitive) == 0) {
+
             found_column = true;
             break;
         }
@@ -2268,7 +2430,7 @@ char **string_into_2d_array(DataLynx *self) {
 
     if (self->raw == NULL) return NULL;
 
-    // Function name (for use in if_error())
+    // Function name (for use in log_error())
     const char *func_name = "string_into_2d_array";
 
     /* THIS FUNCTION: Turns string INTO DYNAMICALLY ALLOCATED JAGGED 2D ARRAY (splits by '\n') */
@@ -2277,7 +2439,7 @@ char **string_into_2d_array(DataLynx *self) {
 
     // Main Array
     self->rows = (char**)malloc(sizeof(char*));
-    if (self->rows == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+    if (self->rows == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
     // Iterate through file
     uintmax_t char_count = 0;
@@ -2287,7 +2449,7 @@ char **string_into_2d_array(DataLynx *self) {
 
         // Allocate 1st char of current row
         self->rows[current_row] = (char*)malloc(sizeof(char));
-        if (self->rows[current_row] == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+        if (self->rows[current_row] == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
         int8_t tmp;
         uint64_t i = 0;
@@ -2322,7 +2484,7 @@ char **string_into_2d_array(DataLynx *self) {
 
                 // Reallocate for next char
                 self->rows[current_row] = realloc(self->rows[current_row], sizeof(char)*(i+2));
-                if (self->rows[current_row] == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
+                if (self->rows[current_row] == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
                 i++;
             }
         }
@@ -2330,7 +2492,7 @@ char **string_into_2d_array(DataLynx *self) {
         // Reallocate Next Row
         if (next_row) {
             self->rows = realloc(self->rows, sizeof(char*)*(current_row+2));
-            if (self->rows == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
+            if (self->rows == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
             current_row++;
         }
         else break;
@@ -2348,7 +2510,7 @@ node **split_2darray_by(DataLynx *self, char split_by) {
 
     if (self->rows == NULL) return NULL;
 
-    // Function name (for use in if_error())
+    // Function name (for use in log_error())
     const char *func_name = "split_2daray_by";
 
     /* THIS FUNCTION: 1. Takes dynamically allocated 2D array
@@ -2358,7 +2520,7 @@ node **split_2darray_by(DataLynx *self, char split_by) {
 
     // Allocate main array of double link lists
     self->grid = (node**)malloc(sizeof(node*));
-    if (self->grid == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+    if (self->grid == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
     // Iterate through whole 2D array
     uintmax_t i = 0;
@@ -2382,7 +2544,7 @@ node **split_2darray_by(DataLynx *self, char split_by) {
             // Allocate 1st char of tmp string
             if (ii == 0) {
                 tmp_str = (char*)malloc(sizeof(char));
-                if (tmp_str == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+                if (tmp_str == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
             }
 
             tmp_str[ii] = self->rows[i][j];
@@ -2414,7 +2576,7 @@ node **split_2darray_by(DataLynx *self, char split_by) {
 
                 // Reallocate for next char
                 tmp_str = realloc(tmp_str, sizeof(char)*(ii+2));
-                if (tmp_str == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
+                if (tmp_str == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
                 j++; ii++;
             }
         }
@@ -2422,7 +2584,7 @@ node **split_2darray_by(DataLynx *self, char split_by) {
         // Reallocate Next Row
         if (next_row) {
             self->grid = realloc(self->grid, sizeof(node*)*(i+2));
-            if (self->grid == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
+            if (self->grid == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
             i++;
         }
         else break;
@@ -2442,11 +2604,11 @@ dict_node **grid_into_dict_grid(DataLynx *self) {
 
     if (self->dict_grid != NULL) free_dict_grid(self);
 
-    // Function name (for use in if_error())
+    // Function name (for use in log_error())
     const char *func_name = "grid_into_dict";
 
     dict_node **main_array = (dict_node**)malloc(sizeof(dict_node*));
-    if (main_array == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+    if (main_array == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
     // Aarray of double link lists (grid)
     for (uintmax_t i = 0; i < self->rowCount; i++) {
@@ -2468,7 +2630,7 @@ dict_node **grid_into_dict_grid(DataLynx *self) {
         }
 
         main_array = (dict_node**)realloc(main_array, sizeof(dict_node*)*(i+2));
-        if (main_array == NULL) {if_error(REALLOC_FAILED, func_name); return NULL;}
+        if (main_array == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
 
 
 
@@ -2552,12 +2714,12 @@ bool update_grid_v3_index(DataLynx *self, uintmax_t row, uintmax_t column, char 
 
     // Create buffer for new string in node
     self->grid_v3[row][column] = (char*)realloc(self->grid_v3[row][column], sizeof(char)*(strlen(new_field)+1));
-    if (self->grid_v3[row][column] == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+    if (self->grid_v3[row][column] == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
 
     strcpy(self->grid_v3[row][column], new_field);
 
     // Edit CSV file as well if allowed (default is false)
-    if (self->csv_write_permission && self->destructive_mode) {
+    if (self->csv.write_permission && self->destructive_mode) {
 
         field_writer_internal_(self, row, column, new_field);
     }
@@ -2603,12 +2765,12 @@ bool update_grid_index(DataLynx *self, uintmax_t desired_row, uintmax_t desired_
 
             // Create buffer for new string in node
             cursor->s = (char*)realloc(cursor->s, sizeof(char)*strlen(new_field)+1);
-            if (cursor->s == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+            if (cursor->s == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
 
             strcpy(cursor->s, new_field);
 
             // Edit CSV file as well if allowed (default is false)
-            if (self->csv_write_permission && self->destructive_mode) {
+            if (self->csv.write_permission && self->destructive_mode) {
 
                 field_writer_internal_(self, desired_row, desired_column, new_field);
             }
@@ -2656,12 +2818,12 @@ bool update_dict_index(DataLynx *self, uintmax_t desired_row, char *desired_colu
             // Replace node
 
             cursor->s = (char*)realloc(cursor->s, sizeof(char)*strlen(new_field)+1);
-            if (cursor->s == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+            if (cursor->s == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
 
             strcpy(cursor->s, new_field);
 
             // Edit CSV file as well if allowed (default is false)
-            if (self->csv_write_permission && self->destructive_mode) {
+            if (self->csv.write_permission && self->destructive_mode) {
 
                 fieldWriter(self, desired_row, desired_column, new_field);
             }
@@ -2700,7 +2862,7 @@ bool sortRowsByColumn(DataLynx *self, const char *column_name, const char *asc_d
 
         // Allocate buffer for temporary column
         self->tmp_column = (char**)malloc(sizeof(char*) * self->rowCount);
-        if (self->tmp_column == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+        if (self->tmp_column == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
         // Copy column
         for (uint8_t i = 0; i < self->rowCount; i++) {
@@ -2881,11 +3043,11 @@ int strcmp_quotes(const char *s1_input, const char *s2_input, bool case_sensitiv
 
     // Allocate buffers and copy strings (so that I can alter them without Valgrind errors)
     char *s1 = (char*)malloc(sizeof(char)*(s1_len+1));
-    if (s1 == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (s1 == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
     strcpy(s1, s1_input);
 
     char *s2 = (char*)malloc(sizeof(char)*(s2_len+1));
-    if (s2== NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (s2== NULL) {log_error(MALLOC_FAILED, func_name); return false;}
     strcpy(s2, s2_input);
 
     // Determine whether to point to strcmp() or strcasecmp()
@@ -2916,10 +3078,14 @@ int strcmp_quotes(const char *s1_input, const char *s2_input, bool case_sensitiv
 
 
 bool printHead(DataLynx *self, uintmax_t number_of_rows) {
-    if (self == NULL) return NULL;
+
+    // Safety checks
+    if (self == NULL) return false;
+    if (!data_exists(self)) return false;
 
     if (number_of_rows >= self->rowCount) return print_data_internal(self);
 
+    // Set member variable so print_data_internal() knows not to print whole dataset
     self->number_of_rows_to_print = number_of_rows;
 
     print_data_internal(self);
@@ -2927,21 +3093,27 @@ bool printHead(DataLynx *self, uintmax_t number_of_rows) {
     if (!self->print_truncated_rows)
         printf("\t... (rows %ld-%ld not displayed)\n\n", self->number_of_rows_to_print, self->rowCount-1);
 
+    // Reset to default
     self->number_of_rows_to_print = self->rowCount;
     return true;
 
 }
 
 bool printTail(DataLynx *self, uintmax_t number_of_rows) {
-    if (self == NULL) return NULL;
+
+    // Safety checks
+    if (self == NULL) return false;
+    if (!data_exists(self)) return false;
 
     if (number_of_rows >= self->rowCount) return print_data_internal(self);
 
+    // Set member variable so print_data_internal() knows not to print whole dataset
     self->number_of_rows_to_print = number_of_rows;
     self->print_tail = true;
 
     print_data_internal(self);
 
+    // Reset to default
     self->number_of_rows_to_print = self->rowCount;
     self->print_tail = false;
     return true;
@@ -3001,6 +3173,11 @@ bool printColumn(DataLynx *self, char *column_name) {
 
 //      NOT CENTERED
 bool printDataTable(DataLynx *self) {
+
+    // Safety checks
+    if (self == NULL) return false;
+    if (!data_exists(self)) return false;
+
     // TO DO scientifi notation, all data structure
     printf("\t<DATA SQL STYLE>\n\n");
     uint16_t column_lengths[self->columnCount]; /* This can be 16-bits instead of size_t, bc we will not store anything in it greater than self->maxFieldPrintLength */
@@ -3108,16 +3285,9 @@ bool printDataTable(DataLynx *self) {
 
 
             // Get current field
-            if (self->grid_v3 != NULL) field = self->grid_v3[(uint32_t)row][column];
-            else if (self->grid != NULL) {
-                if (column == 0) node_tmp = self->grid[(uint32_t)row];
-                field = node_tmp->s;
-            }
-            else if (self->dict_grid != NULL) {
-                if (column == 0) dict_tmp = self->dict_grid[(uint32_t)row];
-                field = dict_tmp->s;
-            }
+            field = get_field_(self, (uintmax_t)row, column);
 
+            // Check if field is empty
             if (field[0] == '\0') field = self->missingValue;
 
             // Remove quotes (non-destructively) if field has quotes
@@ -3461,6 +3631,7 @@ bool printDataTable(DataLynx *self) {
 bool printData(DataLynx *self) {
 
     if (self == NULL) return false;
+    if (!data_exists(self)) return false;
 
     if (self->rowCount > self->maxPrintRows) {
         self->print_truncated_rows = true;
@@ -3477,8 +3648,7 @@ bool printData(DataLynx *self) {
 }
 
 // ___ PRINT_HEADER() ___
-bool printHeader(DataLynx *self)
-{
+bool printHeader(DataLynx *self) {
 
     if (self->__header__ == NULL) return false;
 
@@ -3507,11 +3677,12 @@ bool printHeader(DataLynx *self)
 
 //  ______ PRINT_DATA() ______
 bool print_data_internal(DataLynx *self) {
+
     // Print file name
     printf("\n\t<Data from file: %s>\n", self->filename);
 
     // Header
-    if (self->skip_header && self->__header__ != NULL && !self->print_truncated_rows) {
+    if (self->has_header && self->__header__ != NULL && !self->print_truncated_rows) {
         printHeader(self);
     }
 
@@ -3810,6 +3981,24 @@ void freeAll(DataLynx *self) {
     if (self->tmp_column != NULL) {free(self->tmp_column); self->tmp_column = NULL;}
 
 
+    // Free bin dividers (array of arrays of doubles)
+    if (self->num_binned_columns > 0) {
+
+        for (uint8_t i = 0; i < self->num_binned_columns; i++) {
+            free(self->all_bin_dividers[i]);
+            self->all_bin_dividers[i] = NULL;
+        }
+
+        free(self->all_bin_dividers);
+        self->all_bin_dividers = NULL;
+    }
+
+    // Free JSON string
+    if (self->json != NULL) free_null(&self->json);
+
+    // Free XML string
+    if (self->xml != NULL) free_null(&self->xml);
+
     self = NULL;
 
     return;
@@ -3959,10 +4148,14 @@ bool free_value_counts(DataLynx *self) {
 
     for (uintmax_t c = 0; c < self->columnCount; c++) {
 
+        // if (self->aggregate[c].is_number) continue; /* Can not do this because value_counts created for every column */
+        if (self->aggregate[c].value_counts == NULL) continue; /* oneHot() sets value_counts to NULL */
+
         ValueCount *tmp = NULL;
         for (uint8_t i = 0; i < 27; i++) {
 
             while (self->aggregate[c].value_counts[i] != NULL) {
+
                 // Remember next node
                 tmp = self->aggregate[c].value_counts[i]->next;
 
@@ -4069,7 +4262,7 @@ char *format_number(double value){
 
     // Allocate memory for the new string
     char* result = (char*)malloc(new_length + 1);
-    if (result == NULL) {if_error(MALLOC_FAILED, func_name); return NULL;}
+    if (result == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
     int index = 0;
     for (int i = 0; i < num_digits; i++) {
@@ -4085,4 +4278,899 @@ char *format_number(double value){
     return result;
 
 }
+
+// //          -- GET BINS() (Numeric -> Categorical) -- (end of day 12-21-23)
+// double *getBins(DataLynx *self, char *column_name, uint16_t num_bins, char **bin_names) {
+
+//     //          --- Safety checks ---
+//     if (self == NULL || column_name == NULL || num_bins < 2 || bin_names == NULL) return false;
+
+//     // Corresponding column index
+//     int32_t column_index = findColumnIndex(self, column_name);
+//     if (column_index < 0 || !self->aggregate[column_index].is_number) return false;
+
+//     // Ensure bin_names array has no NULL strings
+//     for (uint16_t i = 0; i < num_bins; i++) {
+//         if (bin_names[i] == NULL) return false;
+//     }
+
+//     const char *func_name = "getBins";
+
+
+//     //          --- Divide range into bins ---
+
+//     // Extract min/max (for code readability)
+//     double min = self->aggregate[column_index].min;
+//     double max = self->aggregate[column_index].max;
+
+//     // Get range
+//     double range = max - min;
+
+//     // Get the size (range) of each bin
+//     double bin_size = range / num_bins;
+
+//     // Allocate array of dividers
+//     uint16_t num_dividers = num_bins + 1;
+//     double *dividers = (double*)malloc(sizeof(double)*num_dividers);
+//     if (dividers == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+//     // Divide range into bin dividers
+//     dividers[0] = min;
+//     dividers[num_dividers-1] = max;
+//     double current_divider = min;
+
+//     for (uint16_t d = 1; d < num_dividers-1; d++) {
+//         current_divider += bin_size;
+//         dividers[d] = current_divider;
+//     }
+
+//     // // PRINT!!!
+//     // for (uint16_t d = 0; d < num_dividers; d++) {
+//     //     printf("%f\n", dividers[d]);
+//     // }
+
+
+//     //          --- Create new column name in header ---
+//     // Realloc header array (i.e array of strings)
+//     self->__header__ = (char**)realloc(self->__header__, sizeof(char*) * ++self->columnCount);
+//     if (self->__header__ == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
+
+//     // Allocate new string for binned column name, initialize string and assign to header array
+//     const char *append = "_binned";
+
+//     char *new_column_name = (char*)malloc(sizeof(char) * (strlen(column_name) + strlen(append) + 1));
+//     if (new_column_name == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+//     sprintf(new_column_name, "%s%s", column_name, append);
+
+//     self->__header__[self->columnCount-1] = new_column_name;
+
+//     // Allocate array to keep track of value counts for each bin
+//     uint16_t *counts = (uint16_t*)malloc(sizeof(uint16_t)*num_bins);
+//     if (counts == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+//     // Initialize array
+//     for (uint16_t b = 0; b < num_bins; b++) counts[b] = 0;
+
+//     uint32_t null_field_count = 0; /* Keep track of null fields for aggregate is_null/not_null counts */
+
+//     //          --- Iterate through each row and attach new binned column ---
+//     for (uintmax_t row = 0; row < self->rowCount; row++) {
+
+//         double numeric_value = 0;
+
+//         node *grid_tmp = NULL;
+//         dict_node *dict_grid_tmp = NULL;
+
+//         // Get numeric value
+//         if (self->grid_v3 != NULL) {
+
+//             // Extract numeric value if field is not null
+//             if (self->grid_v3[row][column_index][0] != '\0') numeric_value = atof(self->grid_v3[row][column_index]);
+//             else null_field_count++;
+//         }
+//         else if (self->grid != NULL) {
+//             grid_tmp = self->grid[row];
+//             get_ptr_to_correct_column(column_index, &grid_tmp, NULL);
+
+//             // Extract numeric value if field is not null
+//             if (grid_tmp->s[0] != '\0') numeric_value = atof(grid_tmp->s);
+//             else null_field_count++;
+
+//         }
+//         else if (self->dict_grid != NULL) {
+//             dict_grid_tmp = self->dict_grid[row];
+//             get_ptr_to_correct_column(column_index, NULL, &dict_grid_tmp);
+
+//             // Extract numeric value if field is not null
+//             if (dict_grid_tmp->s[0] != '\0') numeric_value = atof(dict_grid_tmp->s);
+//             else null_field_count++;
+//         }
+
+
+//         // Determine correct bin name
+//         char *new_field = NULL;
+//         for (uint16_t b = 0; b < num_dividers; b++) {
+
+//             if (numeric_value > dividers[b]) continue;
+//             else {
+//                 if (b != 0) b -= 1;
+//                 // Allocate new field string
+//                 new_field = (char*)malloc(sizeof(char)*(strlen(bin_names[b])+1));
+//                 if (new_field == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+//                 strcpy(new_field, bin_names[b]);
+//                 counts[b]++;
+
+//                 break;
+//             }
+
+//         }
+
+
+//         // Allocate new column in current row
+//         if (self->grid_v3 != NULL) {
+
+//             self->grid_v3[row] = (char **)realloc(self->grid_v3[row], (sizeof(char*)*self->columnCount));
+//             if (self->grid_v3[row] == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
+
+//             self->grid_v3[row][self->columnCount-1] = new_field;
+//         }
+//         else if (self->grid != NULL) {
+//             grid_tmp = self->grid[row];
+//             get_ptr_to_correct_column(self->columnCount-2, &grid_tmp, NULL); /* Get ptr to last node (normally columnCount-1, but we already incremented columnCount) */
+//             node *last = grid_tmp;
+
+//             build_dblink_list(&new_field, &self->grid[row], &last);
+
+//         }
+//         else if (self->dict_grid != NULL) {
+//             dict_grid_tmp = self->dict_grid[row];
+//             get_ptr_to_correct_column(self->columnCount-2, NULL, &dict_grid_tmp);
+//             dict_node *last = dict_grid_tmp;
+
+//             build_dict_link_list(&new_field, &self->dict_grid[row], &last, &new_column_name);
+
+//         }
+
+//     }
+
+//     //          --- Aggregate Data for new binned column ---
+//     // Realloc aggregate array
+//     self->aggregate = (Aggregate*)realloc(self->aggregate, sizeof(Aggregate)*self->columnCount);
+//     if (self->aggregate == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
+
+//     // Is Null / Not Null
+//     self->aggregate[self->columnCount-1].is_null = null_field_count;
+//     self->aggregate[self->columnCount-1].not_null = self->rowCount - null_field_count;
+
+
+//     // Find longest strlen in new binned column
+//     self->aggregate[self->columnCount-1].is_number = false;
+
+//     for (uint16_t b = 0; b < num_bins; b++) {
+//         if (b == 0) self->aggregate[self->columnCount-1].longest_field_strlen = strlen(bin_names[b]);
+//         else if (strlen(bin_names[b]) > self->aggregate[self->columnCount-1].longest_field_strlen) self->aggregate[self->columnCount-1].longest_field_strlen = strlen(bin_names[b]);
+//     }
+
+
+//     // Create value counts "alpha hash" array
+//     create_value_counts(self, self->columnCount-1);
+//     for (uint16_t b = 0; b < num_bins; b++) {
+//         ValueCount *tmp = prepend_value_count(self, self->columnCount-1, bin_names[b], find_alpha_index(bin_names[b]));
+//         tmp->count = counts[b];
+//     }
+
+//     // Keep bin dividers in DataLynx object
+//     if (self->num_binned_columns == 0) {
+//         self->all_bin_dividers = (double**)malloc(sizeof(double*));
+//         if (self->all_bin_dividers == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
+//     }
+//     else {
+//         self->all_bin_dividers = (double**)realloc(self->all_bin_dividers, sizeof(double*) * (self->num_binned_columns + 1));
+//         if (self->all_bin_dividers == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
+//     }
+
+//     self->all_bin_dividers[(++self->num_binned_columns)-1] = dividers;
+
+//     if (self->destructive_mode) overwriteData(self);
+
+//     free(counts);
+//     return dividers;
+// }
+
+
+//          -- GET BINS() (Numeric -> Categorical) --
+double *getBins(DataLynx *self, char *column_name, uint16_t num_bins, char **bin_names_input) {
+
+    //          --- Safety checks ---
+    if (self == NULL || column_name == NULL || num_bins < 2) return false;
+    if (!data_exists(self)) return false;
+
+    // Corresponding column index
+    int32_t column_index = findColumnIndex(self, column_name);
+    if (column_index < 0 || !self->aggregate[column_index].is_number) return false;
+
+    // Use this instead of column_name parameter, because this will ensure that quotes are used if necessary (i.e. if the column name has quotes, the library user can input the column name with or without quotes and finColumnIndex() will still find the correct column)
+    char *original_column_name = self->__header__[column_index];
+
+    char **bin_names = NULL;
+
+    char *bin_names2[] = {
+        "Top Half",
+        "Lower Half"
+    };
+
+    char *bin_names3[] = {
+        "Low",
+        "Medium",
+        "High"
+    };
+
+    char *bin_names4[] = {
+        "Low",
+        "Med-Low",
+        "Med-High",
+        "High"
+    };
+
+    char *bin_names5[] = {
+        "Low",
+        "Med-Low",
+        "Medium",
+        "Med-High",
+        "High"
+    };
+
+    char *bin_names6[] = {
+        "Lowest",
+        "Low",
+        "Med-Low",
+        "Med-High",
+        "High",
+        "Highest"
+    };
+
+    char *bin_names7[] = {
+        "Lowest",
+        "Low",
+        "Med-Low",
+        "Medium",
+        "Med-High",
+        "High",
+        "Highest"
+    };
+
+
+    // Determine what bin names will be (i.e. default or custom)
+    if (num_bins > 7 && bin_names_input == NULL) return false;
+    else if (bin_names_input != NULL) {
+
+        bin_names = bin_names_input;
+
+        // Ensure bin_names array has no NULL strings
+        for (uint16_t i = 0; i < num_bins; i++) {
+            if (bin_names[i] == NULL) return false;
+        }
+    }
+    else {
+
+        // Assign array of bin names
+        switch (num_bins) {
+            case 2:
+                bin_names = bin_names2;
+                break;
+            case 3:
+                bin_names = bin_names3;
+                break;
+            case 4:
+                bin_names = bin_names4;
+                break;
+            case 5:
+                bin_names = bin_names5;
+                break;
+            case 6:
+                bin_names = bin_names6;
+                break;
+            case 7:
+                bin_names = bin_names7;
+                break;
+            default: /* This default should never hit because all other possibilities are handled in if statements, but it feels uncouth to not have default. */
+                bin_names = bin_names3;
+                break;
+        }
+
+    }
+
+    const char *func_name = "getBins";
+
+    //          --- Divide range into bins ---
+
+    // Extract min/max (for code readability)
+    double min = self->aggregate[column_index].min;
+    double max = self->aggregate[column_index].max;
+
+    // Get range
+    double range = max - min;
+
+    // Get the size (range) of each bin
+    double bin_size = range / num_bins;
+
+    // Allocate array of dividers
+    uint16_t num_dividers = num_bins + 1;
+    double *dividers = (double*)malloc(sizeof(double)*num_dividers);
+    if (dividers == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+    // Divide range into bin dividers
+    dividers[0] = min;
+    dividers[num_dividers-1] = max;
+    double current_divider = min;
+
+    for (uint16_t d = 1; d < num_dividers-1; d++) {
+        current_divider += bin_size;
+        dividers[d] = current_divider;
+    }
+
+
+    //          --- Create new column name in header ---
+    // Realloc header array (i.e array of strings)
+    self->__header__ = (char**)realloc(self->__header__, sizeof(char*) * ++self->columnCount);
+    if (self->__header__ == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
+
+
+    //      -- Allocate new string for binned column name, initialize string and assign to header array --
+    const char *append = "_binned";
+
+    size_t original_column_name_strlen = strlen(original_column_name);
+
+    // Allocate buffer for new column name string
+    char *new_column_name = (char*)malloc(sizeof(char) * (original_column_name_strlen + strlen(append) + 1));
+    if (new_column_name == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+    // Assign new column name with append string, making sure to include quotes if original column name has quotes
+    if (!has_quotes(original_column_name)) sprintf(new_column_name, "%s%s", self->__header__[column_index], append);
+    else {
+        sprintf(new_column_name, "%s", self->__header__[column_index]);
+        sprintf(&new_column_name[original_column_name_strlen-1], "%s\"", append);
+    }
+
+
+    // Attach new column name to header
+    self->__header__[self->columnCount-1] = new_column_name;
+
+    // Allocate array to keep track of value counts for each bin
+    uint16_t *counts = (uint16_t*)malloc(sizeof(uint16_t)*num_bins);
+    if (counts == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+    // Initialize array
+    for (uint16_t b = 0; b < num_bins; b++) counts[b] = 0;
+
+    uint32_t null_field_count = 0; /* Keep track of null fields for aggregate is_null/not_null counts */
+
+    //          --- Iterate through each row and attach new binned column ---
+    for (uintmax_t row = 0; row < self->rowCount; row++) {
+
+        double numeric_value = 0;
+
+        node *grid_tmp = NULL;
+        dict_node *dict_grid_tmp = NULL;
+
+        // Get numeric value
+        char *field = get_field_(self, row, column_index);
+
+        if (field[0] != '\0') numeric_value = atof(field);
+        else null_field_count++;
+
+        // Determine correct bin name
+        char *new_field = NULL;
+        for (uint16_t b = 0; b < num_dividers; b++) {
+
+            if (numeric_value > dividers[b]) continue;
+            else {
+                if (b != 0) b -= 1;
+                // Allocate new field string
+                new_field = (char*)malloc(sizeof(char)*(strlen(bin_names[b])+1));
+                if (new_field == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+                strcpy(new_field, bin_names[b]);
+                counts[b]++;
+
+                break;
+            }
+
+        }
+
+
+        // Allocate new column in current row
+        if (self->grid_v3 != NULL) {
+
+            self->grid_v3[row] = (char **)realloc(self->grid_v3[row], (sizeof(char*)*self->columnCount));
+            if (self->grid_v3[row] == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
+
+            self->grid_v3[row][self->columnCount-1] = new_field;
+        }
+        else if (self->grid != NULL) {
+            grid_tmp = self->grid[row];
+            get_ptr_to_correct_column(self->columnCount-2, &grid_tmp, NULL); /* Get ptr to last node (normally columnCount-1, but we already incremented columnCount) */
+            node *last = grid_tmp;
+
+            build_dblink_list(&new_field, &self->grid[row], &last);
+
+        }
+        else if (self->dict_grid != NULL) {
+            dict_grid_tmp = self->dict_grid[row];
+            get_ptr_to_correct_column(self->columnCount-2, NULL, &dict_grid_tmp);
+            dict_node *last = dict_grid_tmp;
+
+            build_dict_link_list(&new_field, &self->dict_grid[row], &last, &new_column_name);
+
+        }
+
+    }
+
+    //          --- Aggregate Data for new binned column ---
+    // Realloc aggregate array
+    self->aggregate = (Aggregate*)realloc(self->aggregate, sizeof(Aggregate)*self->columnCount);
+    if (self->aggregate == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
+
+    // Is Null / Not Null
+    self->aggregate[self->columnCount-1].is_null = null_field_count;
+    self->aggregate[self->columnCount-1].not_null = self->rowCount - null_field_count;
+
+
+    // Find longest strlen in new binned column
+    self->aggregate[self->columnCount-1].is_number = false;
+
+    for (uint16_t b = 0; b < num_bins; b++) {
+        if (b == 0) self->aggregate[self->columnCount-1].longest_field_strlen = strlen(bin_names[b]);
+        else if (strlen(bin_names[b]) > self->aggregate[self->columnCount-1].longest_field_strlen) self->aggregate[self->columnCount-1].longest_field_strlen = strlen(bin_names[b]);
+    }
+
+
+    // Create value counts "alpha hash" array
+    create_value_counts(self, self->columnCount-1);
+    for (uint16_t b = 0; b < num_bins; b++) {
+        ValueCount *tmp = prepend_value_count(self, self->columnCount-1, bin_names[b], find_alpha_index(bin_names[b]));
+        tmp->count = counts[b];
+    }
+
+    // Keep bin dividers in DataLynx object
+    if (self->num_binned_columns == 0) {
+        self->all_bin_dividers = (double**)malloc(sizeof(double*));
+        if (self->all_bin_dividers == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
+    }
+    else {
+        self->all_bin_dividers = (double**)realloc(self->all_bin_dividers, sizeof(double*) * (self->num_binned_columns + 1));
+        if (self->all_bin_dividers == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
+    }
+
+    self->all_bin_dividers[(++self->num_binned_columns)-1] = dividers;
+
+    if (self->destructive_mode) overwriteData(self);
+
+    free(counts);
+    return dividers;
+}
+
+
+
+
+//              -- ONE HOT (Categorical -> Numeric) --
+bool oneHot(DataLynx *self, char *column_name) {
+
+    // Safety checks
+    if (self == NULL || column_name == NULL) return false;
+
+    int32_t column_index = findColumnIndex(self, column_name);
+    if (column_index < 0) return false;
+
+    if (self->aggregate[column_index].is_number) return false;
+
+    const char *func_name = "oneHot";
+
+
+    //          -- Find unique value count -
+    uint16_t unique_values = 0;
+
+    // Iterate through alpha index array
+    for (uint8_t a = 0; a < 27; a++) {
+
+        // Traverse linked list at current alpha location
+        ValueCount *tmp = self->aggregate[column_index].value_counts[a];
+
+        while (tmp != NULL) {
+            unique_values++;
+            tmp = tmp->next;
+        }
+
+    }
+
+
+    //          -- Add new column names to header --
+    // Realloc header array
+    self->__header__ = (char**)realloc(self->__header__, sizeof(char*) * (self->columnCount+unique_values));
+    if (self->__header__ == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
+
+    // Realloc aggregate array
+    self->aggregate = (Aggregate*)realloc(self->aggregate, sizeof(Aggregate) * (self->columnCount+unique_values));
+    if (self->aggregate == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
+
+    // Create strings for each new column name (one for each  unique value in original column)
+    uint16_t new_col = 0;
+    for (uint8_t a = 0; a < 27 && new_col != unique_values; a++) {
+
+        // Traverse linked list at current alpha location
+        ValueCount *tmp = self->aggregate[column_index].value_counts[a];
+
+        while (tmp != NULL) {
+            self->__header__[self->columnCount + new_col] = (char*)malloc(sizeof(char) * (strlen(tmp->value)+1));
+            if (self->__header__ == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
+
+            strcpy(self->__header__[self->columnCount + new_col], tmp->value);
+
+            self->aggregate[self->columnCount + new_col].is_null = 0;
+            self->aggregate[self->columnCount + new_col].not_null = self->rowCount;
+            self->aggregate[self->columnCount + new_col].is_number = true;
+            self->aggregate[self->columnCount + new_col].value_counts = NULL;
+            self->aggregate[self->columnCount + new_col].sum = 0;
+            self->aggregate[self->columnCount + new_col].std = 0;
+            self->aggregate[self->columnCount + new_col].mean = 0;
+            self->aggregate[self->columnCount + new_col].min = 0;
+            self->aggregate[self->columnCount + new_col].lower_qrt = 0;
+            self->aggregate[self->columnCount + new_col].median = 0;
+            self->aggregate[self->columnCount + new_col].upper_qrt = 0;
+            self->aggregate[self->columnCount + new_col].max = 1;
+
+            self->aggregate[self->columnCount + new_col].longest_field_strlen = 1;
+
+            new_col++;
+            tmp = tmp->next;
+        }
+
+    }
+
+    node *grid_tmp = NULL;
+    dict_node *dict_grid_tmp = NULL;
+
+    // Add new columns to main data structure
+    for (uintmax_t row = 0; row < self->rowCount; row++) {
+
+        // Allocate for new columns in current row
+        if (self->grid_v3 != NULL) {
+
+            self->grid_v3[row] = (char**)realloc(self->grid_v3[row], sizeof(char*) * (self->columnCount + unique_values));
+            if (self->grid_v3 == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
+        }
+        else if (self->grid != NULL) {
+            grid_tmp = self->grid[row];
+            get_ptr_to_correct_column(self->columnCount-1, &grid_tmp, NULL);
+
+        }
+        else if (self->dict_grid != NULL) {
+            dict_grid_tmp = self->dict_grid[row];
+            get_ptr_to_correct_column(self->columnCount-1, NULL, &dict_grid_tmp);
+
+        }
+
+        char *current_field = get_field_(self, row, column_index);
+
+        // Start from 1st new column (i.e. columnCount-1 would be last column in header before addind new column names)
+        for (uint16_t c = self->columnCount; c < self->columnCount+unique_values; c++) {
+
+            // Allocate new string for 0 or 1
+            char *new_field = (char*)malloc(sizeof(char) * 2);
+            if (new_field == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+
+            // Assign True/False
+            if (strcmp(self->__header__[c], current_field) != 0) {
+                new_field[0] = '0';
+                new_field[1] = '\0';
+            }
+            else {
+                new_field[0] = '1';
+                new_field[1] = '\0';
+            }
+
+
+
+            // Assign string to data structure / allocate new node for linked lists
+            if (self->grid_v3 != NULL) self->grid_v3[row][c] = new_field;
+            else if (self->grid != NULL) {
+                build_dblink_list(&new_field, &self->grid[row], &grid_tmp);
+            }
+            else if (self->dict_grid != NULL) {
+                build_dict_link_list(&new_field, &self->dict_grid[row], &dict_grid_tmp, &self->__header__[c]);
+            }
+        }
+
+    }
+
+    self->columnCount += unique_values;
+    return true;
+
+}
+
+
+// EXTRACT FIELDS WITHOUT HAVING TO HAVE IF STATEMENTS IN SO MANY FUNCTIONS
+char *get_field_(DataLynx *self, uintmax_t row, int16_t column) {
+
+    /* Do not use getField() or the internal functions that go along with it because they keep track of fields that are grabbed, wasting memory. I could turn this feature off and back on again, but that creates ugly code.
+      - this function will only return NULL if incorrect row or column indexes are given. This is only called from other functions which check for that, so should not happen.*/
+
+    char *field = NULL;
+    node *grid_tmp = NULL;
+    dict_node *dict_grid_tmp = NULL;
+
+    if (self->grid_v3 != NULL) field = self->grid_v3[row][column];
+    else if (self->grid != NULL) {
+        grid_tmp = self->grid[row];
+        get_ptr_to_correct_column(column, &grid_tmp, NULL);
+        field = grid_tmp->s;
+    }
+    else if (self->dict_grid != NULL) {
+        dict_grid_tmp = self->dict_grid[row];
+        get_ptr_to_correct_column(column, NULL, &dict_grid_tmp);
+        field = dict_grid_tmp->s;
+    }
+
+    return field;
+}
+
+
+
+
+//          -- to JSON String() ---
+char *toJSONString(DataLynx *self) {
+
+    /*  - Creates JSON string, saved in self.json, for library user to use as they wish
+            - writeJSON() in the file_io module, writes to a .json file, first by calling this function to create the string. */
+
+    // Safety check
+    if (self == NULL) return false;
+    if (!data_exists(self)) return false;
+
+    if (self->json != NULL) free_null(&self->json);
+
+    const char *func_name = "toJSONString";
+
+    //          -- Create write_string --
+
+    // 1. Determine char count of entire dataset (i.e. sum strlen for every field)
+    char *field = NULL;
+    uintmax_t total_char_count = 0;
+    for (uintmax_t row = 0; row < self->rowCount; row++) {
+        for (uint32_t column = 0; column < self->columnCount; column++) {
+
+            field = get_field_(self, row, column);
+            total_char_count += strlen(field);
+
+        }
+    }
+
+    // 2. Determine header char count (i.e. strlen of every column name)
+    size_t header_strlen = 0;
+    uint16_t non_numeric_column_count = 0;
+    for (uint16_t c = 0; c < self->columnCount; c++) {
+
+        // Tally strlen for each column name (char counts for "" will be added later, as each column name gets "" regardless of if it already does or not, therefore I will tally strlen-2 for column names with "")
+        header_strlen += (has_quotes(self->__header__[c])) ? strlen(self->__header__[c])-2 : strlen(self->__header__[c]);
+
+        // Find numeric column count
+        if (!self->aggregate[c].is_number) non_numeric_column_count++;
+    }
+    total_char_count += (header_strlen * self->rowCount);
+
+    // 3. Add char counts for [], {}, "", :: and ,
+            /*  - (6 * self->columnCount) -> "" around every column name, followed by : (i.e. "column 1": value), plus comma, then space (or }, then comma)
+                - (2 * non_numeric_column_count) -> "" around every value in non-numeric columns
+                - self->rowCount -> {},\n
+            */
+
+    /* Note: This char count system counts exactly the number of chars needed, to save memory. With that said, leaves no room for error. Seems to work fine so far. */
+
+    // Every row -> {},\n
+    total_char_count += (4 * self->rowCount);
+
+    // Every column, every row (except last column) -> "":space,space
+    total_char_count += (6 * (self->columnCount-1)) * self->rowCount;
+
+    // Last column, every row -> "":space
+    total_char_count += (4 * self->rowCount);
+
+    // Ever non-numeric column, every row -> ""
+    total_char_count += ((2 * non_numeric_column_count) * self->rowCount);
+
+    // Once per data set -> [\n]\n and '\0'
+    total_char_count += 5;
+
+
+    // 4. Construct json string
+
+    //      Allocate total buffer needed
+    char *json_string = (char*)malloc(sizeof(char) * total_char_count);
+    if (json_string == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+    //      Beginning of json
+    json_string[0] = '[';
+    json_string[1] = '\n';
+    uintmax_t current_char = 2;
+
+    //      Iterate through every row
+    for (uintmax_t row = 0; row < self->rowCount; row++) {
+
+        //  Start of every row
+        json_string[current_char++] = '{';
+
+        //  Iterate through each column in current row
+        for (uint32_t column = 0; column < self->columnCount; column++) {
+
+            // Column name
+            if (!has_quotes(self->__header__[column])) json_string[current_char++] = '"';
+
+            strcpy(&json_string[current_char], self->__header__[column]);
+            current_char += strlen(self->__header__[column]);
+
+            if (!has_quotes(self->__header__[column])) json_string[current_char++] = '"';
+
+            json_string[current_char++] = ':';
+            json_string[current_char++] = ' ';
+
+
+            // Field (value)
+            field = get_field_(self, row, column);
+
+            // Add beginning quote if necessary
+            if (!self->aggregate[column].is_number && !has_quotes(field)) json_string[current_char++] = '"';
+
+            // Copy field to json string
+            strcpy(&json_string[current_char], field);
+
+            // Move char counter
+            current_char += strlen(field);
+
+            // Add end quote if necessary
+            if (!self->aggregate[column].is_number && !has_quotes(field)) json_string[current_char++] = '"';
+
+
+            // Every column, except last column
+            if (column != self->columnCount-1) {
+                json_string[current_char++] = ',';
+                json_string[current_char++] = ' ';
+            }
+
+
+        }
+
+        // Add json for end of every row
+        json_string[current_char++] = '}';
+        // if (row != self->rowCount-1) json_string[current_char++] = ','; /* Last row does not get comma */
+        json_string[current_char++] = ','; /* Last row does not get comma, however doing it this way, then backing up 2 chars, then adding the \n after all rows are done only adds 2 steps, as opposed to n steps (i.e. an extra step for every row) by using if statement above. */
+        json_string[current_char++] = '\n';
+
+    }
+
+    // Adjust cursor and add back new line (instead of using if (row != self->rowCount-1) json_string[current_char++] = ','; above, which adds row count number of extra steps)
+    current_char -= 2;
+    json_string[current_char++] = '\n';
+
+    // Finish json string
+    json_string[current_char++] = ']';
+    json_string[current_char++] = '\n';
+    json_string[current_char++] = '\0';
+
+
+    // printf("total_char_count: %ld, current_char: %ld", total_char_count, current_char);
+
+    // Store json string in DataLynx object
+    self->json = json_string;
+
+    return self->json;
+}
+
+
+
+//          -- to XML String() ---
+char *toXMLString(DataLynx *self) {
+
+    // Safety check
+    if (self == NULL) return false;
+    if (!data_exists(self)) return false;
+
+    if (self->xml != NULL) free_null(&self->xml);
+
+    const char *func_name = "toxmlString";
+
+    // Create write_string
+    char *field = NULL;
+    uintmax_t total_char_count = 0;
+    for (uintmax_t row = 0; row < self->rowCount; row++) {
+        for (uint32_t column = 0; column < self->columnCount; column++) {
+
+            field = get_field_(self, row, column);
+            total_char_count += strlen(field);
+
+        }
+    }
+
+    // Header strlen
+    size_t header_strlen = 0;
+    uint16_t non_numeric_column_count = 0;
+    for (uint16_t c = 0; c < self->columnCount; c++) {
+        header_strlen += strlen(self->__header__[c]);
+
+        // Find numeric column count
+        if (!self->aggregate[c].is_number) non_numeric_column_count++;
+    }
+    total_char_count += ((header_strlen*2) * self->rowCount);
+
+    total_char_count += (strlen("<data>\n") + strlen("</data>\n"));
+
+    // Add counts for ... <></>/n each row
+    total_char_count += ( ( strlen("\t\t<></>\n") * self->columnCount ) * self->rowCount );
+    total_char_count += ( ( strlen("\t<row>\n") + strlen("\t</row>\n") ) * self->rowCount);
+
+
+    char *xml_string = (char*)malloc(sizeof(char) * total_char_count+1);
+    if (xml_string == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+    //          -- Create xml string --
+    fill_buffer(xml_string, "<data>\n");
+
+    uintmax_t current_char = 7;
+
+    for (uintmax_t row = 0; row < self->rowCount; row++) {
+
+        fill_buffer(&xml_string[current_char], "\t<row>\n");
+        current_char += 7;
+
+        for (uint32_t column = 0; column < self->columnCount; column++) {
+
+            // Column name Open Tag
+            fill_buffer(&xml_string[current_char], "\t\t<");
+            current_char += 3;
+
+            fill_buffer(&xml_string[current_char], self->__header__[column]);
+            current_char += strlen(self->__header__[column]);
+            xml_string[current_char++] = '>';
+
+            // Field (value)
+            field = get_field_(self, row, column);
+
+            fill_buffer(&xml_string[current_char], field);
+            current_char += strlen(field);
+
+
+            // Column name Close Tag
+            xml_string[current_char++] = '<';
+            fill_buffer(&xml_string[current_char], self->__header__[column]);
+            current_char += strlen(self->__header__[column]);
+            xml_string[current_char++] = '/';
+            xml_string[current_char++] = '>';
+            xml_string[current_char++] = '\n';
+
+        }
+
+        fill_buffer(&xml_string[current_char], "\t</row>\n");
+        current_char += 8;
+
+    }
+
+    fill_buffer(&xml_string[current_char], "</data>\n");
+    current_char += 8;
+    xml_string[current_char] = '\0';
+
+
+    // // Write to file
+    // fprintf(xml_file, "%s\n", xml_string);
+
+    // fclose(xml_file);
+
+    self->xml = xml_string;
+
+    return self->xml;
+}
+
+
+
 

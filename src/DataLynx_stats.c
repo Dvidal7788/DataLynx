@@ -11,6 +11,7 @@
 //          __ CREATE_STATS() ____
 bool create_stats(DataLynx *self) {
 
+    /* Do not know if column is numeric yet at this point, bc have not gone through whol data set (not done one column at a time, done row by row) */
     if (self->aggregate != NULL) {
         free_value_counts(self);
         free(self->aggregate);
@@ -20,7 +21,7 @@ bool create_stats(DataLynx *self) {
 
     // Create array of Stats structs
     self->aggregate = malloc(sizeof(Aggregate)*self->columnCount);
-    if (self->aggregate == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (self->aggregate == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
 
     // Initialize
@@ -512,11 +513,25 @@ double aggregate_dict_grid(DataLynx *self, char *column_name, char *operation) {
 }
 
 
+//          -- Calc Mean() --
+void calc_mean(DataLynx *self) {
+
+    for (uintmax_t c = 0; c < self->columnCount; c++) {
+
+        if (!self->aggregate[c].is_number) continue; /* is_number being false means there was not 1 numeric value in the entire column */
+
+        self->aggregate[c].mean = self->aggregate[c].sum / self->aggregate[c].not_null;
+    }
+
+    return;
+}
+
+//      -- Calc Std() --
 void calc_std(DataLynx *self) {
 
     for (uint32_t column = 0; column < self->columnCount; column++) {
 
-        if (!self->aggregate[column].is_number) continue;
+        if (!self->aggregate[column].is_number) continue; /* is_number being false means there was not 1 numeric value in the entire column */
 
         double sum_squared_differences = 0;
 
@@ -879,13 +894,13 @@ void update_stats_new_row(DataLynx *self, char *values[]) {
 //      CREATE VALUE COUNTS()
 bool create_value_counts(DataLynx *self, uintmax_t column_index) {
 
-    char *func_name = "create_value_counts";
+    // if (self->aggregate[column_index].is_number) return false;
 
-    // Each column
+    char *func_name = "create_value_counts";
 
     // Allocate array (A-Z) + one spot for other (i.e. strings that start with digits or punctuation), 27 total
     self->aggregate[column_index].value_counts = (ValueCount**)malloc(sizeof(ValueCount*)*27);
-    if (self->aggregate[column_index].value_counts == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (self->aggregate[column_index].value_counts == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
     // Initialize to NULL
     for (uint8_t i = 0; i < 27; i++) {
@@ -1038,10 +1053,10 @@ void sort_value_counts(DataLynx *self) {
 }
 
 //      APPEND VALUE COUNTS()
-bool prepend_value_count(DataLynx *self, uintmax_t column_index, char *value, uint8_t alpha_index) {
+ValueCount *prepend_value_count(DataLynx *self, uintmax_t column_index, char *value, uint8_t alpha_index) {
 
-    if (self == NULL) return false;
-    if (value == NULL) return false;
+    if (self == NULL) return NULL;
+    if (value == NULL) return NULL;
 
     const char *func_name = "prepend_value_count";
 
@@ -1049,20 +1064,25 @@ bool prepend_value_count(DataLynx *self, uintmax_t column_index, char *value, ui
 
     // Allocate
     ValueCount *new_node = (ValueCount*)malloc(sizeof(ValueCount));
-    if (new_node == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (new_node == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
 
     // Assign
     new_node->value = (char*)malloc(sizeof(char)*(strlen(value)+1));
-    if (new_node->value == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (new_node->value == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
     strcpy(new_node->value, value);
 
     new_node->count = 1;
     new_node->grouped_data = NULL;
-    new_node->next = self->aggregate[column_index].value_counts[alpha_index];
+    // new_node->next = self->aggregate[column_index].value_counts[alpha_index];
+    if (self->aggregate[column_index].value_counts[alpha_index] != NULL) new_node->next = self->aggregate[column_index].value_counts[alpha_index];
+    else {
+        self->aggregate[column_index].value_counts[alpha_index] = new_node;
+        new_node->next = NULL;
+    }
 
     self->aggregate[column_index].value_counts[alpha_index] = new_node;
 
-    return true;
+    return new_node;
 
 }
 
@@ -1278,7 +1298,7 @@ bool printPivotTable(DataLynx *self, char *group_by, char *aggregated_column, ch
 
                 // Allocate buffer for internal DataLynx object
                 tmp->grouped_data = (DataLynx*)malloc(sizeof(DataLynx));
-                if (tmp->grouped_data == NULL) {if_error(MALLOC_FAILED, func_name); return false;};
+                if (tmp->grouped_data == NULL) {log_error(MALLOC_FAILED, func_name); return false;};
 
                 // Initialize DataLynx object
                 *tmp->grouped_data = DataLynxConstructor();
@@ -1356,6 +1376,13 @@ bool printStatsColumn(DataLynx *self, char *column_name) {
 
         // PRINT STATS INTERNAL() (side by side) and Sorted Value Counts Works :)
 bool print_stats_internal_(DataLynx *self, char *column_name) {
+        /*
+            12-21-23:
+                - printStatsColumn() has errors and 2 blocks lost regardless of getBins.
+                        - FIXED: Moved safety check to return before printing value counts up a little, before malloc of sorted array
+                - printStatsAll() and printStatsColumn() seg faults when getBins() is called first (wasn't seg faulting before because was failing at findColumnIndex() bc "_binnned" had 3 n's)
+                        - FIXED: Was overrunning stack-allocated buffers in print_is_not_null()
+        */
 
     // if (self == NULL) return false;
 
@@ -1446,6 +1473,7 @@ bool print_stats_internal_(DataLynx *self, char *column_name) {
 
             }
             else if (stat == -1) {
+
                 /* functionally the same as saying else if (stat == -1 && !self->aggregate[c].is_number) */
                 /* Only do this one time around, otherwise will count columns multiple times.*/
 
@@ -1465,20 +1493,28 @@ bool print_stats_internal_(DataLynx *self, char *column_name) {
 
     }
 
+
+    //                       ------------------------
+    //                             VALUE COUNTS
+    //                       ------------------------
+    /* DO NOT pass into next section if not printing value counts. (non_numeric_column_count will be 0, not only of course in instances where there are no non-numeric columns in the dataset, but ALSO when this function is called from printStatsColumn() and the column requested is a numeric column, therfore skip the next section either way.) */
+    if (non_numeric_column_count == 0) return true;
+
     if (!numeric_stats_in_data && !print_one_column) printf("\n* No numeric stats for this dataset *\n\n\n");
-    else if (!numeric_stats_in_data && print_one_column) printf("\n* No numeric stats for this column *\n\n\n");
+    // else if (!numeric_stats_in_data && print_one_column) printf("\n* No numeric stats for this column *\n\n\n");
 
 
     //              --- COPY VALUE COUNTS INTO SEPARATE ARRAYS TO SORT ---
 
     // Allocate main sorted array (i.e. array of arrays of sorted value counts per column)
     ValueCount **sorted = (ValueCount**)malloc(sizeof(ValueCount*) * non_numeric_column_count);
-    if (sorted == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (sorted == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
     // Array to keep track of unique values for each non-numeric column
     uint16_t *unique_values = (uint16_t*)malloc(sizeof(uint16_t) * non_numeric_column_count);
-    if (unique_values == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+    if (unique_values == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
+    // Keep track of most unique values, because this determines how many new lines there will be
     uint16_t most_unique_values = 0;
 
     // Put Value Counts for current column into separate array
@@ -1491,7 +1527,7 @@ bool print_stats_internal_(DataLynx *self, char *column_name) {
 
         // Allocate array for sorted value counts of current column
         ValueCount *current_sorted = (ValueCount*)malloc(sizeof(ValueCount));
-        if (current_sorted == NULL) {if_error(MALLOC_FAILED, func_name); return false;}
+        if (current_sorted == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
 
         bool first_value = true, values_exist = false;
 
@@ -1507,7 +1543,7 @@ bool print_stats_internal_(DataLynx *self, char *column_name) {
                 //  Realloc sorted array
                 if (!first_value) {
                     current_sorted = (ValueCount*)realloc(current_sorted, sizeof(ValueCount) * ((++current_unique_values) + 1));
-                    if (current_sorted == NULL) {if_error(REALLOC_FAILED, func_name); return false;}
+                    if (current_sorted == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
                 }
                 else first_value = false;
 
@@ -1550,7 +1586,7 @@ bool print_stats_internal_(DataLynx *self, char *column_name) {
     }
 
     //          --- PRINT VALUE COUNTS ---
-    if (non_numeric_column_count == 0) return true;
+    // if (non_numeric_column_count == 0) return true;
     printf("\t\t- Value Counts -\n\t   (i.e. non-numeric stats)\n");
 
     bool with_divider = true;
@@ -1592,6 +1628,7 @@ bool print_stats_internal_(DataLynx *self, char *column_name) {
                 continue;
             }
             else if (v == most_unique_values+2) {
+
                 // Print Is Null
                 bool is_null = true;
                 uint32_t column_index = non_numeric_columns[c];
@@ -1599,6 +1636,7 @@ bool print_stats_internal_(DataLynx *self, char *column_name) {
                 continue;
             }
             else if (v == most_unique_values+3) {
+
                 // Print Not Null
                 bool is_null = false;
                 uint32_t column_index = non_numeric_columns[c];
@@ -1656,6 +1694,308 @@ bool print_stats_internal_(DataLynx *self, char *column_name) {
 }
 
 
+//         // PRINT STATS INTERNAL() (side by side) and Sorted Value Counts Works :) ORIGINAL (before 12/21/23 changes)
+// bool print_stats_internal_(DataLynx *self, char *column_name) {
+
+//     // if (self == NULL) return false;
+
+//     // if (self->aggregate == NULL || column_name == NULL) return false;
+
+//     char *func_name = "print_stats_internal_";
+
+//     // Determine whether to display all columns or just one (i.e. this does not work IF csv has a column named "All")
+//     int16_t c = 0, start = 0, stop = self->columnCount;
+//     bool print_one_column = false;
+//     if (strcmp(column_name, PRINT_ALL_STATS) != 0) {
+
+//         // Adjust start and stop to only print desired column
+//         if ((c = findColumnIndex(self, column_name)) >= 0) stop = c + 1;
+//         // else c = 0; /* if an invalid column name is given, we will print all stats */
+//         else return false;
+
+//         print_one_column = true;
+
+//         start = c;
+
+//     }
+
+//     // Buffer to remember columns for value counts
+//     uint16_t non_numeric_columns[self->columnCount];
+//     uint16_t non_numeric_column_count = 0;
+
+//     printf("\n\t\t<Data from file: %s>\n", self->filename);
+
+//     if (!print_one_column || (print_one_column && self->aggregate[c].is_number) ) printf("\n\t\t- Numeric Stats - \n");
+
+//     const int8_t STAT_COUNT = 10; /* This is the number of numeric stats we are printing per column
+//                                     (i.e. Min, Max, Sum, Mean, 25th %, Median, 75th %, Std,
+//                                     as well as Is Null and Not Null, which are also printed for non-numeric stats aka Value Counts) */
+
+
+//     char space = ' ';
+//     bool numeric_stats_in_data = false;
+
+//     // For each stat: iterate through columns to find numeric columns
+//     for (int8_t stat = -1; stat < STAT_COUNT; stat++) {
+
+//         c = start;
+//         // Iterate through columns to find numeric columns
+//         while (c < stop) {
+
+//             uint8_t column_strlen = strlen(self->__header__[c]) + 23; /* stat_print_() needs this to give proper spacing (to make the column stats line up nicely)*/
+
+//             // Found numeric column
+//             if (self->aggregate[c].is_number) {
+
+//                 numeric_stats_in_data = true;
+
+//                 // Print stats
+//                 if (stat == -1) {
+//                     !has_quotes(self->__header__[c]) ? printf("'%s' <Aggregate Data>%3c", self->__header__[c], space) : printf("%s <Aggregate Data>%3c", self->__header__[c], space);
+//                 }
+//                 else if (stat == 0) {
+//                     stat_print_("Min", self->aggregate[c].min, column_strlen);
+//                 }
+//                 else if (stat == 1){
+//                     stat_print_("Max", self->aggregate[c].max, column_strlen);
+//                 }
+//                 else if (stat == 2){
+//                     stat_print_("Sum", self->aggregate[c].sum, column_strlen);
+//                 }
+//                 else if (stat == 3){
+//                     stat_print_("Mean", self->aggregate[c].mean, column_strlen);
+//                 }
+//                 else if (stat == 4){
+//                     stat_print_("25th %", self->aggregate[c].lower_qrt, column_strlen);
+//                 }
+//                 else if (stat == 5){
+//                     stat_print_("Median", self->aggregate[c].median, column_strlen);
+//                 }
+//                 else if (stat == 6){
+//                     stat_print_("75th %", self->aggregate[c].upper_qrt, column_strlen);
+//                 }
+//                 else if (stat == 7){
+//                     stat_print_("Std", self->aggregate[c].std, column_strlen);
+//                 }
+//                 else if (stat == 8){
+//                     stat_print_("Is Null", (double)self->aggregate[c].is_null, column_strlen);
+//                 }
+//                 else if (stat == 9){
+//                     stat_print_("Not Null", (double)self->aggregate[c].not_null, column_strlen);
+//                 }
+
+//             }
+//             else if (stat == -1) {
+//                 /* functionally the same as saying else if (stat == -1 && !self->aggregate[c].is_number) */
+//                 /* Only do this one time around, otherwise will count columns multiple times.*/
+
+//                 // Remember which column indexes are non-numeric, so we do not have to iterate through each column and check again when we print the value counts
+//                 non_numeric_columns[non_numeric_column_count] = c;
+//                 non_numeric_column_count++;
+//             }
+
+//             c++;
+//         }
+
+//         /* Without this if statement, it will print new lines for every stat as it looks for numeric columns even when no numeric columns exist*/
+//         if (numeric_stats_in_data) {
+//             (stat == STAT_COUNT-1) ? printf("\n\n"): printf("\n");
+//         }
+
+
+//     }
+
+//     if (!numeric_stats_in_data && !print_one_column) printf("\n* No numeric stats for this dataset *\n\n\n");
+//     else if (!numeric_stats_in_data && print_one_column) printf("\n* No numeric stats for this column *\n\n\n");
+
+
+//     //              --- COPY VALUE COUNTS INTO SEPARATE ARRAYS TO SORT ---
+
+//     // Allocate main sorted array (i.e. array of arrays of sorted value counts per column)
+//     ValueCount **sorted = (ValueCount**)malloc(sizeof(ValueCount*) * non_numeric_column_count);
+//     if (sorted == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+//     // Array to keep track of unique values for each non-numeric column
+//     uint16_t *unique_values = (uint16_t*)malloc(sizeof(uint16_t) * non_numeric_column_count);
+//     if (unique_values == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+//     uint16_t most_unique_values = 0;
+
+//     // Put Value Counts for current column into separate array
+//     for (c = 0; c < non_numeric_column_count; c++) {
+
+//         uint32_t column = non_numeric_columns[c];
+
+//         // Allocate array for sorted value counts
+//         uint32_t current_unique_values = 0;
+
+//         // Allocate array for sorted value counts of current column
+//         ValueCount *current_sorted = (ValueCount*)malloc(sizeof(ValueCount));
+//         if (current_sorted == NULL) {log_error(MALLOC_FAILED, func_name); return false;}
+
+//         bool first_value = true, values_exist = false;
+
+//         // Iterate through alpha value count array
+//         for (int l = 0; l < 27; l++) {
+//             ValueCount *tmp = self->aggregate[column].value_counts[l];
+
+//             // Traverse linked list for current alpha character
+//             while (tmp != NULL) {
+
+//                 values_exist = true;
+
+//                 //  Realloc sorted array
+//                 if (!first_value) {
+//                     current_sorted = (ValueCount*)realloc(current_sorted, sizeof(ValueCount) * ((++current_unique_values) + 1));
+//                     if (current_sorted == NULL) {log_error(REALLOC_FAILED, func_name); return false;}
+//                 }
+//                 else first_value = false;
+
+//                 // Assign to sorted array to be sorted in next section
+//                 current_sorted[current_unique_values].value = tmp->value;
+//                 current_sorted[current_unique_values].count = tmp->count;
+
+//                 tmp = tmp->next;
+
+//             }
+
+//         }
+
+//         // Keep track of unique values for current non-numeric column
+//         unique_values[c] = (values_exist) ? ++current_unique_values : 0;
+
+//         if (current_unique_values > most_unique_values) most_unique_values = current_unique_values;
+
+//         // Sort current column's value counts
+//         for (uint32_t i = 0; i < current_unique_values; i++) {
+
+//             uint32_t largest = i;
+
+//             for (uint32_t j = i + 1; j < current_unique_values; j++) {
+
+//                 if (current_sorted[j].count > current_sorted[largest].count) largest = j;
+//             }
+
+//             // Swap
+//             if (i != largest) {
+//                 ValueCount tmp = current_sorted[i];
+//                 current_sorted[i] = current_sorted[largest];
+//                 current_sorted[largest] = tmp;
+//             }
+//         }
+
+//         // Attach array of sorted value counts for current column to array of arrays
+//         sorted[c] = current_sorted;
+
+//     }
+
+//     //          --- PRINT VALUE COUNTS ---
+//     if (non_numeric_column_count == 0) return true;
+//     printf("\t\t- Value Counts -\n\t   (i.e. non-numeric stats)\n");
+
+//     bool with_divider = true;
+
+//     for (int32_t v = -2; v < most_unique_values+4; v++) {
+
+//         for (uint32_t c = 0; c < non_numeric_column_count; c++) {
+
+//             uint32_t column_index = non_numeric_columns[c];
+
+//             // Column string length sets the length for that column
+//             size_t column_strlen = strlen(self->__header__[column_index]) + 31;
+
+//             // Print column name
+//             if (v == -2) {
+//                 has_quotes(self->__header__[c]) ? printf("%s <Aggregate Data>%10c| ", self->__header__[column_index], space) : printf("'%s' <Aggregate Data>%10c| ", self->__header__[column_index], space);
+//                 continue;
+//             }
+//             else if (v == -1 || v == most_unique_values) {
+//                 // This create a line break after column head / after values are printed, before unique values is printed
+//                 char dashes[column_strlen+1];
+//                 char char_to_print = (v == -1) ? '-' : ' ';
+//                 create_spaces_string(dashes, column_strlen+1, with_divider, char_to_print);
+//                 if (c == (uint32_t)non_numeric_column_count-1) dashes[column_strlen-1] = '\0';
+//                 printf("%s", dashes);
+
+//                 continue;
+//             }
+//             else if (v == most_unique_values+1) {
+//                 // Print Unique Values
+//                 char unique_string[32];
+//                 sprintf(unique_string, "Unique values: %u", unique_values[c]);
+
+//                 int8_t num_spaces = column_strlen - strlen(unique_string);
+//                 char spaces[num_spaces+1];
+//                 create_spaces_string(spaces, num_spaces+1, with_divider, ' ');
+
+//                 printf("%s%s", unique_string, spaces);
+//                 continue;
+//             }
+//             else if (v == most_unique_values+2) {
+//                 // Print Is Null
+//                 bool is_null = true;
+//                 uint32_t column_index = non_numeric_columns[c];
+//                 print_stats_is_not_null_(self, column_strlen, column_index, is_null);
+//                 continue;
+//             }
+//             else if (v == most_unique_values+3) {
+//                 // Print Not Null
+//                 bool is_null = false;
+//                 uint32_t column_index = non_numeric_columns[c];
+//                 print_stats_is_not_null_(self, column_strlen, column_index, is_null);
+//                 continue;
+//             }
+
+
+//             // Print spaces if no more values to dislay for this column
+//             if (unique_values[c] <= v) {
+//                 char spaces[column_strlen+1];
+//                 create_spaces_string(spaces, column_strlen+1, with_divider, ' ');
+//                 printf("%s", spaces);
+//                 continue;
+//             }
+
+//             char print_string[64];
+//             has_quotes(sorted[c][v].value) ? sprintf(print_string, "Value: %s", sorted[c][v].value) : sprintf(print_string, "Value: '%s'", sorted[c][v].value);
+
+//             uint8_t value_strlen = strlen(print_string);
+
+//             char count_string[32];
+
+//             sprintf(count_string, "Count: %ld | ", sorted[c][v].count);
+
+//             size_t count_strlen = strlen(count_string);
+
+//             // Spaces
+//             int8_t num_spaces = column_strlen - value_strlen - count_strlen;
+
+//             if (num_spaces > 0) {
+//                 char spaces[num_spaces+1];
+//                 for (uint8_t s = 0; s < num_spaces+1; s++) spaces[s] =  (s == num_spaces) ? '\0' : ' ';
+//                 printf("%s%s%s", print_string, spaces, count_string);
+//             }
+//             else {
+
+//                 // num spaces is negative
+//                 sprintf(&print_string[value_strlen+num_spaces-4], "... ");
+//                 printf("%s%s", print_string, count_string);
+//             }
+
+//         }
+
+//         // (v == most_unique_values-1) ? printf("\n\n") : printf("\n");
+//         printf("\n");
+//     }
+
+//     // Free arrays
+//     for (uint16_t c = 0; c < non_numeric_column_count; c++) free(sorted[c]);
+//     free(sorted);
+//     free(unique_values);
+
+//     return true;
+// }
+
+
 //      stat_print_ (Called from print_stats_internal_)
 void stat_print_(char *stat_name, double stat, uint8_t column_strlen) {
 
@@ -1687,11 +2027,19 @@ void stat_print_(char *stat_name, double stat, uint8_t column_strlen) {
 
 void print_stats_is_not_null_(DataLynx *self, size_t column_strlen, uint32_t column_index, bool is_null) {
 
-    char print_string[32];
+    const uint8_t BUFFER_SIZE = 255;
+
+    // Create main string
+    char print_string[BUFFER_SIZE+1];
     is_null ? sprintf(print_string, "Is Null %ld", self->aggregate[column_index].is_null) : sprintf(print_string, "Not Null %ld", self->aggregate[column_index].not_null);
-    char spaces[32];
+
+    // Create spaces string
+    char spaces[BUFFER_SIZE+1];
     bool with_divider = true;
-    uint8_t num_spaces = column_strlen - strlen(print_string) + 1;
+    uint16_t num_spaces = column_strlen - strlen(print_string) + 1;
+
+    if (num_spaces > BUFFER_SIZE) num_spaces = BUFFER_SIZE; /* Make sure to not overrun buffer*/
+
     create_spaces_string(spaces, num_spaces, with_divider, ' ');
 
     (!is_null && column_index == self->columnCount-1) ? printf("%s%s\n", print_string, spaces) : printf("%s%s", print_string, spaces);
@@ -1700,4 +2048,126 @@ void print_stats_is_not_null_(DataLynx *self, size_t column_strlen, uint32_t col
 }
 
 
+
+//         -- Corr() --
+double corr(DataLynx *self, char *column_name1, char *column_name2) {
+
+    // Safety checks
+    if (self == NULL || column_name1 == NULL || column_name2 == NULL) return 0;
+    if (!data_exists(self)) return 0;
+
+    // Retrieve corresponding integer column indexes
+    int16_t column_index1 = findColumnIndex(self, column_name1);
+    int16_t column_index2 = findColumnIndex(self, column_name2);
+    if (column_index1 < 0 || column_index2 < 0) return 0;
+
+    // Correlation is only for numeric columns
+    if (!self->aggregate[column_index1].is_number || !self->aggregate[column_index2].is_number) return 0;
+
+    // Extract means & standard deviations (for better code readability)
+    double x_mean = self->aggregate[column_index1].mean;
+    double y_mean = self->aggregate[column_index2].mean;
+    double x_std = self->aggregate[column_index1].std;
+    double y_std = self->aggregate[column_index2].std;
+    double sum = 0;
+
+    // Iterate through each row
+    for (uintmax_t row = 0; row < self->rowCount; row++) {
+
+        double x = 0, y = 0;
+
+        // Get fields
+        char *x_string = get_field_(self, row, column_index1);
+        char *y_string = get_field_(self, row, column_index2);
+
+        // Skip null field
+        if (x_string[0] == '\0' || y_string[0] == '\0') continue;
+
+        x = atof(x_string);
+        y = atof(y_string);
+
+        // Subtract the mean from each data point and divide by standard deviation
+        x -= x_mean;
+        x /= x_std;
+
+        y -= y_mean;
+        y /= y_std;
+
+        // Multiply and add to sum
+        sum += (x * y);
+
+
+    }
+
+    // r = 1/n-1 SIGMA (x_i - x_mean)*(y_i = y_mean)
+    double r = 1.0 / (double)(self->rowCount-1);
+
+    return r * sum;
+}
+
+// //          --- Linear Regression() --
+// void linearRegression(DataLynx *self, char *x_column_name, char *y_column_name) {
+
+//     // Safety checks
+//     if (self == NULL) return;
+
+//     int16_t x_column_index = findColumnIndex(self, x_column_name);
+//     int16_t y_column_index = findColumnIndex(self, y_column_name);
+//     if (x_column_name < 0 || y_column_name  < 0) return;
+
+//     double y_mean = self->aggregate[y_column_index].mean;
+
+//     char *x_field = NULL;
+//     char *y_field = NULL;
+
+//     // Calculate SSR for y_bar
+//     double y_bar_ssr = 0;
+//     for (uintmax_t row = 0; row < self->rowCount; row++) {
+
+//         // Extract current field
+//         y_field = get_field_(self, row, y_column_index);
+//         x_field = get_field_(self, row, x_column_index);
+
+//         if (field_y[0] == '\0' || field_x[0] == '\0') continue; /* Skip if EITHER x or y field is empty, bc that data point is invalid */
+
+//         double field = atof(y_field);
+
+//         double residual = field - y_mean;
+
+//         residual *= residual;
+
+//         y_bar_ssr += residual;
+
+//     }
+
+
+//     //              --- FIND SLOPE --
+//     double intercept = y_mean;
+
+//     // Calculate SSR for current SLR
+//     double ssr = 0;
+//     for (uintmax_t row = 0; row < self->rowCount; row++) {
+
+//         // Extract current field
+//         x_field = get_field_(self, row, x_column_index);
+//         y_field = get_field_(self, row, y_column_index);
+
+//         if (field_x[0] == '\0' || field_y[0] == '\0') continue; /* Skip if EITHER x or y field is empty, bc that data point is invalid */
+
+//         double field = atof(y_field);
+
+//         double residual = field - y_mean;
+
+//         residual *= residual;
+
+//         y_bar_ssr += residual;
+
+//     }
+
+
+
+
+
+//     return;
+// }
 
