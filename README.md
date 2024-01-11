@@ -3188,6 +3188,100 @@ Linear Model:
 </div
 
 
+<!-- fit() -->
+<h4 align="center">linearModel.fit()</h4>
+<h6 align="center">bool fit(DataLynx *self, char *x_column_name, char *y_column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name you wish to be the "x" or "independent variable".</li>
+###### <li>String of column name you wish to be the "y"/"target"/"dependent variable".</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Provide the names of 2 numeric columns and this function will "fit"/"train" the linear model (i.e. find the slope and intercept of the line that best fits the data).</li>
+###### <li>Once the model has been fitted/trained, the slope and intercept will become available within the linearModel struct within the DataLynx object.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+
+// Fit/Train the model
+myData.linearModel.fit(&myData, "highway-mpg", "price");
+
+// Access slope and intercept
+printf("Slope: %.2f\n", myData.linearModel.slope_);
+printf("Intercept: %.2f\n", myData.linearModel.intercept_);
+```
+
+<ul>
+ 
+###### <li>The above code will find the best fit line for the 2 columns provided. The slope and intercept become available as soon as the model has been trained.</li>
+</ul>
+<hr>
+
+
+
+
+<!-- Predict() -->
+<h4 align="center">linearModel.predict()</h4>
+<h6 align="center">double *predict(DataLynx *self, double x_new_values[]);</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Provide an array of doubles and this function will use the trained model to predict the corresponding yhat values.</li>
+###### <li>You can provide a new array of new values OR you can provide the original x values.</li>
+###### <li>NOTE: the array of x values must be the same length as the original x and y vectors (i.e. the row count `myData.rowCount`).</li>
+###### <li>NOTE: If using the original x values, you must convert this column to an array of doubles using (i.e. `getNumerColumn(&myData, "highway-mpg");`)</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+// Retrieve numeric column
+double *x = getNumericColumn(&myData, "highway-mpg");
+
+// Use array of doubles to predict yhat
+double *yhat = myData.linearModel.predict(&myData, x);
+```
+
+<ul>
+ 
+###### <li></li>
+###### <li>NOTE: You are NOT responsible for freeing the returned yhat array. You may use this function as much as you wish and all yhat arrays will be freed along with all other internal data structures when you run freeAll() at the end of your program.</li>
+</ul>
+<hr>
+
+
+
 
 
 
