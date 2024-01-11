@@ -3058,7 +3058,7 @@ double revenue_not_null = myData.notNull(&myData, "Revenue");
 ##### To Use:
 <ul>
 
-###### <li>This function turns numeric data into categorical data. Therefore, the column name provided must be a numeric column.</li>
+###### <li>This function converts numeric data into categorical data. Therefore, the column name provided must be a numeric column.</li>
 ###### <li>This function will create a "binned" column of the numeric column provided.</li>
 ###### <li>Please make sure bin_names array is of size num_bins.</li>
 ###### <li>NOTE: This is one situation, where I can not protect the library user against themselves. If you provided num_bins that is not equal to the array size of bin_names, there could be a buffer overrun. You can overcome this by simply passing NULL as the bin_names_input parameter, as long as you provide a num_bins parameter, the function will automatically provide bin generic names (e.g. {"Low", "Medium-Low", "Medium-High", "High"} if num_bins = 4). NOTE: Generic bin names are only provided if num_bins is between 2 and 7.</li>
@@ -3088,6 +3088,50 @@ myData.getBins(&myData, "Salary", num_bins, NULL);
 
 </ul>
 <hr>
+
+
+<!-- ONE HOT -->
+<h4 align="center">oneHot()</h4>
+<h6 align="center">bool oneHot(struct DataLynx *self, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name in which you wish to apply one-hot encoding to (i.e. convert into numeric data).</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function converts categorical data into numeric data. Therefore, the name of the column provided, must be a non-numeric column.</li>
+###### <li>This function will create a new column for each unique value in the column provided. For each row, all values in the new columns will be 0 (i.e. False), except for the column which represents the original value. This column will be set to 1 (i.e. True). See below for visual.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns true.</li>
+###### <li>On failure, returns false.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.oneHot(&myData, "department");
+```
+
+<ul>
+ 
+###### <li>The above code will create new "one hot" columns for each unique value in the "department" column, effectively turning categorical data into numeric data.</li>
+###### <li>Output:</li>
+![onehot1](https://github.com/Dvidal7788/DataLynx/assets/91298183/acc2a5c5-0e8c-44e1-906f-c8e231f96c96)
+
+</ul>
+<hr>
+
+
 
 
 
