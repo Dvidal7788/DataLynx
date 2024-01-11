@@ -3041,11 +3041,12 @@ double revenue_not_null = myData.notNull(&myData, "Revenue");
 <hr>
 
 
-<!-- GET BINS() -–>
-<h4 align="center">getBins()</h4>
-<h6 align="center">double *getBins(DataLynx *self, char *column_name, uint16_t num_bins, char **bin_names_input)</h6>
 
-##### PARAMETERS:
+<!-- GET BINS -->
+<h4 align="center">getBins()</h4>
+<h6 align="center">double *getBins(DataLynx *self, char *column_name, uint16_t num_bins, char **bin_names)</h6>
+
+
 <ul>
     
 ###### <li>Pointer to (i.e. address of) dataLynx object.</li>
