@@ -7,7 +7,7 @@
 </kbd>
 </div>
 
-Manifesto:
+Overview:
 --------
 
 ---
@@ -1859,6 +1859,117 @@ myData.sortRowsByColumn(&myData, "Department", "HELLO!");
 <hr>
 
 
+<!-- DROP NULL -->
+<h4 align="center">dropNull()</h4>
+<h6 align="center">int16_t dropNull(DataLynx *self, char *column_name)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name you wish to check for NULLS (i.e. empty fields) and drop any corresponding rows.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will check the provided column for any empty fields and will remove the corresponding rows.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns number of rows dropped. (If there is no error and no rows were dropped due to there not being any empty fields in the column provided as input, the function will return 0.)</li>
+###### <li>On failure, returns -1. This only occurs if malloc/realloc fails.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.dropNull(&myData, "Fist Name");
+```
+
+<ul>
+ 
+###### <li>The above code will drop any rows, which have an empty field in the "First Name" column.</li>
+###### <li>Integer of column index you wish to check for NULLS (i.e. empty fields) and drop any corresponding rows.</li>
+</ul>
+<hr>
+
+
+<!-- DROP NULL IDX-->
+<h4 align="center">dropNullIdx()</h4>
+<h6 align="center">int16_t dropNullIdx(DataLynx *self, uint16_t column_index)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will check the provided column for any empty fields and will remove the corresponding rows.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns number of rows dropped. (If there is no error and no rows were dropped due to there not being any empty fields in the column provided as input, the function will return 0.)</li>
+###### <li>On failure, returns -1. This only occurs if malloc/realloc fails.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.dropNullIdx(&myData, 1);
+```
+
+<ul>
+ 
+###### <li>The above code will drop any rows, which have an empty field in the 1 column.</li>
+</ul>
+<hr>
+
+
+<!-- DROP NULL ALL-->
+<h4 align="center">dropNullAll()</h4>
+<h6 align="center">int16_t dropNullAll(DataLynx *self)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will check all columns for any empty fields and will remove the corresponding rows.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns number of rows dropped. (If there is no error and no rows were dropped due to there not being any empty fields in the column provided as input, the function will return 0.)</li>
+###### <li>On failure, returns -1. This only occurs if malloc/realloc fails.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.dropNullAll(&myData);
+```
+
+<ul>
+ 
+###### <li>The above code will drop any rows, which have an empty field in any columns.</li>
+</ul>
+<hr>
 
 
 
@@ -2928,6 +3039,55 @@ double revenue_not_null = myData.notNull(&myData, "Revenue");
 ###### <li>The above code will return the total count of *non*-NULL values (i.e. *non*-empty fields) in the "Revenue" column of the dataset.</li>
 </ul>
 <hr>
+
+
+<!-- GET BINS() -–>
+<h4 align="center">getBins()</h4>
+<h6 align="center">double *getBins(DataLynx *self, char *column_name, uint16_t num_bins, char **bin_names_input)</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name in which you wish to bin (i.e. turn into categorical data).</li>
+###### <li>Integer of number of bins you wish to create.</li>
+###### <li>Array of bin names (i.e. {"Low", "Medium", "High"} if num_bins = 3). This array must be the size of num_bins.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function turns numeric data into categorical data. Therefore, the column name provided must be a numeric column.</li>
+###### <li>This function will create a "binned" column of the numeric column provided.</li>
+###### <li>Please make sure bin_names_input array is of size num_bins.</li>
+###### <li>NOTE: This is one situation, where I can not protect the library user against themselves. If you provided num_bins that is not equal to the array size of bin_names_input, there could be a buffer overrun. You can overcome this by simply passing NULL as the bin_names_input parameter, as long as you provide a num_bins parameter, the function will automatically provide bin generic names (e.g. {"Low", "Medium-Low", "Medium-High", "High"} if num_bins = 4). NOTE: Generic bin names are only provided if num_bins is between 2 and 7.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns an array of the binned column. This column will automatically be attached to the original dataset.</li>
+###### <li>On failure, returns NULL.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+myData.getBins(&myData, "Salary", 3, NULL);
+```
+
+<ul>
+ 
+###### <li>The above code will create a new binned column from the "Salary" column and will use generic bin names.</li>
+###### <li>Output:</li>
+</ul>
+<hr>
+
+
+
+
+
 
 
 
