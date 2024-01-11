@@ -3252,7 +3252,7 @@ printf("Intercept: %.2f\n", myData.linearModel.intercept_);
 ###### <li>Provide an array of doubles and this function will use the trained model to predict the corresponding yhat values.</li>
 ###### <li>You can provide a new array of new values OR you can provide the original x values.</li>
 ###### <li>NOTE: the array of x values must be the same length as the original x and y vectors (i.e. the row count `myData.rowCount`).</li>
-###### <li>NOTE: If using the original x values, you must convert this column to an array of doubles using (i.e. `getNumerColumn(&myData, "highway-mpg");`)</li>
+###### <li>NOTE: If using the original x values, you must convert this column to an array of doubles using (i.e. `getNumerColumn(&myData, "highway-mpg");`). This is because internally all values are stored as strings, including numeric columns.</li>
 </ul>
 
 ##### RETURN:
@@ -3266,7 +3266,7 @@ printf("Intercept: %.2f\n", myData.linearModel.intercept_);
 ##### Example Code:
 
 ```C
-// Retrieve numeric column
+// Retrieve column formatted as array of doubles
 double *x = getNumericColumn(&myData, "highway-mpg");
 
 // Use array of doubles to predict yhat
