@@ -3259,8 +3259,8 @@ printf("Intercept: %.2f\n", myData.linearModel.intercept_);
 ##### RETURN:
 <ul>
     
-###### <li>On success, returns true.</li>
-###### <li>On failure, returns false.</li>
+###### <li>On success, returns an array of doubles, containing the yhat values.</li>
+###### <li>On failure, returns NULL.</li>
 </ul>
 
 
@@ -3276,11 +3276,104 @@ double *yhat = myData.linearModel.predict(&myData, x);
 
 <ul>
  
-###### <li></li>
+###### <li>The above code will use the x values provided to predict the y values (i.e. yhat).</li>
 ###### <li>NOTE: You are NOT responsible for freeing the returned yhat array. You may use this function as much as you wish and all yhat arrays will be freed along with all other internal data structures when you run freeAll() at the end of your program.</li>
 </ul>
 <hr>
 
+
+
+
+<!-- MSE -->
+<h4 align="center">linearModel.mse()</h4>
+<h6 align="center">double mse(DataLynx *self, double y[], double yhat[])</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>Array of doubles containing the y values.</li>
+###### <li>Array of doubles containing the yhat values.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function compares y vs yhat to calculate the mean squared error of the provided yhat values.</li>
+###### <li>Note: The arrays provided must be the same length as the row count of the original data. If you are using yhat returned from linearModel.predict() and using getNumericColumn() to retrieve the original y values formatted as an array of doubles, this will never be a problem.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns the mean squared error.</li>
+###### <li>On failure, returns 0.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+
+// Retreive y values formatted as array of doubles
+double *y = getNumericColumn(&myData, "price");
+
+// Find mean squared error
+/* Note: The yhat array returned from linearModel.predict() is already an array of doubles */
+double mse = myData.linearModel.mse(&myData, y, yhat);
+```
+
+<ul>
+ 
+###### <li>The above code will return the mean squared error of the yhat values provided.</li>
+</ul>
+<hr>
+
+
+<!-- R2 SCORE -->
+<h4 align="center">r2_score()</h4>
+<h6 align="center">double r2_score(DataLynx *self, double yhat[])</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>This function will return the r-squared score (i.e. coefficient of determiniation).</li>
+###### <li>Note: The array provided must be the same length as the row count of the original data. If you are using yhat returned from linearModel.predict(), this will never be a problem.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns the r-squared score of the provided yhat values.</li>
+###### <li>On failure, returns 0.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+
+// Retrieve target column formatted as an array of doubles
+double *y = getNumericColumn(&myData, "price");
+
+// Retrieve corresponding yhat values
+double *yhat = myData.linearModel.predict(&myData, y);
+
+// Use yhat values to retrieve r-squared score
+double r_squared = myData.r2_score(&myData, yhat);
+```
+
+<ul>
+ 
+###### <li>The above code will provide the r-squared score (i.e. coefficient of determination) for the yhat values provided.</li>
+</ul>
+<hr>
 
 
 
