@@ -37,6 +37,7 @@ Table of Contents
   ###### <li>[Functions for Reading/Writing from/to a CSV file](#csv)</li> 
   ###### <li>[Functions for Data Wrangling/Cleaning](#data_wrangling)</li>
   ###### <li>[Functions for Statistical / Aggregate Data](#stats)</li>
+  ###### <li>[Functions for Linear Regression](#linearmodel)</li>
   ###### <li>[Functions for Printing](#print)</li>
   </ul>
 </ol>
