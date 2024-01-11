@@ -3082,6 +3082,9 @@ myData.getBins(&myData, "Salary", 3, NULL);
  
 ###### <li>The above code will create a new binned column from the "Salary" column and will use generic bin names.</li>
 ###### <li>Output:</li>
+
+![bins](https://github.com/Dvidal7788/DataLynx/assets/91298183/90174d54-1c0e-4912-a292-af641a484fbd)
+
 </ul>
 <hr>
 
