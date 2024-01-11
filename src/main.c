@@ -19,7 +19,7 @@ int main(void)
         // if (strcasecmp(myData.filename, "quit") == 0) {printf("\n\tGOODBYE!\n\n"); free_null(&myData.filename); return 1;}
 
         // Open
-        if (myData.csv.openFile(&myData, "csv/printers.csv")) break;
+        if (myData.csv.openFile(&myData, "csv/autos.csv")) break;
 
     }
     // End of set up section
@@ -35,7 +35,50 @@ int main(void)
     // myData.csv.reader(&myData);         /* Grid    */
     // myData.csv.dictReader(&myData);        /* Dict    */
 
+    //              Linear Regression
+    myData.linearModel.fit(&myData, "highway-mpg", "price");
+    printf("Linear Model:\ny = %.2fx + %.2f\n\n", myData.linearModel.slope_, myData.linearModel.intercept_);
 
+    double *highway_mpg = getNumericColumn(&myData, "highway-mpg");
+
+    double *yhat = myData.linearModel.predict(&myData, highway_mpg);
+
+    for (uintmax_t i = 0; i < myData.rowCount; i++) {
+        printf("%.2f\n", yhat[i]);
+    }
+
+
+    double new_x2[myData.rowCount];
+    for (uintmax_t row = 0; row < myData.rowCount; row++) {
+        new_x2[row] = atof(myData.getField(&myData, row, "highway-mpg")) * 2;
+    }
+
+    double *yhat2 = myData.linearModel.predict(&myData, new_x2);
+
+    double *y = getNumericColumn(&myData, "price");
+    printf("MSE: %.2f\n\n", mse(&myData, y, yhat));
+
+
+    printf("R2: %.2f\n\n", r2_score(&myData, yhat));
+
+    freeAll(&myData);
+    return 0;
+
+
+
+    //          JOIN
+    // DataLynx salary = DataLynxConstructor();
+
+    // salary.csv.openFile(&salary, "csv/salary.csv");
+
+    // salary.csv.reader_v3(&salary );
+
+    // salary.printDataTable(&salary);
+
+    // DataLynx *merged = join(&myData, &salary, "emp_id", "emp_id", "inner");
+
+    // This will seg fault if merged is return  as NULL on error
+    // merged->freeAll(merged);
 
     //          -- PRINT --
     // myData.printData(&myData);
@@ -91,6 +134,8 @@ int main(void)
 
     // myData.replaceAll(&myData, "?", ""); /* Replace all instances if '?' with NULL */
     // myData.replaceInColumn(&myData, "Name", "?", "TEST");
+
+    // myData.replaceInColumn(&myData, "salary, Salary & Salary ", "?", );
 
 
 
@@ -284,14 +329,16 @@ int main(void)
     // myData.insertRowDict(&myData, row_values);
 
     //      -- Drop Null --
-    printf("DrOP NULL\n\n");
-    dropNull(&myData, "name");
+    printf("Drop NULL\n\n");
+    // dropNull(&myData, "name");
+    // dropNullIdx(&myData, 1);
+    dropNullAll(&myData);
 
 
     //          -- to JSON --
     // toJSONString(&myData);
     // writeJSON(&myData, NULL);
-    writeXML(&myData, NULL);
+    // writeXML(&myData, NULL);
 
     // printf("\n\t\t---- JSON ----\n\n%s\n", myData.json);
 
@@ -309,6 +356,7 @@ int main(void)
 
     //      --- End ---
     myData.freeAll(&myData);
+    // salary.freeAll(&salary);
 
     return EXIT_SUCCESS;
 }

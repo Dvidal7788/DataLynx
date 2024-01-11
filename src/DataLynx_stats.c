@@ -2105,69 +2105,142 @@ double corr(DataLynx *self, char *column_name1, char *column_name2) {
     return r * sum;
 }
 
-// //          --- Linear Regression() --
-// void linearRegression(DataLynx *self, char *x_column_name, char *y_column_name) {
 
-//     // Safety checks
-//     if (self == NULL) return;
+//          linearModel.fit() (Linear Regression)
+bool fit(DataLynx *self, char *x_column_name, char *y_column_name) {
 
-//     int16_t x_column_index = findColumnIndex(self, x_column_name);
-//     int16_t y_column_index = findColumnIndex(self, y_column_name);
-//     if (x_column_name < 0 || y_column_name  < 0) return;
+    // Safety checks
+    if (self == NULL || x_column_name == NULL || y_column_name == NULL) return false;
+    if (!data_exists(self))  return false;
 
-//     double y_mean = self->aggregate[y_column_index].mean;
+    // Find corresponding column indexes
+    int16_t x_column_index = findColumnIndex(self, x_column_name);
+    int16_t y_column_index = findColumnIndex(self, y_column_name);
+    if (x_column_index < 0 || y_column_index < 0) return false;
 
-//     char *x_field = NULL;
-//     char *y_field = NULL;
+    // Save y index
+    self->linearModel.y_index = (uint16_t)y_column_index;
 
-//     // Calculate SSR for y_bar
-//     double y_bar_ssr = 0;
-//     for (uintmax_t row = 0; row < self->rowCount; row++) {
+    double sum_of_products = 0, x_sum = 0, y_sum = 0, sum_of_squared_x = 0;
 
-//         // Extract current field
-//         y_field = get_field_(self, row, y_column_index);
-//         x_field = get_field_(self, row, x_column_index);
+    // Iterate through data
+    char *x_field = NULL, *y_field = NULL;
+    for (uintmax_t row = 0; row < self->rowCount; row++) {
 
-//         if (field_y[0] == '\0' || field_x[0] == '\0') continue; /* Skip if EITHER x or y field is empty, bc that data point is invalid */
+        // Extract fields
+        x_field = get_field_(self, row, x_column_index);
+        y_field = get_field_(self, row, y_column_index);
 
-//         double field = atof(y_field);
+        // Skip empty fields
+        if (x_field[0] == '\0' || y_field[0] == '\0') continue;
 
-//         double residual = field - y_mean;
+        // Convert fields to floating point
+        double x_field_float = atof(x_field);
+        double y_field_float = atof(y_field);
 
-//         residual *= residual;
+        // Add to sums
+        x_sum += x_field_float;
+        y_sum += y_field_float;
 
-//         y_bar_ssr += residual;
+        // Add to sum of products and sum of squared x valuues
+        sum_of_products += x_field_float * y_field_float;
+        sum_of_squared_x += x_field_float * x_field_float;
 
-//     }
+    }
 
+    // Reassign x_sum and y_sum
+    self->aggregate[x_column_index].sum = x_sum;
+    self->aggregate[y_column_index].sum = y_sum;
 
-//     //              --- FIND SLOPE --
-//     double intercept = y_mean;
+    // Calculate and assign slope
+    self->linearModel.slope_ = ((self->rowCount * sum_of_products) - x_sum * y_sum) / ((self->rowCount * sum_of_squared_x) - (x_sum * x_sum));
 
-//     // Calculate SSR for current SLR
-//     double ssr = 0;
-//     for (uintmax_t row = 0; row < self->rowCount; row++) {
+    // Calculate and assign intercept
+    self->linearModel.intercept_ = ((y_sum * sum_of_squared_x) - (x_sum * sum_of_products)) / ((self->rowCount * sum_of_squared_x) - (x_sum * x_sum));
 
-//         // Extract current field
-//         x_field = get_field_(self, row, x_column_index);
-//         y_field = get_field_(self, row, y_column_index);
+    self->linearModel.is_fitted = true;
 
-//         if (field_x[0] == '\0' || field_y[0] == '\0') continue; /* Skip if EITHER x or y field is empty, bc that data point is invalid */
-
-//         double field = atof(y_field);
-
-//         double residual = field - y_mean;
-
-//         residual *= residual;
-
-//         y_bar_ssr += residual;
-
-//     }
-
+    return true;
+}
 
 
 
+//              linearModel.predict()
+double *predict(DataLynx *self, double x_new_values[]) {
 
-//     return;
-// }
+    /* NOTE:
+        - I can NOT protect the library user against themselves when it comes to passing an array of x values that is not the same length as self.rowCount.
+        - I can however, ensure that all yhat arrays are freed automatically using freeAll() */
 
+    // Safety checks
+    if (self == NULL || x_new_values == NULL) return NULL;
+    if (!data_exists(self) || !self->linearModel.is_fitted)  return NULL;
+
+    const char *func_name = "predict";
+
+    // Malloc or realloc yhat master array
+    if (self->linearModel.yhat_master == NULL) {
+        self->linearModel.yhat_master = (double**)malloc(sizeof(double*) * ++(self->linearModel.yhat_master_len));
+        if (self->linearModel.yhat_master == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
+    }
+    else {
+        self->linearModel.yhat_master = (double**)realloc(self->linearModel.yhat_master, sizeof(double*) * ++(self->linearModel.yhat_master_len));
+        if (self->linearModel.yhat_master == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
+    }
+
+
+    // Malloc current yhat array
+    self->linearModel.yhat_master[self->linearModel.yhat_master_len-1] = (double*)malloc(sizeof(double) * self->rowCount);
+    if (self->linearModel.yhat_master[self->linearModel.yhat_master_len-1] == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
+
+    // Iterate through data and calculate yhat
+    for (uintmax_t row = 0; row < self->rowCount; row++) {
+        self->linearModel.yhat_master[self->linearModel.yhat_master_len-1][row] = (x_new_values[row] * self->linearModel.slope_) + self->linearModel.intercept_;
+    }
+
+
+    // Return yhat array
+    return self->linearModel.yhat_master[self->linearModel.yhat_master_len-1];
+
+}
+
+
+//              linearModel.mse()
+double mse(DataLynx *self, double y[], double yhat[]) {
+
+    // Safety checks
+    if (self == NULL) return 0;
+    if (!data_exists(self) || !self->linearModel.is_fitted)  return 0;
+
+    double sum_sq_residuals = 0;
+    for (uintmax_t row = 0; row < self->rowCount; row++) {
+
+        double residual = y[row] - yhat[row];
+        sum_sq_residuals += residual * residual;
+    }
+
+    return sum_sq_residuals / self->rowCount;
+}
+
+
+//         linearModel.r2_score()
+double r2_score(DataLynx *self, double yhat[]) {
+
+    // Safety checks
+    if (self == NULL) return 0;
+    if (!data_exists(self) || !self->linearModel.is_fitted)  return 0;
+
+    // Get y
+    double *y = get_numeric_column_(self, self->linearModel.y_index);
+
+    // Create ybar
+    double ybar[self->rowCount];
+
+    char *y_column_name = self->__header__[self->linearModel.y_index];
+    double y_mean = self->mean(self, y_column_name);
+
+    for (uintmax_t row = 0; row < self->rowCount; row++) ybar[row] = y_mean;
+
+    // Calculate r-squared score
+    return mse(self, y, yhat) / mse(self, y, ybar);
+}

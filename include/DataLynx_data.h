@@ -116,6 +116,7 @@ typedef struct DataLynx {
     bool case_sensitive_sort;
     uintmax_t number_of_rows_to_print;
     bool print_tail;
+    bool drop_null_all;
 
     char **__header__;
     Aggregate *aggregate;
@@ -182,6 +183,33 @@ typedef struct DataLynx {
 
     } csv;
 
+    // Linaer Regression struct
+    struct {
+
+        bool (*fit)(struct DataLynx *self, char *x_column_name, char *y_column_name);
+        double *(*predict)(struct DataLynx *self, double x_new_values[]);
+
+        double (*mse)(struct DataLynx *self, double y[], double yhat[]);
+        double (*r2_score)(struct DataLynx *self, double yhat[]);
+
+        double slope_;
+        double intercept_;
+
+        bool is_fitted;
+
+        uint16_t y_index;
+
+        double **yhat_master;
+        int16_t yhat_master_len;
+
+    } linearModel;
+
+    char ***extracted_columns;
+    int16_t extracted_columns_len;
+
+    double **extracted_numeric_columns;
+    int16_t extracted_numeric_columns_len;
+
 
 
     // Get Field  (from data structure in memory)
@@ -232,6 +260,9 @@ typedef struct DataLynx {
     bool (*dropColumn)(struct DataLynx *self, char *column_name);
     bool (*dropColumnIdx)(struct DataLynx *self, uintmax_t column_index);
     bool (*dropRow)(struct DataLynx *self, uintmax_t row_to_dop);
+    int16_t (*dropNull)(struct DataLynx *self, char *column_name);
+    int16_t (*dropNullIdx)(struct DataLynx *self, uint16_t column_index);
+    int16_t (*dropNullAll)(struct DataLynx *self);
 
     bool (*createHeader)(struct DataLynx *self, char *header[], uint32_t column_count);
     bool (*insertRow)(struct DataLynx *self, char *values[]);
@@ -240,6 +271,13 @@ typedef struct DataLynx {
     bool (*sortRowsByColumn)(struct DataLynx *self, const char *column_name, const char *asc_desc);
 
     double *(*getBins)(struct DataLynx *self, char *column_name, uint16_t num_bins, char **bin_names);
+    bool (*oneHot)(struct DataLynx *self, char *column_name);
+
+    char *(*toJSONString)(struct DataLynx *self);
+    char *(*toXMLString)(struct DataLynx *self);
+
+    bool (*writeXML)(struct DataLynx *self, char *filename_param);
+    bool (*writeJSON)(struct DataLynx *self, char *filename_param);
 
     uint16_t (*valueCount)(struct DataLynx *self, char *value, char *column_name);
     bool (*isInColumn)(struct DataLynx *self, char *value, char *column_name);
@@ -253,6 +291,7 @@ typedef struct DataLynx {
     uintmax_t (*isNull)(struct DataLynx *self, char *column_name);
     uintmax_t (*notNull)(struct DataLynx *self, char *column_name);
 
+    double (*corr)(struct DataLynx *self, char *column_name1, char *column_name2);
 
     // Convert data structures
     char **(*string_into_2d_array)(struct DataLynx *myCSV);
@@ -348,6 +387,7 @@ bool dropColumnIdx(DataLynx *self, uintmax_t column_index);
 bool dropRow(DataLynx *self, uintmax_t row_to_drop);
 int16_t dropNull(DataLynx *self, char *column_name);
 int16_t dropNullIdx(DataLynx *self, uint16_t column_index);
+int16_t dropNullAll(DataLynx *self);
 int16_t drop_null_(DataLynx *self, uint16_t column_index);
 
     /* _internal_ */
@@ -379,6 +419,14 @@ char *get_field_dict(DataLynx *self, uintmax_t desired_row, char *desired_column
 
 char *get_field_(DataLynx *self, uintmax_t row, int16_t column);
 
+char **getColumn(DataLynx *self, char *column_name);
+char **getColumnIdx(DataLynx *self, uint16_t column_index);
+char **get_column_(DataLynx *self, uint16_t column_index);
+
+double *getNumericColumn(DataLynx *self, char *column_name);
+double *getNumericColumnIdx(DataLynx *self, uint16_t column_index);
+double *get_numeric_column_(DataLynx *self, uint16_t column_index);
+
 double *getBins(DataLynx *self, char *column_name, uint16_t num_bins, char **bin_names);
 bool oneHot(DataLynx *self, char *column_name);
 
@@ -399,6 +447,8 @@ bool compare_for_sort_(char *field1, char *field2, bool ascending, bool case_sen
 char *toJSONString(DataLynx *self);
 char *toXMLString(DataLynx *self);
 
+DataLynx *join(DataLynx *table1, DataLynx *table2, const char *on1, const char *on2, const char *how);
+
 void print_grid_v3(DataLynx *self);
 void print_grid(DataLynx *self);
 bool print_lnk_list(DataLynx *self, node *head, uintmax_t current_row);
@@ -418,6 +468,5 @@ bool free_value_counts(DataLynx *self);
 void free_last_retrieved_fields(DataLynx *self);
 bool free_null(char **s);
 bool fclose_null(FILE **file);
-
 
 #endif /* DATALYNX_DATA_H */

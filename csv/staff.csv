@@ -1,11 +1,9 @@
 emp_id,name,dept,ext,"salary, Salary & Salary"
 1,   David   ,Director,123,250000
-1,"David, and David",Director,123,250000
 2,Anna,Director,456,250000
 3,John,Sales,111,75000
 4,Amanda,Sales,222,150000
 5,Tom,IT,333,125000
-5,,IT,333,100000
 6,Mary,Administration,444,60000
-7,Jessica,Administration,555,50000
-8,Tim,IT,777,170000
+7,Jessica,Administration,555,70000
+8,Tim,IT,777,80000

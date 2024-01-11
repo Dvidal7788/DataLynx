@@ -7,7 +7,7 @@
 </kbd>
 </div>
 
-Overview:
+Manifesto:
 --------
 
 ---
@@ -1857,83 +1857,6 @@ myData.sortRowsByColumn(&myData, "Department", "HELLO!");
 
 
 <hr>
-
-
-<!-- DROP NULL -->
-<h4 align="center">dropNull()</h4>
-<h6 align="center">int16_t dropNull(DataLynx *self, char *column_name)</h6>
-
-##### PARAMETERS:
-<ul>
-    
-###### <li>Pointer to (i.e. address of) dataLynx object.</li>
-###### <li>String of column name you wish to check for NULLS (i.e. empty fields) and drop any corresponding rows.</li>
-</ul>
-
-##### To Use:
-<ul>
-
-###### <li>This function will check the provided column for any empty fields and will remove the corresponding rows.</li>
-</ul>
-
-##### RETURN:
-<ul>
-    
-###### <li>On success, returns number of rows dropped. (If there is no error and no rows were dropped due to there not being any empty fields in the column provided as input, the function will return 0.)</li>
-###### <li>On failure, returns -1. This only occurs if malloc/realloc fails.</li>
-</ul>
-
-
-##### Example Code:
-
-```C
-myData.dropNull(&myData, "Fist Name");
-```
-
-<ul>
- 
-###### <li>The above code will drop any rows, which have an empty field in the "First Name" column.</li>
-###### <li>Integer of column index you wish to check for NULLS (i.e. empty fields) and drop any corresponding rows.</li>
-</ul>
-<hr>
-
-
-<!-- DROP NULL IDX-->
-<h4 align="center">dropNullIdx()</h4>
-<h6 align="center">int16_t dropNullIdx(DataLynx *self, uint16_t column_index)</h6>
-
-##### PARAMETERS:
-<ul>
-    
-###### <li>Pointer to (i.e. address of) dataLynx object.</li>
-</ul>
-
-##### To Use:
-<ul>
-
-###### <li>This function will check the provided column for any empty fields and will remove the corresponding rows.</li>
-</ul>
-
-##### RETURN:
-<ul>
-    
-###### <li>On success, returns number of rows dropped. (If there is no error and no rows were dropped due to there not being any empty fields in the column provided as input, the function will return 0.)</li>
-###### <li>On failure, returns -1. This only occurs if malloc/realloc fails.</li>
-</ul>
-
-
-##### Example Code:
-
-```C
-myData.dropNullIdx(&myData, 1);
-```
-
-<ul>
- 
-###### <li>The above code will drop any rows, which have an empty field in the 1 column.</li>
-</ul>
-<hr>
-
 
 
 

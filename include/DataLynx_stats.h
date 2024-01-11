@@ -26,7 +26,6 @@ double upperQrt(DataLynx *self, char *column_name);
 uintmax_t isNull(DataLynx *self, char *column_name);
 uintmax_t notNull(DataLynx *self, char *column_name);
 
-double corr(DataLynx *self, char *column_name1, char *column_name2);
 
 double find_new_min(DataLynx *self, uintmax_t column, double old_field_float, double new_field_float);
 double find_new_max(DataLynx *self, uintmax_t column, double old_field_float, double new_field_float);
@@ -50,6 +49,14 @@ void remove_value_count_node(DataLynx *self, uintmax_t column_index, uint8_t alp
 void sort_value_counts(DataLynx *self);
 
 void update_stats_new_row(DataLynx *self, char *values[]);
+
+double corr(DataLynx *self, char *column_name1, char *column_name2);
+
+//  linearModel.fit() (i.e. find slope/intercept for Linear Regression)
+bool fit(DataLynx *self, char *x_column_name, char *y_column_name);
+double *predict(DataLynx *self, double x_new_values[]);
+double mse(DataLynx *self, double y[], double yhat[]);
+double r2_score(DataLynx *self, double yhat[]);
 
 
 bool printPivotTable(DataLynx *self, char *group_by, char *aggregated_column, char *stat);

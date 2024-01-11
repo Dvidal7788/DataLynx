@@ -46,6 +46,7 @@ DataLynx DataLynxConstructor(void) {
     self.number_of_rows_to_print = 0;
     self.max_row_digits = 0;
     self.print_tail = false;
+    self.drop_null_all = false;
 
     self.last_retrieved_field = NULL;
     self.last_retrieved_fields = NULL;
@@ -87,6 +88,24 @@ DataLynx DataLynxConstructor(void) {
     self.csv.backup = &backup;
     self.csv.overwriteData = &overwriteData;
 
+    //      Linear Model Struct
+    self.linearModel.fit = &fit;
+    self.linearModel.predict = &predict;
+    self.linearModel.mse = &mse;
+    self.linearModel.r2_score = &r2_score;
+
+    self.linearModel.slope_ = 0;
+    self.linearModel.intercept_ = 0;
+    self.linearModel.is_fitted = false;
+    self.linearModel.yhat_master = NULL;
+    self.linearModel.yhat_master_len = 0;
+
+    self.extracted_columns = NULL;
+    self.extracted_columns_len = 0;
+
+    self.extracted_numeric_columns = NULL;
+    self.extracted_numeric_columns_len = 0;
+
     // Functions that operate on the data structure in memory
 
     self.getField = &getField;
@@ -107,6 +126,9 @@ DataLynx DataLynxConstructor(void) {
     self.dropColumn = &dropColumn;
     self.dropColumnIdx = &dropColumnIdx;
     self.dropRow = &dropRow;
+    self.dropNull = &dropNull;
+    self.dropNullIdx = &dropNullIdx;
+    self.dropNullAll = &dropNullAll;;
 
     self.createHeader = &createHeader;
     self.insertRow = &insertRow;
@@ -115,6 +137,13 @@ DataLynx DataLynxConstructor(void) {
     self.sortRowsByColumn = &sortRowsByColumn;
 
     self.getBins = &getBins;
+    self.oneHot = &oneHot;
+
+    self.toXMLString = &toXMLString;
+    self.toJSONString = &toJSONString;
+
+    self.writeXML = &writeXML;
+    self.writeJSON = &writeJSON;
 
     // Can call min, max etc from .min()/.max() etc or .stats()
     self.valueCount = &valueCount;
@@ -127,6 +156,8 @@ DataLynx DataLynxConstructor(void) {
     self.mean = &mean;
     self.isNull = &isNull;
     self.notNull = &notNull;
+
+    self.corr = &corr;
 
     self.freeAll = &freeAll;
 
@@ -1135,6 +1166,8 @@ int16_t dropNull(DataLynx *self, char *column_name) {
     return drop_null_(self, column_index);
 }
 
+
+//          -- DROP NULL Idx() --
 int16_t dropNullIdx(DataLynx *self, uint16_t column_index) {
 
     if (self == NULL) return false;
@@ -1144,31 +1177,69 @@ int16_t dropNullIdx(DataLynx *self, uint16_t column_index) {
 }
 
 
+//          -- DROP NULL ALL() --
+int16_t dropNullAll(DataLynx *self) {
+
+    // Tell drop_null_() to check all columns
+    self->drop_null_all = true;
+
+    // I am passing 0 here, but since self->drop_null_all is set to true, this parameter will be ignored anyway
+    int16_t num_rows_dropped = drop_null_(self, 0);
+
+    // Reset to default
+    self->drop_null_all = false;
+
+    return num_rows_dropped;
+}
+
+
+//          drop_null_() (internal)
 int16_t drop_null_(DataLynx *self, uint16_t column_index) {
 
     /* Returns number of rows dropped. -1 if error occurs */
 
     const char *func_name = "drop_null_";
 
-    // Allocate buffer to remember which rows to drop
+    // Allocate buffer to keep track of which rows to drop
     uintmax_t num_rows_to_drop = 0;
     uintmax_t *rows_to_drop = (uintmax_t*)malloc(sizeof(uintmax_t));
     if (rows_to_drop == NULL) {log_error(MALLOC_FAILED, func_name); return -1;}
 
-    // Iterate through data to determine which rows to drop
-    for (uintmax_t row = 0; row < self->rowCount; row++) {
+    // Determine whether to execute entire column loop or start and stop at only the requested column (depending if called from dropNullAll() or not)
+    uint32_t start, stop;
+    if (!self->drop_null_all) {
 
-        char *field = get_field_(self, row, column_index);
-
-        if (field[0] == '\0') {
-            rows_to_drop[num_rows_to_drop] = row;
-
-            num_rows_to_drop++;
-
-            rows_to_drop = (uintmax_t*)realloc(rows_to_drop, sizeof(uintmax_t) * (num_rows_to_drop+1));
-            if (rows_to_drop == NULL) {log_error(REALLOC_FAILED, func_name); return -1;}
-        }
+        // Only check 1 column requested
+        start = column_index;
+        stop = column_index + 1;
     }
+    else {
+
+        // Check all columns
+        start = 0;
+        stop = self->columnCount;
+    }
+
+    // Iterate through data to determine which rows to drop
+    for (uint32_t column = start; column < stop; column++) {
+
+        for (uintmax_t row = 0; row < self->rowCount; row++) {
+
+            char *field = get_field_(self, row, column);
+
+            if (field[0] == '\0') {
+                rows_to_drop[num_rows_to_drop] = row;
+
+                num_rows_to_drop++;
+
+                // Realloc array to keep track of rows to drop
+                rows_to_drop = (uintmax_t*)realloc(rows_to_drop, sizeof(uintmax_t) * (num_rows_to_drop+1));
+                if (rows_to_drop == NULL) {log_error(REALLOC_FAILED, func_name); return -1;}
+            }
+        }
+
+    }
+
 
     // Return if no rows to drop
     if (num_rows_to_drop == 0) {
@@ -2378,6 +2449,130 @@ char *get_field_dict(DataLynx *self, uintmax_t desired_row, char *desired_column
 
 }
 
+
+//          getColumn()
+char **getColumn(DataLynx *self, char *column_name) {
+
+    // Safety checks
+    if (self == NULL || column_name == NULL) return NULL;
+    if (!data_exists(self)) return NULL;
+
+    // Get corresponding column index
+    int16_t column_index = findColumnIndex(self, column_name);
+    if (column_index < 0) return NULL;
+
+    return get_column_(self, (uint16_t)column_index);
+
+}
+
+
+//          getColumn Idx()
+char **getColumnIdx(DataLynx *self, uint16_t column_index) {
+
+    // Safety checks
+    if (self == NULL) return NULL;
+    if (!data_exists(self) || column_index > self->columnCount-1) return NULL;
+
+    return get_column_(self, column_index);
+
+}
+
+
+//          get_column_() (internal)
+char **get_column_(DataLynx *self, uint16_t column_index) {
+
+    const char *func_name = "get_column_";
+
+    // Malloc or realloc extracted columns array
+    if (self->extracted_columns == NULL) {
+        self->extracted_columns = (char***)malloc(sizeof(char**) * ++(self->extracted_columns_len));
+        if (self->extracted_columns == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
+    }
+    else {
+        self->extracted_columns = (char***)realloc(self->extracted_columns, sizeof(char**) * ++(self->extracted_columns_len));
+        if (self->extracted_columns == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
+    }
+
+
+    // Malloc current column array
+    char **column_array = (char**)malloc(sizeof(char*) * self->rowCount);
+    if (column_array == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
+
+
+    // Iterate through data and extract column
+    for (uintmax_t row = 0; row < self->rowCount; row++) {
+
+        column_array[row] = get_field_(self, row, column_index);
+    }
+
+    // Keep track of array so freeAll() can free it
+    self->extracted_columns[(self->extracted_columns_len)-1] = column_array;
+
+    return column_array;
+}
+
+
+
+//          getNumericColumn()
+double *getNumericColumn(DataLynx *self, char *column_name) {
+
+    // Safety checks
+    if (self == NULL || column_name == NULL) return NULL;
+    if (!data_exists(self)) return NULL;
+
+    // Get corresponding column index
+    int16_t column_index = findColumnIndex(self, column_name);
+    if (column_index < 0) return NULL;
+
+    return get_numeric_column_(self, (uint16_t)column_index);
+
+}
+
+
+//          getNumericColumn Idx()
+double *getNumericColumnIdx(DataLynx *self, uint16_t column_index) {
+
+    // Safety checks
+    if (self == NULL) return NULL;
+    if (!data_exists(self) || column_index > self->columnCount-1) return NULL;
+
+    return get_numeric_column_(self, column_index);
+
+}
+
+
+//          get_numeric_column_() (internal)
+double *get_numeric_column_(DataLynx *self, uint16_t column_index) {
+
+    const char *func_name = "get_numeric_column_";
+
+    // Malloc or realloc extracted columns array
+    if (self->extracted_numeric_columns == NULL) {
+        self->extracted_numeric_columns = (double**)malloc(sizeof(double*) * ++(self->extracted_numeric_columns_len));
+        if (self->extracted_numeric_columns == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
+    }
+    else {
+        self->extracted_numeric_columns = (double**)realloc(self->extracted_numeric_columns, sizeof(double*) * ++(self->extracted_numeric_columns_len));
+        if (self->extracted_numeric_columns == NULL) {log_error(REALLOC_FAILED, func_name); return NULL;}
+    }
+
+
+    // Malloc current column array
+    double *column_array = (double*)malloc(sizeof(double) * self->rowCount);
+    if (column_array == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
+
+
+    // Iterate through data and extract column
+    for (uintmax_t row = 0; row < self->rowCount; row++) {
+
+        column_array[row] = atof(get_field_(self, row, column_index));
+    }
+
+    // Keep track of array so freeAll() can free it
+    self->extracted_numeric_columns[(self->extracted_numeric_columns_len)-1] = column_array;
+
+    return column_array;
+}
 
 
 
@@ -3999,6 +4194,29 @@ void freeAll(DataLynx *self) {
     // Free XML string
     if (self->xml != NULL) free_null(&self->xml);
 
+    // Free yhat arrays
+    if (self->linearModel.yhat_master != NULL) {
+        for (uint16_t i = 0; i < self->linearModel.yhat_master_len; i++) free(self->linearModel.yhat_master[i]);
+        free(self->linearModel.yhat_master);
+        self->linearModel.yhat_master = NULL;
+    }
+
+
+    // Free extracted columns
+    if (self->extracted_columns != NULL) {
+        for (uint16_t i = 0; i < self->extracted_columns_len; i++) free(self->extracted_columns[i]);
+        free(self->extracted_columns);
+        self->extracted_columns = NULL;
+    }
+
+    // Free extracted columns
+    if (self->extracted_numeric_columns != NULL) {
+        for (uint16_t i = 0; i < self->extracted_numeric_columns_len; i++) free(self->extracted_numeric_columns[i]);
+        free(self->extracted_numeric_columns);
+        self->extracted_numeric_columns = NULL;
+    }
+
+
     self = NULL;
 
     return;
@@ -5173,4 +5391,104 @@ char *toXMLString(DataLynx *self) {
 
 
 
+
+//          JOIN (DOES NOT WORK YET)
+DataLynx *join(DataLynx *table1, DataLynx *table2, const char *on1, const char *on2, const char *how) {
+
+    // BUG: if  rows dont exactly match up, will not work!!!!!!!!!!!!!!!!!!!!!!!!
+
+    // Safety checks
+    if (table1 == NULL || table2 == NULL) return NULL;
+    if (!data_exists(table1) || !data_exists(table2)) return NULL;
+    if (on1 == NULL || on2 == NULL || how == NULL) return NULL;
+
+
+    // Find column indexes
+    int16_t on1_index = findColumnIndex(table1, on1);
+    int16_t on2_index = findColumnIndex(table2, on2);
+    if (on1_index < 0 || on2_index < 0) return NULL;
+
+    const char *func_name = "join";
+
+    typedef struct RowJoin {
+        uintmax_t row1;
+        uintmax_t row2;
+    } RowJoin;
+
+
+    // Allocate buffer to keep track of which rows to merge
+    uintmax_t row_join_buffer_size = (table1->rowCount > table2->rowCount) ? table1->rowCount : table2->rowCount;
+
+    RowJoin *row_joins = (RowJoin*)malloc(sizeof(RowJoin) * row_join_buffer_size);
+    if (row_joins == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
+
+    uintmax_t num_rows_to_join = 0;
+
+
+    uintmax_t row1 = 0;
+    uintmax_t row2 = 0;
+
+    while (row1 < table1->rowCount && row2 < table2->rowCount) {
+
+        if (strcmp(get_field_(table1, row1, on1_index), get_field_(table2, row2, on2_index)) == 0) {
+            row_joins[num_rows_to_join].row1 = row1;
+            row_joins[num_rows_to_join++].row2 = row2;
+        }
+
+        row1++;
+        row2++;
+    }
+
+    // Create merged
+    DataLynx *merged = (DataLynx*)malloc(sizeof(DataLynx));
+    if (merged == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
+
+    merged->columnCount = table1->columnCount + table2->columnCount;
+    merged->rowCount = num_rows_to_join;
+
+    merged->grid_v3 = (char***)malloc(sizeof(char**) * merged->rowCount);
+    if (merged->grid_v3 == NULL) {log_error(MALLOC_FAILED, func_name); return NULL;}
+
+
+    for (uintmax_t row = 0; row < num_rows_to_join; row++) {
+    printf("JOIN: %ld\n\n",num_rows_to_join);
+
+        // Allocate row
+        merged->grid_v3[row] = (char**)malloc(sizeof(char*) * merged->columnCount);
+        if (merged->grid_v3[row] == NULL) {log_error(MALLOC_FAILED, func_name); freeAll(merged); return NULL;}
+
+        char *field = NULL;
+
+        // Copy columns from table 1 to merged
+        for (uint16_t column1 = 0; column1 < table1->columnCount; column1++) {
+            field = get_field_(table1, row, column1);
+
+            size_t field_strlen = strlen(field);
+
+            // Allocate string
+            merged->grid_v3[row][column1] = (char*)malloc(sizeof(char) * (field_strlen+1));
+            if (merged->grid_v3[row][column1] == NULL) {log_error(MALLOC_FAILED, func_name); freeAll(merged); return NULL;}
+
+            strcpy(merged->grid_v3[row][column1], field);
+
+        }
+
+        // Copy columns from table 2 to merged
+        for (uint16_t column2 = merged->columnCount-table2->columnCount; column2 < table2->columnCount; column2++) {
+            field = get_field_(table2, row, column2);
+
+            size_t field_strlen = strlen(field);
+
+            // Allocate string
+            merged->grid_v3[row][column2] = (char*)malloc(sizeof(char) * (field_strlen+1));
+            if (merged->grid_v3[row][column2] == NULL) {log_error(MALLOC_FAILED, func_name); freeAll(merged); return NULL;}
+
+            strcpy(merged->grid_v3[row][column2], field);
+        }
+    }
+
+
+
+    return merged;
+}
 
