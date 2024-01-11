@@ -3042,6 +3042,48 @@ double revenue_not_null = myData.notNull(&myData, "Revenue");
 
 
 
+<!-- CORR -->
+<h4 align="center">corr()</h4>
+<h6 align="center">double corr(DataLynx *self, char *column_name1, char *column_name2);</h6>
+
+##### PARAMETERS:
+<ul>
+    
+###### <li>Pointer to (i.e. address of) dataLynx object.</li>
+###### <li>String of column name, in which you wish to find the correlation of to another column.</li>
+###### <li>String of 2nd column name, in which you wish to find the correlation of to the 1st column name provided.</li>
+</ul>
+
+##### To Use:
+<ul>
+
+###### <li>Provide the names of 2 numeric columns, and this function will return the correlation of the 2 columns (i.e. correlation will be between -1 and 1.)</li>
+###### <li>Both column names provided must be numeric columns.</li>
+</ul>
+
+##### RETURN:
+<ul>
+    
+###### <li>On success, returns correlation of 2 columns.</li>
+###### <li>On failure, returns 0.</li>
+</ul>
+
+
+##### Example Code:
+
+```C
+int correlation = myData.corr(&myData, "highway-mpg", "price");
+```
+
+<ul>
+ 
+###### <li>The above code will return the correlation between the "highway-mpg" column and the "price" column.</li>
+</ul>
+<hr>
+
+
+
+
 <!-- GET BINS -->
 <h4 align="center">getBins()</h4>
 <h6 align="center">double *getBins(DataLynx *self, char *column_name, uint16_t num_bins, char **bin_names)</h6>
