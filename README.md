@@ -205,7 +205,7 @@ myData.csv.dictReader(&myData);
 Statistics / Value Counts (Aggregate Data)
 =========
 
-###### (This library provides you with the following statistical / aggregate data)
+###### (This library provides you with the following statistical / aggregate data.)
 </div>
 
 
@@ -222,7 +222,10 @@ Statistics / Value Counts (Aggregate Data)
 ###### <li>75th percentile (upper quartile)</li>
 ###### <li>Is Null (number of empty field in a given column)</li>
 ###### <li>Not Null (number of non-empty field in a given column)</li>
+###### <li>Correlation (to any other numeric column).</li>
 </ul>
+
+See ![Linear Model](#linearmodel) for data regarding linear regression.
 
 ##### For non-numeric columns:
 <ul>
@@ -3176,7 +3179,13 @@ myData.oneHot(&myData, "department");
 
 
 
-
+<!-- LINEAR MODEL -->
+<a id="linearmodel"></a>
+<div align="center">
+  
+Linear Model:
+--------
+</div
 
 
 
